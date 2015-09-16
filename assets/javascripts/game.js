@@ -160,6 +160,9 @@ function playerHit(player, bullet) {
 }
 
 var shotTimer = 0
+// decreasing shotLevel towards 0 will increase frequency
+// var shotLevel = 1
+// var shotCooldown = 500 * shotLevel;
 var shotCooldown = 500
 ////////////////////////////////////////////////////////////// SHOOTING
 function shoot() {
@@ -206,4 +209,8 @@ function purchaseItem(item) {
 		// remove .cost from bank
 		// enable/disable buttons
 		// enable item ability
+}
+
+function upgradeShot() {
+	shotCooldown = shotCooldown * 0.9
 }
