@@ -11,8 +11,10 @@ function preload() {
 	game.load.image('sky','images/sky.jpg');
 	game.load.image('ship', 'images/ship.gif');
 	// game.load.image('ship', 'images/spaceship.png');
-	game.load.image('basic_bullet_horizontal','images/basic_bullet_right.png')
-	game.load.image('basic_bullet_vertical','images/basic_bullet_down.png')
+	game.load.image('basic_bullet_right','images/basic_bullet_right.png')
+	game.load.image('basic_bullet_down','images/basic_bullet_down.png')
+	game.load.image('basic_bullet_left','images/basic_bullet_left.png')
+	game.load.image('basic_bullet_up','images/basic_bullet_up.png')
 	// game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
 
 	// width, height [, # of frames [of sprite img]]
@@ -46,6 +48,8 @@ function create() {
 	gold_coin.value = 500
 	gold_coin.animations.add('rotate')
 	gold_coin.animations.play('rotate',20,true)
+	setTimeout(function() { gold_coin.kill() ; }, Math.floor(Math.random() * 10000)+5000)
+
 	/////////////////////////// SILVER COIN
 	silver_coins = game.add.group()
 	silver_coins.enableBody = true;
@@ -53,6 +57,7 @@ function create() {
 	silver_coin.value = 200
 	silver_coin.animations.add('rotate')
 	silver_coin.animations.play('rotate',20,true)
+	setTimeout(function() { silver_coin.kill() ; }, Math.floor(Math.random() * 10000)+10000)
 	/////////////////////////// COPPER COIN
 	copper_coins = game.add.group()
 	copper_coins.enableBody = true;
@@ -60,6 +65,7 @@ function create() {
 	copper_coin.value = 50
 	copper_coin.animations.add('rotate')
 	copper_coin.animations.play('rotate',20,true)
+	setTimeout(function() { copper_coin.kill() ; }, Math.floor(Math.random() * 10000)+10000)
 	//////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////////////////////// PLAYER OPTIONS
@@ -74,8 +80,7 @@ function create() {
 	bullets.setAll('anchor.y',0.5)
 	bullets.setAll('outOfBoundsKill', true)
 	bullets.setAll('checkWorldBounds', true)
-	bullets.createMultiple(10,'basic_bullet_horizontal')
-
+	bullets.create(300,300,'basic_bullet_right')
 	// bullets.create(player.position.x+100, player.position.y+34, 'basic_bullet_horizontal')
 	// bullets.create(200, 500, 'basic_bullet_horizontal')
 	///////////////////////////////////////////////////////////////////
@@ -125,8 +130,10 @@ function update() {
   game.physics.arcade.overlap(player, gold_coins, getRich, null, this);
   game.physics.arcade.overlap(player, copper_coins, getRich, null, this);
   game.physics.arcade.overlap(player, silver_coins, getRich, null, this);
-}
 
+  game.physics.arcade.overlap(silver_coins, bullets, playerHit, null, this);
+
+}
 
 function spawnPlayer() {
 	player = game.add.sprite(0, 0, 'sship');
@@ -143,7 +150,7 @@ function spawnPlayer() {
 ///////////////////////////////////////////// PLAYER COLLISION FUNCTION
 function playerHit(player, bullet) {
 	//  EXPLODE ANIMATION
-	explode = game.add.sprite(player.position.x-25,player.position.y-25,'explode1')
+	explode = game.add.sprite(player.body.center.x-50, player.body.center.y-50,'explode1')
 	explode.animations.add('explode')
 	explode.animations.play('explode',10)
 	/////////////////////////////////////////////////////////////////////
@@ -160,22 +167,23 @@ function shoot() {
 		shotTimer = game.time.now + shotCooldown
 		// player is facing right
 		if (player.frame === 0) {
-			var bullet = bullets.create(player.position.x+60, player.position.y+20, 'basic_bullet_horizontal')
+			var bullet = bullets.create(player.body.center.x+30, player.body.center.y-4, 'basic_bullet_right')
 			bullet.body.velocity.x = 400
+			// debugger
 		}
 		// player is facing down
 		else if (player.frame === 1) {
-			var bullet = bullets.create(player.position.x+20, player.position.y+65, 'basic_bullet_vertical')
+			var bullet = bullets.create(player.body.center.x-5, player.body.center.y+30, 'basic_bullet_down')
 			bullet.body.velocity.y = 400
 		}
 		// player is facing left
 		else if (player.frame === 2) {
-			var bullet = bullets.create(player.position.x-33, player.position.y+20, 'basic_bullet_horizontal')
+			var bullet = bullets.create(player.body.center.x-30-20, player.body.center.y-4, 'basic_bullet_left')
 			bullet.body.velocity.x = -400
 		}
 		// player is facing up
 		else if (player.frame === 3) {
-			var bullet = bullets.create(player.position.x+20, player.position.y-30, 'basic_bullet_vertical')
+			var bullet = bullets.create(player.body.center.x-5, player.body.center.y-30-20, 'basic_bullet_up')
 			bullet.body.velocity.y = -400
 		}
 		
