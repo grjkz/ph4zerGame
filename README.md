@@ -7,4 +7,4 @@
 * Player can spend money on items/powerups
 
 ### Trello
-[Trello](https://trello.com/b/vIu8CAj1/ph4zerproj3kt)
+[Clickity Click](https://trello.com/b/vIu8CAj1/ph4zerproj3kt)
