@@ -1,4 +1,5 @@
 console.log('game.js linked')
+var socket = io();
 
 var game = new Phaser.Game(1280,720, Phaser.AUTO, 'game-area', {preload:preload,create:create,update:update})
 
@@ -6,6 +7,15 @@ var bank = 0;
 var bankOutput;
 var lives = 4;
 var bullets;
+var myInfo;
+var Players = {}
+
+var shotTimer = 0
+// decreasing shotLevel towards 0 will increase frequency
+// var shotLevel = 1
+// var shotCooldown = 500 * shotLevel;
+var shotCooldown = 500
+
 
 function preload() {
 	game.load.image('sky','images/sky.jpg');
@@ -15,9 +25,9 @@ function preload() {
 	game.load.image('basic_bullet_down','images/basic_bullet_down.png')
 	game.load.image('basic_bullet_left','images/basic_bullet_left.png')
 	game.load.image('basic_bullet_up','images/basic_bullet_up.png')
-	// game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+	game.load.image('bubble','images/bubble.png')
 
-	// width, height [, # of frames [of sprite img]]
+	// width, height [, # of frames (of sprite img)]
 	game.load.spritesheet('gold_coin', 'images/gold_coin.png', 32, 32, 8)
 	game.load.spritesheet('copper_coin', 'images/copper_coin.png',35.2,32)
 	game.load.spritesheet('silver_coin', 'images/silver_coin_float.png',32,32)
@@ -44,7 +54,7 @@ function create() {
 	gold_coins.enableBody = true;
 	// enable body needs to next to its creation code for some reason
 
-	gold_coin = gold_coins.create(100,100,'gold_coin')
+	var gold_coin = gold_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'gold_coin')
 	gold_coin.value = 500
 	gold_coin.animations.add('rotate')
 	gold_coin.animations.play('rotate',20,true)
@@ -53,7 +63,7 @@ function create() {
 	/////////////////////////// SILVER COIN
 	silver_coins = game.add.group()
 	silver_coins.enableBody = true;
-	silver_coin = silver_coins.create(200,300,'silver_coin')
+	silver_coin = silver_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'silver_coin')
 	silver_coin.value = 200
 	silver_coin.animations.add('rotate')
 	silver_coin.animations.play('rotate',20,true)
@@ -61,7 +71,7 @@ function create() {
 	/////////////////////////// COPPER COIN
 	copper_coins = game.add.group()
 	copper_coins.enableBody = true;
-	copper_coin = copper_coins.create(0,300,'copper_coin')
+	copper_coin = copper_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'copper_coin')
 	copper_coin.value = 50
 	copper_coin.animations.add('rotate')
 	copper_coin.animations.play('rotate',20,true)
@@ -81,6 +91,8 @@ function create() {
 	bullets.setAll('outOfBoundsKill', true)
 	bullets.setAll('checkWorldBounds', true)
 	bullets.create(300,300,'basic_bullet_right')
+	bullets.create(400,100,'basic_bullet_right')
+	bullets.create(0,100,'basic_bullet_right')
 	// bullets.create(player.position.x+100, player.position.y+34, 'basic_bullet_horizontal')
 	// bullets.create(200, 500, 'basic_bullet_horizontal')
 	///////////////////////////////////////////////////////////////////
@@ -91,10 +103,33 @@ function create() {
   // var changeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
   // changeKey.onDown.add(this.nextWeapon, this);
   ///////////////////////////////////////////////////////////////////
+
+  ////////////////////////////////////////////////////////// POWERUPS
+  shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
+  
+  ///////////////////////////////////////////////////////////////////
 }
 
+var lastupdate = 0
+
 function update() {
+	if (lastupdate < game.time.now) {
+		lastupdate = game.time.now + 500
+		// console.log(game.time.now)
+		socket.emit('movement', player.body.position)
+
+	// this creates way too many coins
+		// socket.on('movement', function(location) {
+		// 	var gold_coin = gold_coins.create(location.x,location.y,'gold_coin')
+		// 	gold_coin.value = 1
+		// 	gold_coin.animations.add('rotate')
+		// 	gold_coin.animations.play('rotate',20,true)
+		// })
+	}
 	
+  // game.debug.body(shield);
+  // game.debug.body(player);
+
 	// game.physics.arcade.collide(player, platforms);
 
 	//////////////////////////////////////////////////// PLAYER CONTROLS
@@ -107,7 +142,7 @@ function update() {
   else if (cursors.down.isDown) {
     player.body.velocity.y = 300;
     player.animations.play('down')
-  }
+  }	
   if (cursors.left.isDown && cursors.right.isDown) {}
   else if (cursors.left.isDown) {
   	player.body.velocity.x = -300;
@@ -132,11 +167,15 @@ function update() {
   game.physics.arcade.overlap(player, silver_coins, getRich, null, this);
 
   game.physics.arcade.overlap(silver_coins, bullets, playerHit, null, this);
+  /////////////////////////////////////////////////////////////////////
 
+  checkShield()
 }
 
 function spawnPlayer() {
-	player = game.add.sprite(0, 0, 'sship');
+	// socket.emit('spawnPlayer', {})
+
+	player = game.add.sprite(100, 300, 'sship');
 	// player.weapons = []
 	player.animations.add('right',[0],1,true);
 	player.animations.add('down',[1],1,true);
@@ -144,30 +183,39 @@ function spawnPlayer() {
 	player.animations.add('up',[3],1,true);
 	game.physics.arcade.enable(player);
 	player.body.collideWorldBounds = true;
+	player.shielded = false
+
+	socket.emit('player info',{x: player.x, y: player.y})
 }
 
 
 ///////////////////////////////////////////// PLAYER COLLISION FUNCTION
 function playerHit(player, bullet) {
-	//  EXPLODE ANIMATION
-	explode = game.add.sprite(player.body.center.x-50, player.body.center.y-50,'explode1')
-	explode.animations.add('explode')
-	explode.animations.play('explode',10)
-	/////////////////////////////////////////////////////////////////////
-	player.kill()
-	bullet.kill()
-
+	if (player.shielded) {
+		bullet.kill()
+		shield.kill()
+		player.shielded = false
+	}
+	else {
+		//  EXPLODE ANIMATION
+		explode = game.add.sprite(player.body.center.x-50, player.body.center.y-50,'explode1')
+		explode.animations.add('explode')
+		explode.animations.play('explode',10)
+		/////////////////////////////////////////////////////////////////////
+		player.kill()
+		bullet.kill()
+	}
 }
 
-var shotTimer = 0
-// decreasing shotLevel towards 0 will increase frequency
-// var shotLevel = 1
-// var shotCooldown = 500 * shotLevel;
-var shotCooldown = 500
+
+
 ////////////////////////////////////////////////////////////// SHOOTING
 function shoot() {
 	if (shotTimer < game.time.now) {
+
+		socket.emit('shoot', "Player has fired a shot")
 		shotTimer = game.time.now + shotCooldown
+
 		// player is facing right
 		if (player.frame === 0) {
 			var bullet = bullets.create(player.body.center.x+30, player.body.center.y-4, 'basic_bullet_right')
@@ -197,11 +245,16 @@ function shoot() {
 function getRich(player, coin) {
 	// check the value of the coin
 	// add value of coin to total bank
+
+	// try to make the shield follow u from the start
 	coin.kill()
 	bank += coin.value
 	bankOutput.text = 'Bank: '+bank;
-}
+	player.shielded = true
 
+	socket.emit('add coin', coin.value)
+	console.log("add coin")
+}
 
 function purchaseItem(item) {
 	// compare bank with item.cost
@@ -214,3 +267,55 @@ function purchaseItem(item) {
 function upgradeShot() {
 	shotCooldown = shotCooldown * 0.9
 }
+
+function checkShield() {
+	if (player.shielded === true) {
+		shield.position.set(player.position.x-2.5,player.position.y-2.5)		
+	}
+}
+
+// gets own id and info
+socket.on('player info', function(data) {
+	myInfo = data
+	// console.log(data)
+})
+
+// a new player joins
+socket.on('add new user', function(player) {
+	Players[player.id] = player
+	Players.counter++
+
+	var opponent = game.add.sprite(player.x, player.y, 'sship');
+	// opponent.weapons = []
+	opponent.animations.add('right',[0],1,true);
+	opponent.animations.add('down',[1],1,true);
+	opponent.animations.add('left',[2],1,true);
+	opponent.animations.add('up',[3],1,true);
+	game.physics.arcade.enable(opponent);
+	opponent.body.collideWorldBounds = true;
+	opponent.shielded = false
+})
+
+// init: grab all other players' info
+socket.on('get other players', function(data) {
+	Players = data
+
+	
+})
+
+// any player moves
+socket.on('movement', function(data) {
+	Players[data.id].x = data.x
+	Players[data.id].y = data.y
+})
+
+// a player disconnects
+socket.on('delete player', function(id) {
+	delete Players[id]
+	Players.counter--
+	// kill() his ship
+})
+
+socket.on('update bank', function(player) {
+	Players[player.id] = player
+})

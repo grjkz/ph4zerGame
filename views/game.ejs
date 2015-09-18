@@ -6,8 +6,44 @@
 	<title>Game</title>
 </head>
 <body>
+	
 	<div id="game-area"></div>
+
+	<div id="chat-area">
+		<ul id='messages'></ul>
+		<form action="">
+			<input type="text" id="m" autocomplete='off'>
+			<button>Send</button>
+		</form>
+	</div>
 </body>
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
 <script src="javascripts/phaser.min.js"></script>
 <script src="javascripts/game.js"></script>
+<script>
+  var socket = io();
+  var a;
+  socket.on('user joined', function(data) {
+
+  })
+
+
+
+  socket.on('shoot',function(msg) {
+  	console.log(msg)
+  })
+  // CHAT STUFF
+  $('form').submit(function(){
+    socket.emit('chat message', $('#m').val());
+    $('#m').val('');
+    return false;
+  });
+  socket.on('chat message', function(msg){
+    $('#messages').append($('<li>').text(msg));
+  });
+  socket.on('connected msg',function(data) {
+  	$('#messages').append($('<li>').text(data+" has connected"))
+  })
+</script>
 </html>

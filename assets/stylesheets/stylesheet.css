@@ -2,3 +2,7 @@ canvas {
 	margin: auto auto;
 
 }
+
+#chat-area {
+	height: 400px;
+}
