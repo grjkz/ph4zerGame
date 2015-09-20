@@ -2,7 +2,6 @@ var express = require('express')
 var app = express()
 // var server = require('http').Server(app)
 var ejs = require('ejs')
-var Player = require('./assets/javascripts/models/Player').Player
 
 var server = app.listen(6666,function() {
 	console.log('server is listening on 3k')
