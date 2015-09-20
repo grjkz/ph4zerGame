@@ -3,8 +3,8 @@ var app = express()
 // var server = require('http').Server(app)
 var ejs = require('ejs')
 
-var server = app.listen(6666,function() {
-	console.log('server is listening on 3k')
+var server = app.listen(3001,function() {
+	console.log('server is listening on 3001')
 })
 var io = require('socket.io')(server);
 
