@@ -4,7 +4,7 @@ var app = express()
 var ejs = require('ejs')
 var Player = require('./assets/javascripts/models/Player').Player
 
-var server = app.listen(3000,function() {
+var server = app.listen(6666,function() {
 	console.log('server is listening on 3k')
 })
 var io = require('socket.io')(server);
@@ -26,7 +26,7 @@ app.get('*',function(req,res) {
 
 // server socket
 var users = { counter: 0 }
-
+var bulletCounter = 0
 io.on('connection', function(client){
   // console.log('a user connected');
   users.counter++
@@ -71,8 +71,14 @@ io.on('connection', function(client){
   })
 
   // user fires
-  client.on('shoot', function(msg) {
-		io.emit('shoot', msg)
+  client.on('shoot', function(data) {
+		io.emit('shoot', {
+			id: data.id,
+			facing: data.facing,
+			bulletID: bulletCounter
+		})
+
+		bulletCounter++
 	})
 
   // user gets hit
@@ -107,6 +113,10 @@ io.on('connection', function(client){
     // console.log('message: ' + msg);
     io.emit('chat message', msg);
   });
+
+  client.on('name change', function(name) {
+  	console.log('name change involked!!!!')
+  })
 
 });
 

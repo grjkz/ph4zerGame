@@ -11,6 +11,7 @@ var myID = 'dont have one yet'
 var Players = { counter: 0 }
 var playerReady = false
 
+var Bullets = {}
 var shotTimer = 0
 // decreasing shotLevel towards 0 will increase frequency
 // var shotLevel = 1
@@ -100,6 +101,8 @@ function create() {
 
 	///////////////////////////////////////////// ENABLE PLAYER CONTROLS
 	cursors = this.input.keyboard.createCursorKeys();
+
+	// this prevents spacebar from being used in the input tag
   this.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
   // var changeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
   // changeKey.onDown.add(this.nextWeapon, this);
@@ -110,6 +113,8 @@ function create() {
   
   ///////////////////////////////////////////////////////////////////
 
+
+  // tell server that i'm done loading init stuff
   socket.emit('ready')
 }
 
@@ -184,11 +189,18 @@ function update() {
   	Players[myID].animations.play('right')
   }
 
- //  if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
- //  	shoot();
- //  	// player.weapons[0].fire(player);
-	// }
+  if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && shotTimer < game.time.now) {
+  	shotTimer = game.time.now + shotCooldown
+		// console.log(myID+': shot')
+		socket.emit('shoot', {
+			id: myID, 
+			facing: Players[myID].facing 
+		})
+	}
+
 }
+//////////////////////////////////////////////////////////////////////////////
+
 
 // new player joins the game
 socket.on('add new user', function(newPlayer) {
@@ -211,8 +223,68 @@ socket.on('movement', function(data) {
 	Players[data.id].animations.play(data.facing)
 })
 
+////////////////////////////////////////////////////////////// SHOOTING
+socket.on('shoot',function(data) {
+	shoot(data)
+})
+
+function shoot(shooter) {
+// id: 
+// facing: 
+// bulletID
+	//create a bullet from Player[shooter.id].x.y with correct velocity
+	var shooter = Players[shooter.id]
+
+	console.log(shooter.facing)
+
+	// shooter is facing right
+	if (shooter.facing === "right") {
+		console.log("shot right")
+		Bullets[shooter.bulletID] = bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+		var bullet = Bullets[shooter.bulletID] 
+		bullet.body.velocity.x = 400
+	}
+	// shooter is facing down
+	else if (shooter.facing === "down") {
+		console.log("shot down")
+		Bullets[shooter.bulletID] = bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+		var bullet = Bullets[shooter.bulletID] 
+		bullet.body.velocity.y = 400
+	}
+	// shooter is facing left
+	else if (shooter.facing === "left") {
+		console.log("shot left")
+		Bullets[shooter.bulletID] = bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+		var bullet = Bullets[shooter.bulletID] 
+		bullet.body.velocity.x = -400
+	}
+	// shooter is facing up
+	else if (shooter.facing === "up") {
+		console.log("shot up")
+		Bullets[shooter.bulletID] = bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+		var bullet = Bullets[shooter.bulletID] 
+		bullet.body.velocity.y = -400
+	}
 
 
+	// 	// player is facing down
+	// 	else if (player.frame === 1) {
+	// 		var bullet = bullets.create(player.body.center.x-5, player.body.center.y+30, 'basic_bullet_down')
+	// 		bullet.body.velocity.y = 400
+	// 	}
+	// 	// player is facing left
+	// 	else if (player.frame === 2) {
+	// 		var bullet = bullets.create(player.body.center.x-30-20, player.body.center.y-4, 'basic_bullet_left')
+	// 		bullet.body.velocity.x = -400
+	// 	}
+	// 	// player is facing up
+	// 	else if (player.frame === 3) {
+	// 		var bullet = bullets.create(player.body.center.x-5, player.body.center.y-30-20, 'basic_bullet_up')
+	// 		bullet.body.velocity.y = -400
+	// 	}
+		
+	// }
+}
 
 
 

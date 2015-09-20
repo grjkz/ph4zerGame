@@ -33,19 +33,25 @@
 
 
   socket.on('shoot',function(msg) {
-  	console.log(msg)
+  	// console.log("facing: "+msg)
   })
+  
   // CHAT STUFF
   $('form').submit(function(){
-    socket.emit('chat message', $('#m').val());
+  	if ($('#m').val() !== /^\/name\s/) {
+	    socket.emit('chat message', $('#m').val());
+	  }
+	  else {
+	  	socket.emit('name change')//, new name)
+	  }
     $('#m').val('');
     return false;
   });
   socket.on('chat message', function(msg){
-    $('#messages').append($('<li>').text(msg));
+    $('#messages').prepend($('<li>').text(msg));
   });
-  socket.on('connected msg',function(data) {
-  	$('#messages').append($('<li>').text(data+" has connected"))
+  socket.on('connected msg',function(user) {
+  	$('#messages').prepend($('<li>').text(user+" has connected"))
   })
 </script>
 </html>
