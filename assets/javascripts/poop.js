@@ -134,9 +134,11 @@ function spawnPlayer(user) {
 	player.animations.add('down',[1],1,true);
 	player.animations.add('left',[2],1,true);
 	player.animations.add('up',[3],1,true);
+	player.animations.play(user.facing)
 	game.physics.arcade.enable(player);
 	player.body.collideWorldBounds = true;
 	player.shielded = false
+	player.facing = user.facing
 	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
 
 	// socket.emit('player info',{x: player.x, y: player.y})
@@ -147,7 +149,11 @@ function update() {
 	if (!playerReady) return
 		// check of another user is connected before blasting the server
 		if (Players.counter > 1) {
-			socket.emit('movement', Players[myID].body.position)
+			socket.emit('movement', {
+				x: Players[myID].body.x,
+				y: Players[myID].body.y, 
+				facing: Players[myID].facing
+			})
 		}
 		// also send the direction i'm facing along with my location
 		// maybe is should put this into the conditionals that move the player
@@ -158,19 +164,23 @@ function update() {
   if (cursors.down.isDown && cursors.up.isDown) {}
   else if (cursors.up.isDown) {
     Players[myID].body.velocity.y = -300;
+    Players[myID].facing = "up"
     Players[myID].animations.play('up')
   }
   else if (cursors.down.isDown) {
     Players[myID].body.velocity.y = 300;
+    Players[myID].facing = "down"
     Players[myID].animations.play('down')
   }	
   if (cursors.left.isDown && cursors.right.isDown) {}
   else if (cursors.left.isDown) {
   	Players[myID].body.velocity.x = -300;
+  	Players[myID].facing = "left"
   	Players[myID].animations.play('left')
   }
   else if (cursors.right.isDown) {
   	Players[myID].body.velocity.x = 300;
+  	Players[myID].facing = "right"
   	Players[myID].animations.play('right')
   }
 
@@ -198,6 +208,7 @@ socket.on('get other players', function(users) {
 socket.on('movement', function(data) {
 	Players[data.id].x = data.x
 	Players[data.id].y = data.y
+	Players[data.id].animations.play(data.facing)
 })
 
 

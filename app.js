@@ -61,8 +61,12 @@ io.on('connection', function(client){
   // user moves
   // not persisted on server
   client.on('movement', function(position) {
-  	// console.log(position)
-  	client.broadcast.emit('movement', {id: client.id, x: position.x, y: position.y})
+  	client.broadcast.emit('movement', {
+  		id: client.id, 
+  		x: position.x, 
+  		y: position.y, 
+  		facing: position.facing
+  	})
 
   })
 
@@ -119,18 +123,22 @@ generatePlayer = function(id) {
 	if (users.counter === 1) {
 			var x = 100
 			var y = 100
+			var facing = "right"
 		}
 		else if (users.counter ===2) {
 			var x = 1180
 			var y = 500
+			var facing = "left"
 		}
 		else if (users.counter ===3) {
 			var x = 100
 			var y = 500
+			var facing = "right"
 		}
 		else if (users.counter ===4) {
 			var x = 1180
 			var y = 100
+			var facing = "left"
 		}
 		else {
 			var x = Math.floor(Math.random()*1230)
@@ -142,7 +150,8 @@ generatePlayer = function(id) {
 			bank: 0,
 			alias: "Unknown",
 			x: x, 
-			y: y
+			y: y,
+			facing: facing
 		}
 }
 
