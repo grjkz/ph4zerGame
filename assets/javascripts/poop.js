@@ -152,14 +152,7 @@ function spawnPlayer(user) {
 
 function update() {
 	if (!playerReady) return
-		// check of another user is connected before blasting the server
-		if (Players.counter > 1) {
-			socket.emit('movement', {
-				x: Players[myID].body.x,
-				y: Players[myID].body.y, 
-				facing: Players[myID].facing
-			})
-		}
+
 		// also send the direction i'm facing along with my location
 		// maybe is should put this into the conditionals that move the player
 		// emit { player.x, player.x, player.facing = [direction] }
@@ -188,10 +181,17 @@ function update() {
   	Players[myID].facing = "right"
   	Players[myID].animations.play('right')
   }
+	// check of another user is connected before blasting the server
+	if (Players.counter > 1) {
+		socket.emit('movement', {
+			x: Players[myID].body.x,
+			y: Players[myID].body.y, 
+			facing: Players[myID].facing
+		})
+	}
 
   if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && shotTimer < game.time.now) {
-  	shotTimer = game.time.now + shotCooldown
-		// console.log(myID+': shot')
+  	shotTimer = game.time.now + shotCooldown;
 		socket.emit('shoot', {
 			id: myID, 
 			facing: Players[myID].facing 
@@ -220,47 +220,43 @@ socket.on('get other players', function(users) {
 socket.on('movement', function(data) {
 	Players[data.id].x = data.x
 	Players[data.id].y = data.y
+	Players[data.id].facing = data.facing
 	Players[data.id].animations.play(data.facing)
 })
 
 ////////////////////////////////////////////////////////////// SHOOTING
-socket.on('shoot',function(data) {
+socket.on('shoots fired',function(data) {
 	shoot(data)
 })
 
 function shoot(shooter) {
-// id: 
-// facing: 
-// bulletID
-	//create a bullet from Player[shooter.id].x.y with correct velocity
-	var shooter = Players[shooter.id]
 
-	console.log(shooter.facing)
+	var shooter = Players[shooter.id]
 
 	// shooter is facing right
 	if (shooter.facing === "right") {
-		console.log("shot right")
+		// console.log("shot right")
 		Bullets[shooter.bulletID] = bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
 		var bullet = Bullets[shooter.bulletID] 
 		bullet.body.velocity.x = 400
 	}
 	// shooter is facing down
 	else if (shooter.facing === "down") {
-		console.log("shot down")
+		// console.log("shot down")
 		Bullets[shooter.bulletID] = bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
 		var bullet = Bullets[shooter.bulletID] 
 		bullet.body.velocity.y = 400
 	}
 	// shooter is facing left
 	else if (shooter.facing === "left") {
-		console.log("shot left")
+		// console.log("shot left")
 		Bullets[shooter.bulletID] = bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
 		var bullet = Bullets[shooter.bulletID] 
 		bullet.body.velocity.x = -400
 	}
 	// shooter is facing up
 	else if (shooter.facing === "up") {
-		console.log("shot up")
+		// console.log("shot up")
 		Bullets[shooter.bulletID] = bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
 		var bullet = Bullets[shooter.bulletID] 
 		bullet.body.velocity.y = -400

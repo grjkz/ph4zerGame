@@ -57,7 +57,7 @@ io.on('connection', function(client){
   });
 
 
-  // user moves
+  // user position update (constantly updating)
   // not persisted on server
   client.on('movement', function(position) {
   	client.broadcast.emit('movement', {
@@ -66,17 +66,15 @@ io.on('connection', function(client){
   		y: position.y, 
   		facing: position.facing
   	})
-
   })
 
   // user fires
   client.on('shoot', function(data) {
-		io.emit('shoot', {
+		io.emit('shoots fired', {
 			id: data.id,
 			facing: data.facing,
 			bulletID: bulletCounter
 		})
-
 		bulletCounter++
 	})
 
