@@ -28,41 +28,18 @@ app.get('*',function(req,res) {
 var users = { counter: 0 }
 
 io.on('connection', function(client){
-  console.log('a user connected');
+  // console.log('a user connected');
   users.counter++
+  console.log(users.counter+" user(s) connected")
 
   // wait for client to tell server that it's ready before sending over data
 	client.on('ready', function() {
 		// sends the new client all previous existing users
 		client.emit('get other players', users)
 		
-		// var newUser = new Player(client.id)
-		if (users.counter === 1) {
-			var x = 100
-			var y = 100
-		}
-		else if (users.counter ===2) {
-			var x = 1180
-			var y = 500
-		}
-		else if (users.counter ===3) {
-			var x = 100
-			var y = 500
-		}
-		else if (users.counter ===4) {
-			var x = 1180
-			var y = 100
-		}
+		// create new player object with location
+		generatePlayer(client.id);
 
-		users[client.id] = {
-			id: client.id,
-			bank: 0,
-			alias: "Unknown",
-			x: x, 
-			y: y
-		}
-
-		// console.log(users)
 		// send new user his own info
 		client.emit('player info', users[client.id])
 		// send new user to all other clients
@@ -80,27 +57,37 @@ io.on('connection', function(client){
     console.log(users.counter+" user(s) left")
   });
 
+
+  // user moves
+  // not persisted on server
+  client.on('movement', function(position) {
+  	// console.log(position)
+  	client.broadcast.emit('movement', {id: client.id, x: position.x, y: position.y})
+
+  })
+
   // user fires
   client.on('shoot', function(msg) {
 		io.emit('shoot', msg)
 	})
 
-  // user moves
-  // not persisted on server
-  client.on('movement', function(location) {
-  	// console.log(location)
-  	client.broadcast.emit('movement', {id: this.id, x: location.x, y: location.y})
-
+  // user gets hit
+  client.on('player hit', function(data) {
+  	client.broadcast.emit('player hit', data)
   })
 
   // user picks up coin
   client.on('add coin', function(coin) {
-  	console.log(this.id)
-  	var player = users[this.id]
-  	console.log("player bank was: "+player.bank)
-  	player.bank += coin
-  	console.log('player bank is now: '+player.bank)
-  	io.emit('update bank', player)
+
+  	// var player = users[this.id]
+  	// console.log(player.id+" bank was: "+player.bank)
+
+  	users[this.id].bank += coin
+
+  	// console.log(player.id+' bank is now: '+player.bank)
+
+  	// send over userID and their new bank amount
+  	client.broadcast.emit('update bank', {id: this.id, bank: users[this.id].bank})
   })
 
 
@@ -128,7 +115,36 @@ io.on('connection', function(client){
 // 	})
 // }
 
+generatePlayer = function(id) {
+	if (users.counter === 1) {
+			var x = 100
+			var y = 100
+		}
+		else if (users.counter ===2) {
+			var x = 1180
+			var y = 500
+		}
+		else if (users.counter ===3) {
+			var x = 100
+			var y = 500
+		}
+		else if (users.counter ===4) {
+			var x = 1180
+			var y = 100
+		}
+		else {
+			var x = Math.floor(Math.random()*1230)
+			var y = Math.floor(Math.random()*550)
+		}
 
+		users[id] = {
+			id: id,
+			bank: 0,
+			alias: "Unknown",
+			x: x, 
+			y: y
+		}
+}
 
 
 

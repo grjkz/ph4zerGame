@@ -1,13 +1,15 @@
+console.log('game.js linked')
+var socket = io();
+
 var game = new Phaser.Game(1280,720, Phaser.AUTO, 'game-area', {preload:preload,create:create,update:update})
 
 var bank = 0;
 var bankOutput;
 var lives = 4;
 var bullets;
-var myInfo;
-var Players = {}
+var myID = 'dont have one yet'
+var Players = { counter: 0 }
 var playerReady = false
-var player;
 
 var shotTimer = 0
 // decreasing shotLevel towards 0 will increase frequency
@@ -31,10 +33,9 @@ function preload() {
 	game.load.spritesheet('copper_coin', 'images/copper_coin.png',35.2,32)
 	game.load.spritesheet('silver_coin', 'images/silver_coin_float.png',32,32)
 	game.load.spritesheet('explode1', 'images/explode1.png', 100, 100, 9)
-	console.log("Loading sship: "+game.time.time)
+	// console.log("Loading sship: "+game.time.time)
 	game.load.spritesheet('sship','images/sship.png',50,50)
 }
-
 
 function create() {
 	//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
@@ -109,5 +110,102 @@ function create() {
   
   ///////////////////////////////////////////////////////////////////
 
-  socket.emit('ready', myInfo)
+  socket.emit('ready')
 }
+
+// gets own id and info
+socket.on('player info', function(data) {
+	// gold_coins.create(0,0,'gold_coin')
+	// console.log("first socket: "+game.time.time)
+	myID = data.id
+	// console.log(data)
+	spawnPlayer(data)
+	// console.log('my user info was received')
+	Players[myID].me = true
+})
+
+function spawnPlayer(user) {
+	Players.counter++
+	Players[user.id] = game.add.sprite(user.x, user.y, 'sship');
+
+	var player = Players[user.id]
+	// player.weapons = []
+	player.animations.add('right',[0],1,true);
+	player.animations.add('down',[1],1,true);
+	player.animations.add('left',[2],1,true);
+	player.animations.add('up',[3],1,true);
+	game.physics.arcade.enable(player);
+	player.body.collideWorldBounds = true;
+	player.shielded = false
+	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
+
+	// socket.emit('player info',{x: player.x, y: player.y})
+	playerReady = true
+}
+
+function update() {
+	if (!playerReady) return
+		// check of another user is connected before blasting the server
+		if (Players.counter > 1) {
+			socket.emit('movement', Players[myID].body.position)
+		}
+		// also send the direction i'm facing along with my location
+		// maybe is should put this into the conditionals that move the player
+		// emit { player.x, player.x, player.facing = [direction] }
+
+	//////////////////////////////////////////////////// PLAYER CONTROLS
+	Players[myID].body.velocity.set(0);
+  if (cursors.down.isDown && cursors.up.isDown) {}
+  else if (cursors.up.isDown) {
+    Players[myID].body.velocity.y = -300;
+    Players[myID].animations.play('up')
+  }
+  else if (cursors.down.isDown) {
+    Players[myID].body.velocity.y = 300;
+    Players[myID].animations.play('down')
+  }	
+  if (cursors.left.isDown && cursors.right.isDown) {}
+  else if (cursors.left.isDown) {
+  	Players[myID].body.velocity.x = -300;
+  	Players[myID].animations.play('left')
+  }
+  else if (cursors.right.isDown) {
+  	Players[myID].body.velocity.x = 300;
+  	Players[myID].animations.play('right')
+  }
+
+ //  if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)) {
+ //  	shoot();
+ //  	// player.weapons[0].fire(player);
+	// }
+}
+
+// new player joins the game
+socket.on('add new user', function(newPlayer) {
+	spawnPlayer(newPlayer)
+})
+
+// init: grab all other players' info
+socket.on('get other players', function(users) {
+	// display all the players
+	for (user in users) {
+		if (user !== 'counter') {
+			spawnPlayer(users[user])
+		}
+	}	
+})
+
+socket.on('movement', function(data) {
+	Players[data.id].x = data.x
+	Players[data.id].y = data.y
+})
+
+
+
+
+
+
+
+
+
+

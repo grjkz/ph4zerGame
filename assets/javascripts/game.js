@@ -10,6 +10,7 @@ var bullets;
 var myInfo;
 var Players = {}
 var playerReady = false
+var player;
 
 var shotTimer = 0
 // decreasing shotLevel towards 0 will increase frequency
@@ -118,19 +119,18 @@ var lastupdate = 0
 
 function update() {
 	if (!playerReady) return
-	if (lastupdate < game.time.now) {
-		lastupdate = game.time.now + 200
-		// console.log(game.time.now)
-		socket.emit('movement', player.body.position)
+		if (Players.counter) {
+			debugger
+			socket.emit('movement', player.body.position)
+		}
+		// also send the direction i'm facing along with my location
+		// maybe is should put this into the conditionals that move the player
+		// emit { player.x, player.x, player.facing = [direction] }
 
-	// this creates way too many coins
-		// socket.on('movement', function(location) {
-		// 	var gold_coin = gold_coins.create(location.x,location.y,'gold_coin')
-		// 	gold_coin.value = 1
-		// 	gold_coin.animations.add('rotate')
-		// 	gold_coin.animations.play('rotate',20,true)
-		// })
-	}
+	// if (lastupdate < game.time.now) {
+		// console.log(game.time.now)
+		// lastupdate = game.time.now + 8
+	// }
 
   // game.debug.body(shield);
   // game.debug.body(player);
@@ -175,12 +175,16 @@ function update() {
   /////////////////////////////////////////////////////////////////////
 
   checkShield()
+}
 
-  /////////////////////////////////////////////////////////// SOCKET STUFF
-  // any player moves
+
+/////////////////////////////////////////////////////////// SOCKET STUFF
+// any player moves
 socket.on('movement', function(data) {
 	Players[data.id].x = data.x
 	Players[data.id].y = data.y
+	// also check the direction the player is facing
+	// have conditionals for which animation to render
 })
 
 // a player disconnects
@@ -192,10 +196,44 @@ socket.on('delete player', function(id) {
 })
 
 socket.on('update bank', function(player) {
-	Players[player.id] = player
+	Players[player.id].bank = player.bank
+})
+
+// a new player joins
+socket.on('add new user', function(newPlayer) {
+	Players[newPlayer.id] = game.add.sprite(newPlayer.x, newPlayer.y, 'sship');
+	Players.counter++
+
+	// opponent.weapons = []
+	Players[newPlayer.id].animations.add('right',[0],1,true);
+	Players[newPlayer.id].animations.add('down',[1],1,true);
+	Players[newPlayer.id].animations.add('left',[2],1,true);
+	Players[newPlayer.id].animations.add('up',[3],1,true);
+	game.physics.arcade.enable(Players[newPlayer.id]);
+	Players[newPlayer.id].body.collideWorldBounds = true;
+	Players[newPlayer.id].shielded = false
+
+	// add bubble to newPlayer location
+	// make it invisible
+	// not sure if making it invisible will actually disable the bubble hitbox though
+	console.log(newPlayer)
+})
+
+// init: grab all other players' info
+socket.on('get other players', function(data) {
+	
+	// display all the players
+	for (id in data) {
+		debugger
+		if (id !== 'counter') {
+			// console.log("data ids: "+id)
+			// debugger
+			Players[id] = game.add.sprite(data[id].x, data[id].y, 'sship')
+		}
+	}	
 })
 ///////////////////////////////////////////////////////////////////////////
-}
+
 
 function spawnPlayer(x,y) {
 	// socket.emit('spawnPlayer', {})
@@ -223,7 +261,8 @@ function spawnPlayer(x,y) {
 function playerHit(player, bullet) {
 	if (player.shielded) {
 		bullet.kill()
-		shield.kill()
+		// shield.kill()
+		// don't kill the bubble, make it invisible again
 		player.shielded = false
 	}
 	else {
@@ -231,17 +270,32 @@ function playerHit(player, bullet) {
 		explode = game.add.sprite(player.body.center.x-50, player.body.center.y-50,'explode1')
 		explode.animations.add('explode')
 		explode.animations.play('explode',10)
-		/////////////////////////////////////////////////////////////////////
+		//
 		player.kill()
 		bullet.kill()
 	}
 }
 
-
+socket.on('player hit', function(data) {
+	if (Player[data.id].shielded) {
+		// remove shield
+	}
+	else {
+		var explode = game.add.sprite(data.x-50, data.y-50, 'explode1')
+		explode.animations.add('explode')
+		explode.animations.play('explode',10)
+		Player[data.id].kill()
+		// how do i kill that bullet?
+	}
+})
 
 ////////////////////////////////////////////////////////////// SHOOTING
 function shoot() {
 	if (shotTimer < game.time.now) {
+
+		// need direction of ship
+		// calculate the correct velocity using direction
+		// 
 
 		socket.emit('shoot', "Player has fired a shot")
 		shotTimer = game.time.now + shotCooldown
@@ -299,8 +353,11 @@ function upgradeShot() {
 }
 
 function checkShield() {
-	if (player.shielded === true) {
-		shield.position.set(player.position.x-2.5,player.position.y-2.5)		
+	for (player in Players) {
+		if (player.shielded === true) {
+			// make shielf visible
+			// shield.position.set(player.position.x-2.5,player.position.y-2.5)		
+		}
 	}
 }
 
@@ -314,35 +371,7 @@ socket.on('player info', function(data) {
 	// console.log('my user info was received')
 })
 
-// a new player joins
-socket.on('add new user', function(player) {
-	Players[player.id] = game.add.sprite(player.x, player.y, 'sship');
-	Players.counter++
 
-	// opponent.weapons = []
-	Players[player.id].animations.add('right',[0],1,true);
-	Players[player.id].animations.add('down',[1],1,true);
-	Players[player.id].animations.add('left',[2],1,true);
-	Players[player.id].animations.add('up',[3],1,true);
-	game.physics.arcade.enable(Players[player.id]);
-	Players[player.id].body.collideWorldBounds = true;
-	Players[player.id].shielded = false
-})
-
-// init: grab all other players' info
-socket.on('get other players', function(data) {
-	
-	// display all the players
-	for (id in data) {
-		if (id !== 'counter') {
-			// console.log("data ids: "+id)
-			// debugger
-			Players[id] = game.add.sprite(data[id].x, data[id].y, 'sship')
-		}
-	}
-	
-	
-})
 
 // // any player moves
 // socket.on('movement', function(data) {
