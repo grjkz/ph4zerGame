@@ -80,9 +80,11 @@ function create() {
   upgradeKey.onDown.add(upgradeGun, this);
   var shieldKey = this.input.keyboard.addKey(Phaser.Keyboard.W);
   shieldKey.onDown.add(buyShield, this);
+  var shotgunKey = this.input.keyboard.addKey(Phaser.Keyboard.F);
+  shotgunKey.onDown.add(buyShotgun, this);
   var verticalKey = this.input.keyboard.addKey(Phaser.Keyboard.E);
   verticalKey.onDown.add(buyVertical, this);
-  var omniKey = this.input.keyboard.addKey(Phaser.Keyboard.F);
+  var omniKey = this.input.keyboard.addKey(Phaser.Keyboard.Q);
   omniKey.onDown.add(buyOmnishot, this);
   ///////////////////////////////////////////////////////////////////
 
@@ -374,7 +376,8 @@ function upgradeGun() {
 socket.on('upgrade receipt', function(data) {
 	if (data.passed) {
 		updateBank(data.id, data.bank)
-		shotCooldown *= 0.8
+		if (data.id === myID)
+			shotCooldown *= 0.8
 	}
 })
 ///////////////////////////////////// SHIELD
@@ -392,6 +395,73 @@ socket.on('shield receipt', function(data) {
 		updateBank(data.id, data.bank)
 		player.shielded = true
 		shields = true
+	}
+})
+////////////////////////////////////// SHOTGUN SHOT
+function buyShotgun() {
+	socket.emit('buy shotgun', {})
+}
+socket.on('shotgun receipt', function(data) {
+	if (data.passed) {
+		console.log('shooting shotgun')
+		updateBank(data.id, data.bank)
+		var shooter = Players[data.id]
+		// shooter is facing right
+		if (shooter.facing === "right") {
+			var centerShot = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+				centerShot.body.velocity.x = 400
+				centerShot.bulletID = data.bulletID1
+			var leftShot = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+				leftShot.body.velocity.x = 400
+				leftShot.body.velocity.y = -200
+				leftShot.bulletID = data.bulletID2
+			var rightShot = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+				rightShot.body.velocity.x = 400
+				rightShot.body.velocity.y = 200
+				rightShot.bulletID = data.bulletID3
+		}
+		// shooter is facing down
+		else if (shooter.facing === "down") {
+			var centerShot = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+				centerShot.body.velocity.y = 400
+				centerShot.bulletID = data.bulletID1
+			var leftShot = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+				leftShot.body.velocity.y = 400
+				leftShot.body.velocity.x = 200
+				leftShot.bulletID = data.bulletID2
+			var rightShot = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+				rightShot.body.velocity.y = 400
+				rightShot.body.velocity.x = -200
+				rightShot.bulletID = data.bulletID3
+		}
+		// shooter is facing left
+		else if (shooter.facing === "left") {
+			var centerShot = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+				centerShot.body.velocity.x = -400
+				centerShot.bulletID = data.bulletID1
+			var leftShot = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+				leftShot.body.velocity.x = -400
+				leftShot.body.velocity.y = 200
+				leftShot.bulletID = data.bulletID2
+			var rightShot = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+				rightShot.body.velocity.x = -400
+				rightShot.body.velocity.y = -200
+				rightShot.bulletID = data.bulletID3
+		}
+		// shooter is facing up
+		else if (shooter.facing === "up") {
+			var centerShot = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+				centerShot.body.velocity.y = -400
+				centerShot.bulletID = data.bulletID1
+			var leftShot = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+				leftShot.body.velocity.y = -400
+				leftShot.body.velocity.x = -200
+				leftShot.bulletID = data.bulletID2
+			var rightShot = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+				rightShot.body.velocity.y = -400
+				rightShot.body.velocity.x = 200
+				rightShot.bulletID = data.bulletID3
+		}
 	}
 })
 ////////////////////////////////////// VERTICAL SHOT
@@ -456,10 +526,42 @@ socket.on('omnishot receipt', function(data){
 		var bullet = Bullets.create(shooter.x+50+5, shooter.y+50+5, 'basic_bullet_right')
 		bullet.body.velocity.y = 300
 		bullet.body.velocity.x = 300
-		// bullet.bulletID = data.bulletID[7]
+		bullet.bulletID = data.bulletID[7]
 	}
 })
-
+/////////////////////////////// HADOUKEN
+function buyHadouken() {
+	socket.emit('buy hadouken', {})
+}
+socket.on('hadouken receipt', function(data) {
+	if (data.passed) {
+		updateBank(data.id, data.bank)
+		var shooter = Players[data.id]
+		if (shooter.facing === "right") {
+			var hadouken = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+			hadouken.body.velocity.x = 400
+			hadouken.bulletID = shooter.bulletID
+		}
+		// shooter is facing down
+		else if (shooter.facing === "down") {
+			var hadouken = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+			hadouken.body.velocity.y = 400
+			hadouken.bulletID = shooter.bulletID
+		}
+		// shooter is facing left
+		else if (shooter.facing === "left") {
+			var hadouken = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+			hadouken.body.velocity.x = -400
+			hadouken.bulletID = shooter.bulletID
+		}
+		// shooter is facing up
+		else if (shooter.facing === "up") {
+			var hadouken = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+			hadouken.body.velocity.y = -400
+			hadouken.bulletID = shooter.bulletID
+		}
+	}
+})
 ////////////////////////////////////////////////////////////////////////////
 
 // damn update is too fast to let this work

@@ -129,6 +129,23 @@ io.on('connection', function(client){
   	}
   })
 
+  // user requests shotgun shot
+  client.on('buy shotgun', function() {
+  	if (users[client.id].bank >= 0) {
+  		users[client.id].bank -= 0;
+  		var firstID = bulletCounter
+  		bulletCounter++
+  		var secondID = bulletCounter
+  		bulletCounter++
+  		var thirdID = bulletCounter
+  		io.emit('shotgun receipt', {id: client.id, bank: users[client.id].bank,bulletID1: firstID, bulletID2: secondID, bulletID3: thirdID, passed: true})
+  		bulletCounter++
+  	}
+  	else {
+  		client.emit('shotgun receipt', {passed: false})
+  	}
+  })
+
   // user requests vertical shot
   client.on('buy vertical', function() {
   	if (users[client.id].bank >= 0) {
@@ -136,14 +153,15 @@ io.on('connection', function(client){
   		var firstID = bulletCounter
   		bulletCounter++
   		var secondID = bulletCounter
-  		bulletCounter++
   		io.emit('vertical receipt', {id: client.id, bank: users[client.id].bank,bulletID1: firstID, bulletID2: secondID, passed: true})
+  		bulletCounter++
   	}
   	else {
   		client.emit('vertical receipt', {passed: false})
   	}
   })
 
+  // user requests 8-way directional shot
   client.on('buy omnishot', function() {
   	if (users[client.id].bank >= 0) {
   		users[client.id].bank -= 0;
@@ -157,6 +175,19 @@ io.on('connection', function(client){
   		client.emit('omnishot receipt', {passed: false})
   	}
   })
+
+  // user requests hadouken
+  client.on('buy hadouken', function() {
+  	if (users[client.id].bank >= 0) {
+  		users[client.id].bank -= 0;
+  		io.emit('hadouken receipt', {id: client.id, bank: users[client.id].bank,bulletID: bulletCounter, passed: true})
+  		bulletCounter++
+  	}
+  	else {
+  		client.emit('hadouken receipt', {passed: false})	
+  	}
+  })
+
 
   // messaging
   client.on('chat message', function(msg){
