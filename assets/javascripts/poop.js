@@ -19,7 +19,7 @@ var shotTimer = 0
 // decreasing shotLevel towards 0 will increase frequency
 // var shotLevel = 1
 // var shotCooldown = 500 * shotLevel;
-var shotCooldown = 500
+var shotCooldown = 700
 
 
 function preload() {
@@ -56,47 +56,17 @@ function create() {
 	/////////////////////////////////////////////// WORLD ITEM OPTIONS
 	coins = game.add.group()
 	coins.enableBody = true;
-	/////////////////////////// GOLD COIN
-	gold_coins = game.add.group()
-	gold_coins.enableBody = true;
-	// enable body needs to next to its creation code for some reason
-
-	// var gold_coin = gold_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'gold_coin')
-	// gold_coin.value = 500
-	// gold_coin.animations.add('rotate')
-	// gold_coin.animations.play('rotate',20,true)
-	// setTimeout(function() { gold_coin.kill() ; }, Math.floor(Math.random() * 10000)+5000)
-
-	/////////////////////////// SILVER COIN
-	silver_coins = game.add.group()
-	silver_coins.enableBody = true;
-	// silver_coin = silver_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'silver_coin')
-	// silver_coin.value = 200
-	// silver_coin.animations.add('rotate')
-	// silver_coin.animations.play('rotate',20,true)
-	// setTimeout(function() { silver_coin.kill() ; }, Math.floor(Math.random() * 10000)+10000)
-	/////////////////////////// COPPER COIN
-	copper_coins = game.add.group()
-	copper_coins.enableBody = true;
-	// copper_coin = copper_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'copper_coin')
-	// copper_coin.value = 50
-	// copper_coin.animations.add('rotate')
-	// copper_coin.animations.play('rotate',20,true)
-	// setTimeout(function() { copper_coin.kill() ; }, Math.floor(Math.random() * 10000)+10000)
 	//////////////////////////////////////////////////////////////////
-
-	/////////////////////////////////////////////////// PLAYER OPTIONS
-	// spawnPlayer();
-	/////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////// BULLET OPTIONS
 	Bullets = game.add.group()
 	Bullets.enableBody = true;
 	game.physics.arcade.enable(Bullets)
+	// Bullets.setAll('checkWorldBounds', true)
+	// Bullets.setAll('outOfBoundsKill', true)
+
 	// Bullets.setAll('anchor.x',0.5)
 	// Bullets.setAll('anchor.y',0.5)
-	Bullets.setAll('outOfBoundsKill', true)
-	Bullets.setAll('checkWorldBounds', true)
 	// Bullets.create(300,300,'basic_bullet_right')
 	// Bullets.create(400,100,'basic_bullet_right')
 	// Bullets.create(0,100,'basic_bullet_right')
@@ -134,13 +104,14 @@ function create() {
 
 // gets own id and info
 socket.on('player info', function(data) {
-	// gold_coins.create(0,0,'gold_coin')
-	// console.log("first socket: "+game.time.time)
 	myID = data.id
-	// console.log(data)
-	spawnPlayer(data)
-	// console.log('my user info was received')
-	Players[myID].alive = true
+	if (!data.observer) {
+		spawnPlayer(data)
+		Players[myID].alive = true
+	}
+	else {
+		Players[myID].alive = false	
+	}
 })
 
 function spawnPlayer(user) {
@@ -160,7 +131,6 @@ function spawnPlayer(user) {
 	player.facing = user.facing
 	player.bank = user.bank
 	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
-
 
 	playerReady = true
 }
@@ -224,6 +194,7 @@ function update() {
 		})
 	}
 
+
 	////////////////////////////////////////////////////////// COLLISIONS
   game.physics.arcade.collide(Players[myID], Bullets, playerHit, null, this);
   game.physics.arcade.overlap(Players[myID], coins, getRich, null, this);
@@ -239,7 +210,9 @@ function update() {
 
 // new player joins the game
 socket.on('add new user', function(newPlayer) {
-	spawnPlayer(newPlayer)
+	if (!newPlayer.observer) {
+		spawnPlayer(newPlayer)
+	}
 })
 
 // init: grab all other players' info
@@ -247,7 +220,8 @@ socket.on('get other players', function(users) {
 	// display all the players
 	for (user in users) {
 		if (user !== 'counter') {
-			spawnPlayer(users[user])
+			if (!user.observer)
+				spawnPlayer(users[user])
 		}
 	}	
 })
@@ -292,6 +266,14 @@ function shoot(shooter) {
 		bullet.body.velocity.y = -400
 		bullet.bulletID = shooter.bulletID
 	}
+	// makes sure that all bullets are killed upon leaving world bounds
+	bullet.checkWorldBounds = true
+	bullet.outOfBoundsKill = true
+	Bullets.children.forEach(function(bullet) {
+		if (!bullet.visible) {
+			bullet.destroy()
+		}
+	})
 }
 
 // SERVER-GENERATED RANDOM COIN
@@ -308,32 +290,23 @@ function generateCoin(data) {
 	coin.animations.play('rotate',20,true)
 	setTimeout(function() { 
 		// coin.kill(); 
-		delete coin; 
+		coin.destroy();
 	}, data.expire)
 }
 
 // LOCAL CLIENT PICKS UP COIN
 function getRich(player, coin) {
+	// only send the information over so that only one person is picking up the coin to avoid conflict
 	socket.emit('coin get', {
 		id: myID, 
 		coinID: coin.coinID, 
 		value: coin.value
 	})
-	
-	// add value of coin to total bank
-	// coin.kill()
-	// bank += coin.value
-	// bankOutput.text = 'Bank: '+bank;
-	// player.shielded = true
-
-	// console.log("add coin")
 }
 
 socket.on('update bank', function(data) {
 	coins.children.forEach(function(coin) {
-		if (coin.coinID === data.coinID) {
-			coin.kill()
-		}
+		if (coin.coinID === data.coinID) { coin.kill() }
 	})
 	Players[data.id].bank = data.bank
 	bankOutput.text = 'Bank: '+Players[myID].bank;

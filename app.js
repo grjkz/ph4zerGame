@@ -92,16 +92,9 @@ io.on('connection', function(client){
   	io.emit('spawn coin', generateCoin())
   },Math.floor(Math.random()*10000)+10000)
 
-  // user picks up coin
+  // user picked up coin
   client.on('coin get', function(coin) {
-
-  	// var player = users[this.id]
-  	// console.log(player.id+" bank was: "+player.bank)
-
   	users[this.id].bank += coin.value
-
-  	// console.log(player.id+' bank is now: '+player.bank)
-
   	// send over userID and their new bank amount
   	io.emit('update bank', {
   		id: this.id, 
@@ -140,6 +133,7 @@ io.on('connection', function(client){
 // }
 
 generatePlayer = function(id) {
+	var observer = false
 	if (users.counter === 1) {
 			var x = 100
 			var y = 100
@@ -163,6 +157,7 @@ generatePlayer = function(id) {
 		else {
 			var x = Math.floor(Math.random()*1230)
 			var y = Math.floor(Math.random()*550)
+			observer = true
 		}
 
 		users[id] = {
@@ -171,7 +166,8 @@ generatePlayer = function(id) {
 			alias: "Unknown",
 			x: x, 
 			y: y,
-			facing: facing
+			facing: facing,
+			observer: observer
 		}
 }
 
