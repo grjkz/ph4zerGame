@@ -22,6 +22,7 @@ var shotCooldown = 700
 
 function preload() {
 	game.load.image('sky','images/sky.jpg');
+	game.load.image('bottom_bar', 'images/bottom_bar.png')
 	game.load.image('ship', 'images/ship.gif');
 	// game.load.image('ship', 'images/spaceship.png');
 	game.load.image('basic_bullet_right','images/basic_bullet_right.png')
@@ -37,11 +38,42 @@ function preload() {
 	game.load.spritesheet('explode1', 'images/explode1.png', 100, 100, 9)
 	// console.log("Loading sship: "+game.time.time)
 	game.load.spritesheet('sship','images/sship.png',50,50)
+	game.load.spritesheet('charging','images/charging.png',60,60)
 }
 
 function create() {
 	//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
 	game.add.sprite(0, 0, 'sky');
+	game.add.sprite(0, 600, 'bottom_bar')
+	///////////////////////// WINDOW SHOPPING
+	// display shield
+	game.add.sprite(30, 620, 'bubble')
+	game.add.text(53, 640, 'S', {fontSize:'16px',fill:'white'})
+	game.add.text(10, 690, 'Shield: $350', {fontSize:'16px', fill:'orange'})
+	// display shotgun
+	game.add.sprite(180, 625, 'basic_bullet_right')
+	game.add.sprite(180, 645, 'basic_bullet_right')
+	game.add.sprite(180, 665, 'basic_bullet_right')
+	game.add.text(140, 690, 'Shotgun: $250', {fontSize:'16px', fill:'orange'})
+	game.add.text(210, 640, 'F', {fontSize:'16px',fill:'white'})
+	// display gun upgrade
+	game.add.sprite(350, 645, 'basic_bullet_right')
+	game.add.sprite(330, 645, 'basic_bullet_right')
+	game.add.sprite(310, 645, 'basic_bullet_right')
+	game.add.text(290, 690, 'Upgrade: $500', {fontSize:'16px', fill:'orange'})
+	game.add.text(335, 655, 'Q', {fontSize:'16px',fill:'white'})
+	// display veritcal
+	// game.add.sprite()
+	game.add.text(435, 690, 'Vertical: $200', {fontSize:'16px', fill:'orange'})
+	game.add.text(480, 640, 'E', {fontSize:'16px', fill:'white'})
+	// display Omni
+	// game.add.sprite()
+	game.add.text(575, 690, 'Omnishot: $500', {fontSize:'16px', fill:'orange'})
+	game.add.text(630, 640, 'A', {fontSize:'16px', fill:'white'})
+	// display Ultimate
+	// game.add.sprite()
+	game.add.text(730, 690, '^ This ^: $1000', {fontSize:'16px', fill:'orange'})
+	game.add.text(780, 640,'R',{fontSize:'16px', fill:'white'})
 	//////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////// GAME OPTIONS
@@ -76,16 +108,18 @@ function create() {
   // }, this)
 
   // var upgradeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-  var upgradeKey = this.input.keyboard.addKey(Phaser.Keyboard.A);
+  var upgradeKey = this.input.keyboard.addKey(Phaser.Keyboard.Q);
   upgradeKey.onDown.add(upgradeGun, this);
-  var shieldKey = this.input.keyboard.addKey(Phaser.Keyboard.W);
+  var shieldKey = this.input.keyboard.addKey(Phaser.Keyboard.S);
   shieldKey.onDown.add(buyShield, this);
   var shotgunKey = this.input.keyboard.addKey(Phaser.Keyboard.F);
   shotgunKey.onDown.add(buyShotgun, this);
   var verticalKey = this.input.keyboard.addKey(Phaser.Keyboard.E);
   verticalKey.onDown.add(buyVertical, this);
-  var omniKey = this.input.keyboard.addKey(Phaser.Keyboard.Q);
+  var omniKey = this.input.keyboard.addKey(Phaser.Keyboard.A);
   omniKey.onDown.add(buyOmnishot, this);
+  // var ultimateKey = this.input.keyboard.addKey(Phaser.Keyboard.R);
+  // ultimateKey.onDown.add(buyUltimate, this);
   ///////////////////////////////////////////////////////////////////
 
   ////////////////////////////////////////////////////////// POWERUPS
@@ -125,6 +159,7 @@ function spawnPlayer(user) {
 	player.body.collideWorldBounds = true;
 	player.shielded = false
 	player.facing = user.facing
+	player.charging = false;
 	// player.bank = user.bank
 	updateBank(user.id, user.bank)
 	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
@@ -153,23 +188,31 @@ function update() {
 	Players[myID].body.velocity.set(0);
   if (cursors.down.isDown && cursors.up.isDown) {}
   else if (cursors.up.isDown) {
-    Players[myID].body.velocity.y = -300;
+  	if (!Players[myID].charging) {
+	    Players[myID].body.velocity.y = -300;
+	  }
     Players[myID].facing = "up"
     Players[myID].animations.play('up')
   }
   else if (cursors.down.isDown) {
-    Players[myID].body.velocity.y = 300;
+  	if (!Players[myID].charging) {
+	    Players[myID].body.velocity.y = 300;
+	  }
     Players[myID].facing = "down"
     Players[myID].animations.play('down')
   }	
   if (cursors.left.isDown && cursors.right.isDown) {}
   else if (cursors.left.isDown) {
-  	Players[myID].body.velocity.x = -300;
+  	if (!Players[myID].charging) {
+	  	Players[myID].body.velocity.x = -300;
+	  }
   	Players[myID].facing = "left"
   	Players[myID].animations.play('left')
   }
   else if (cursors.right.isDown) {
-  	Players[myID].body.velocity.x = 300;
+  	if (!Players[myID].charging) {
+	  	Players[myID].body.velocity.x = 300;
+	  }
   	Players[myID].facing = "right"
   	Players[myID].animations.play('right')
   }
@@ -491,6 +534,12 @@ socket.on('omnishot receipt', function(data){
 	if (data.passed) {
 		updateBank(data.id, data.bank);
 		var shooter = Players[data.id]
+		// disable player movement
+		// var aura = game.add.sprite(0,0,'charging')
+		// aura.animations.add('charge')
+		// aura.animations.play('charge',30,true)
+
+		// countdown before firing shot
 		// shoot down
 		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
 		bullet.body.velocity.y = 400
@@ -529,36 +578,36 @@ socket.on('omnishot receipt', function(data){
 		bullet.bulletID = data.bulletID[7]
 	}
 })
-/////////////////////////////// HADOUKEN
-function buyHadouken() {
-	socket.emit('buy hadouken', {})
+/////////////////////////////// Ultimate
+function buyUltimate() {
+	socket.emit('buy ultimate', {})
 }
-socket.on('hadouken receipt', function(data) {
+socket.on('ultimate receipt', function(data) {
 	if (data.passed) {
 		updateBank(data.id, data.bank)
 		var shooter = Players[data.id]
 		if (shooter.facing === "right") {
-			var hadouken = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
-			hadouken.body.velocity.x = 400
-			hadouken.bulletID = shooter.bulletID
+			var ultimate = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+			ultimate.body.velocity.x = 400
+			ultimate.bulletID = shooter.bulletID
 		}
 		// shooter is facing down
 		else if (shooter.facing === "down") {
-			var hadouken = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
-			hadouken.body.velocity.y = 400
-			hadouken.bulletID = shooter.bulletID
+			var ultimate = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+			ultimate.body.velocity.y = 400
+			ultimate.bulletID = shooter.bulletID
 		}
 		// shooter is facing left
 		else if (shooter.facing === "left") {
-			var hadouken = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
-			hadouken.body.velocity.x = -400
-			hadouken.bulletID = shooter.bulletID
+			var ultimate = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+			ultimate.body.velocity.x = -400
+			ultimate.bulletID = shooter.bulletID
 		}
 		// shooter is facing up
 		else if (shooter.facing === "up") {
-			var hadouken = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
-			hadouken.body.velocity.y = -400
-			hadouken.bulletID = shooter.bulletID
+			var ultimate = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+			ultimate.body.velocity.y = -400
+			ultimate.bulletID = shooter.bulletID
 		}
 	}
 })
