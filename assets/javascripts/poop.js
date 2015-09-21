@@ -4,21 +4,19 @@ var socket = io();
 var game = new Phaser.Game(1280,720, Phaser.AUTO, 'game-area', {preload:preload,create:create,update:update})
 
 var bank = 0;
+var coins;
 var bankOutput;
 var lives = 4;
-var bullets;
+var Bullets;
 var myID = 'dont have one yet'
 // var Alive = false
 var Players = { counter: 0 }
+var Shields;
+var shields = false;
 var playerReady = false
-
-var coins;
-
-var Bullets;
-var shotTimer = 0
 // decreasing shotLevel towards 0 will increase frequency
-// var shotLevel = 1
-// var shotCooldown = 500 * shotLevel;
+var shotTimer = 0
+var shotLevel = 1
 var shotCooldown = 700
 
 
@@ -67,7 +65,6 @@ function create() {
 	///////////////////////////////////////////// ENABLE PLAYER CONTROLS
 	cursors = this.input.keyboard.createCursorKeys();
 
-	
 	// this prevents spacebar from being used in the input tag
   // game.onFocus.add(function() {
   // 	console.log('focused')
@@ -78,13 +75,15 @@ function create() {
   // 	// game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
   // }, this)
 
-  // var changeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
-  // changeKey.onDown.add(this.nextWeapon, this);
+  // var upgradeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
+  var upgradeKey = this.input.keyboard.addKey(Phaser.Keyboard.A);
+  upgradeKey.onDown.add(upgradeGun, this);
+  var shieldKey = this.input.keyboard.addKey(Phaser.Keyboard.S);
+  shieldKey.onDown.add(buyShield, this);
   ///////////////////////////////////////////////////////////////////
 
   ////////////////////////////////////////////////////////// POWERUPS
-  
-  
+  Shields = game.add.group()
   ///////////////////////////////////////////////////////////////////
 
 
@@ -119,7 +118,8 @@ function spawnPlayer(user) {
 	player.body.collideWorldBounds = true;
 	player.shielded = false
 	player.facing = user.facing
-	player.bank = user.bank
+	// player.bank = user.bank
+	updateBank(user.id, user.bank)
 	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
 
 	playerReady = true
@@ -193,7 +193,9 @@ function update() {
 
   // game.physics.arcade.overlap(silver_coins, bullets, playerHit, null, this);
   /////////////////////////////////////////////////////////////////////
-
+  if (shields) {
+	  checkShield()
+  }
 }
 //////////////////////////////////////////////////////////////////////////////
 
@@ -298,8 +300,7 @@ socket.on('update bank', function(data) {
 	coins.children.forEach(function(coin) {
 		if (coin.coinID === data.coinID) { coin.kill() }
 	})
-	Players[data.id].bank = data.bank
-	bankOutput.text = 'Bank: '+Players[myID].bank;
+	updateBank(data.id, data.bank)
 })
 
 
@@ -311,8 +312,11 @@ function playerHit(player, bullet) {
 	var me = Players[myID];
 
 	if (me.shielded === true) {
-		// shield.kill()
-		// don't kill the bubble, make it invisible again
+		Shields.children.forEach(function(shield) {
+			if (shield.playerID === myID) {
+				shield.destroy();
+			}
+		})
 		bullet.kill()
 		me.shielded = false
 	}
@@ -328,10 +332,6 @@ function playerHit(player, bullet) {
 	
 }
 
-// Bullets.children have a key value starting from 0 when first created and an 'z' id of its key+1
-// Bullets.children[0].z = 1
-// use that to find the bullet u need to kill
-
 // remote player was hit
 socket.on('player hit', function(data) {
 	Bullets.children.forEach(function(bullet) {
@@ -340,10 +340,12 @@ socket.on('player hit', function(data) {
 	})
 
 	var player = Players[data.id];
-	
 	if (player.shielded === true) {
-		// shield.kill()
-		// don't kill the bubble, make it invisible again
+		Shields.children.forEach(function(shield) {
+			if (shield.playerID === data.id) {
+				shield.destroy();
+			}
+		})
 		player.shielded = false
 	}
 	else {
@@ -354,7 +356,74 @@ socket.on('player hit', function(data) {
 		explode.animations.add('explode')
 		explode.animations.play('explode',10)
 		//
-		// bullet.kill()
+		// set interval player.reset(location)
 	}
 })
+
+/////////////////////////////////////////////////////////// SHOPPING FUCTIONS
+///////////////////////////////////// UPGRADE GUN
+function upgradeGun() {
+	console.log('upgrade gun requested')
+	socket.emit('upgrade gun', {})
+}
+socket.on('upgrade receipt', function(data) {
+	if (data.passed) {
+		updateBank(data.id, data.bank)
+		shotCooldown *= 0.8
+	}
+})
+///////////////////////////////////// SHIELD
+function buyShield() {
+	if (!Players[myID].shielded) {
+		socket.emit('buy shield', {})
+	}
+}
+socket.on('shield receipt', function(data) {
+	if (data.passed) {
+		var player = Players[data.id]
+		var shield = Shields.create(player.x, player.y, 'bubble')
+		shield.playerID = data.id
+		console.log('shield purchase successful')
+		updateBank(data.id, data.bank)
+		player.shielded = true
+		shields = true
+	}
+})
+
+
+////////////////////////////////////////////////////////////////////////////
+
+// damn update is too fast to let this work
+function checkShield() {
+	// this blocks the error mentioned above
+	if (Shields.children.length < 1) {
+		shields = false
+		return false
+	}
+	Shields.children.forEach(function(shield) {
+		if (shield.playerID) {
+			var player = Players[shield.playerID]
+			shield.position.set(player.x-2.5,player.y-2.5)
+		}
+	})
+}
+
+function updateBank(id, amount) {
+	Players[id].bank = amount
+	bankOutput.text = 'Bank: '+Players[myID].bank;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

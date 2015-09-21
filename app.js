@@ -11,6 +11,9 @@ var io = require('socket.io')(server);
 app.set('view_engine', 'ejs')
 app.use(express.static('assets'))
 
+app.get('/', function(req,res) {
+	res.render('index.ejs')
+})
 
 // server http
 app.get('/game',function(req,res) {
@@ -25,9 +28,9 @@ app.get('*',function(req,res) {
 
 // server socket
 var users = { counter: 0 }
-var bulletCounter = 0
-var coinCounter = 0
-
+var bulletCounter = 0;
+var coinCounter = 0;
+var shieldCounter = 0;
 io.on('connection', function(client){
   // console.log('a user connected');
   users.counter++
@@ -103,17 +106,35 @@ io.on('connection', function(client){
   	})
   })
 
+  // user requests gun upgrade
+  client.on('upgrade gun', function() {
+  	if (users[client.id].bank >= 500) {
+  		users[client.id].bank -= 500
+	  	client.emit('upgrade receipt', {id: client.id, bank: users[client.id].bank, passed: true})
+  	}
+  	else {
+  		client.emit('upgrade receipt', {passed: false})	
+  	}
+  })
 
+  // user requests a shield
+  client.on('buy shield', function() {
+  	if (users[client.id].bank >= 00) {
+  		users[client.id].bank -= 00;
+  		io.emit('shield receipt', {id: client.id, bank: users[client.id].bank,shieldID: shieldCounter, passed: true})
+  		shieldCounter++
+  	}
+  	else {
+  		client.emit('shield receipt', {passed: false})		
+  	}
+  })
 
-
+  // messaging
   client.on('chat message', function(msg){
   	if (msg === "ready") {
   		client.emit('player info', users[client.id])
   		console.log('ready was typed')
   	}
-	// console.log("***********************************************************")
-	// console.log(users[client.id])
-    // console.log('message: ' + msg);
     io.emit('chat message', msg);
   });
 
