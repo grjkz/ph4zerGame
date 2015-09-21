@@ -6,3 +6,15 @@ canvas {
 #chat-area {
 	height: 400px;
 }
+
+.top-text {
+	color:orange;
+}
+
+strong {
+	color:blue;
+}
+
+li {
+	margin-bottom: 1em;
+}

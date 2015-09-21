@@ -38,7 +38,7 @@ function preload() {
 	game.load.spritesheet('explode1', 'images/explode1.png', 100, 100, 9)
 	// console.log("Loading sship: "+game.time.time)
 	game.load.spritesheet('sship','images/sship.png',50,50)
-	game.load.spritesheet('charging','images/charging.png',60,60)
+	game.load.spritesheet('charging','images/charging.png',70,70)
 }
 
 function create() {
@@ -118,8 +118,8 @@ function create() {
   verticalKey.onDown.add(buyVertical, this);
   var omniKey = this.input.keyboard.addKey(Phaser.Keyboard.A);
   omniKey.onDown.add(buyOmnishot, this);
-  // var ultimateKey = this.input.keyboard.addKey(Phaser.Keyboard.R);
-  // ultimateKey.onDown.add(buyUltimate, this);
+  var ultimateKey = this.input.keyboard.addKey(Phaser.Keyboard.R);
+  ultimateKey.onDown.add(buyUltimate, this);
   ///////////////////////////////////////////////////////////////////
 
   ////////////////////////////////////////////////////////// POWERUPS
@@ -534,12 +534,6 @@ socket.on('omnishot receipt', function(data){
 	if (data.passed) {
 		updateBank(data.id, data.bank);
 		var shooter = Players[data.id]
-		// disable player movement
-		// var aura = game.add.sprite(0,0,'charging')
-		// aura.animations.add('charge')
-		// aura.animations.play('charge',30,true)
-
-		// countdown before firing shot
 		// shoot down
 		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
 		bullet.body.velocity.y = 400
@@ -586,29 +580,43 @@ socket.on('ultimate receipt', function(data) {
 	if (data.passed) {
 		updateBank(data.id, data.bank)
 		var shooter = Players[data.id]
-		if (shooter.facing === "right") {
-			var ultimate = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
-			ultimate.body.velocity.x = 400
-			ultimate.bulletID = shooter.bulletID
-		}
-		// shooter is facing down
-		else if (shooter.facing === "down") {
-			var ultimate = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
-			ultimate.body.velocity.y = 400
-			ultimate.bulletID = shooter.bulletID
-		}
-		// shooter is facing left
-		else if (shooter.facing === "left") {
-			var ultimate = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
-			ultimate.body.velocity.x = -400
-			ultimate.bulletID = shooter.bulletID
-		}
-		// shooter is facing up
-		else if (shooter.facing === "up") {
-			var ultimate = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
-			ultimate.body.velocity.y = -400
-			ultimate.bulletID = shooter.bulletID
-		}
+		shooter.charging = true // stops the player from moving
+		// play charging animation
+		var aura = game.add.sprite(shooter.x-6,shooter.y-6,'charging')
+		aura.animations.add('charge')
+		aura.animations.play('charge',40,false)
+		// countdown before firing shot
+		setTimeout(function() { 
+			console.log('first timeout')
+			// if (shooter.facing === "right") {
+			// 	var ultimate = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+			// 	ultimate.body.velocity.x = 400
+			// 	ultimate.bulletID = shooter.bulletID
+			// }
+			// // shooter is facing down
+			// else if (shooter.facing === "down") {
+			// 	var ultimate = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+			// 	ultimate.body.velocity.y = 400
+			// 	ultimate.bulletID = shooter.bulletID
+			// }
+			// // shooter is facing left
+			// else if (shooter.facing === "left") {
+			// 	var ultimate = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+			// 	ultimate.body.velocity.x = -400
+			// 	ultimate.bulletID = shooter.bulletID
+			// }
+			// // shooter is facing up
+			// else if (shooter.facing === "up") {
+			// 	var ultimate = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+			// 	ultimate.body.velocity.y = -400
+			// 	ultimate.bulletID = shooter.bulletID
+			// }
+			}, 500)
+			setTimeout(function() { 
+				console.log('second')
+				shooter.charging = false;
+				aura.destroy()
+			}, 1000)
 	}
 })
 ////////////////////////////////////////////////////////////////////////////

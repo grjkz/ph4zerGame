@@ -21,7 +21,6 @@ app.get('/game',function(req,res) {
 })
 
 app.get('*',function(req,res) {
-	console.log('redirecting to /game')
 	res.redirect('/game')
 })
 
@@ -110,7 +109,7 @@ io.on('connection', function(client){
   client.on('upgrade gun', function() {
   	if (users[client.id].bank >= 500) {
   		users[client.id].bank -= 500
-	  	client.emit('upgrade receipt', {id: client.id, bank: users[client.id].bank, passed: true})
+	  	io.emit('upgrade receipt', {id: client.id, bank: users[client.id].bank, passed: true})
   	}
   	else {
   		client.emit('upgrade receipt', {passed: false})	
@@ -176,15 +175,15 @@ io.on('connection', function(client){
   	}
   })
 
-  // user requests hadouken
-  client.on('buy hadouken', function() {
+  // user requests ultimate
+  client.on('buy ultimate', function() {
   	if (users[client.id].bank >= 0) {
   		users[client.id].bank -= 0;
-  		io.emit('hadouken receipt', {id: client.id, bank: users[client.id].bank,bulletID: bulletCounter, passed: true})
+  		io.emit('ultimate receipt', {id: client.id, bank: users[client.id].bank,bulletID: bulletCounter, passed: true})
   		bulletCounter++
   	}
   	else {
-  		client.emit('hadouken receipt', {passed: false})	
+  		client.emit('ultimate receipt', {passed: false})	
   	}
   })
 
