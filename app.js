@@ -26,6 +26,8 @@ app.get('*',function(req,res) {
 // server socket
 var users = { counter: 0 }
 var bulletCounter = 0
+var coinCounter = 0
+
 io.on('connection', function(client){
   // console.log('a user connected');
   users.counter++
@@ -79,9 +81,16 @@ io.on('connection', function(client){
 	})
 
   // user gets hit
-  client.on('player hit', function(data) {
+  client.on('im hit', function(data) {
   	client.broadcast.emit('player hit', data)
   })
+
+
+  // randomly generate coins
+  // an instance of this is created upon each player connection resulting in too many coins
+  setInterval(function() {
+  	io.emit('spawn coin', generateCoin())
+  },Math.floor(Math.random()*10000)+10000)
 
   // user picks up coin
   client.on('add coin', function(coin) {
@@ -162,7 +171,39 @@ generatePlayer = function(id) {
 		}
 }
 
+generateCoin = function() {
+	var name = ''
+	var timer = 0
+	var value = 0
+	var randomNum = Math.floor(Math.random()*100)
+	if (randomNum < 13) {
+		name = "gold_coin"
+		timer = Math.floor(Math.random() * 10000)+5000
+		value = 500
+	}
+	else if (randomNum < 50) {
+		name = "silver_coin"
+		timer = Math.floor(Math.random() * 10000)+10000
+		value = 200
+	}
+	else {
+		name = "copper_coin"
+		timer = Math.floor(Math.random() * 10000)+10000
+		value = 50
+	}
 
+	coin = {
+		x: Math.floor(Math.random()*(1280-32)),
+		y: Math.floor(Math.random()*(600-32)),
+		type: name,
+		value: value,
+		coinID: coinCounter,
+		expire: timer
+	}
+	coinCounter++
+
+	return coin
+}
 
 
 

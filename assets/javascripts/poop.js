@@ -8,10 +8,13 @@ var bankOutput;
 var lives = 4;
 var bullets;
 var myID = 'dont have one yet'
+// var Alive = false
 var Players = { counter: 0 }
 var playerReady = false
 
-var Bullets = {}
+var coins;
+
+var Bullets;
 var shotTimer = 0
 // decreasing shotLevel towards 0 will increase frequency
 // var shotLevel = 1
@@ -51,33 +54,34 @@ function create() {
 	/////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////////////////// WORLD ITEM OPTIONS
+	coins = game.add.group()
 	/////////////////////////// GOLD COIN
 	gold_coins = game.add.group()
 	gold_coins.enableBody = true;
 	// enable body needs to next to its creation code for some reason
 
-	var gold_coin = gold_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'gold_coin')
-	gold_coin.value = 500
-	gold_coin.animations.add('rotate')
-	gold_coin.animations.play('rotate',20,true)
-	setTimeout(function() { gold_coin.kill() ; }, Math.floor(Math.random() * 10000)+5000)
+	// var gold_coin = gold_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'gold_coin')
+	// gold_coin.value = 500
+	// gold_coin.animations.add('rotate')
+	// gold_coin.animations.play('rotate',20,true)
+	// setTimeout(function() { gold_coin.kill() ; }, Math.floor(Math.random() * 10000)+5000)
 
 	/////////////////////////// SILVER COIN
 	silver_coins = game.add.group()
 	silver_coins.enableBody = true;
-	silver_coin = silver_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'silver_coin')
-	silver_coin.value = 200
-	silver_coin.animations.add('rotate')
-	silver_coin.animations.play('rotate',20,true)
-	setTimeout(function() { silver_coin.kill() ; }, Math.floor(Math.random() * 10000)+10000)
+	// silver_coin = silver_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'silver_coin')
+	// silver_coin.value = 200
+	// silver_coin.animations.add('rotate')
+	// silver_coin.animations.play('rotate',20,true)
+	// setTimeout(function() { silver_coin.kill() ; }, Math.floor(Math.random() * 10000)+10000)
 	/////////////////////////// COPPER COIN
 	copper_coins = game.add.group()
 	copper_coins.enableBody = true;
-	copper_coin = copper_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'copper_coin')
-	copper_coin.value = 50
-	copper_coin.animations.add('rotate')
-	copper_coin.animations.play('rotate',20,true)
-	setTimeout(function() { copper_coin.kill() ; }, Math.floor(Math.random() * 10000)+10000)
+	// copper_coin = copper_coins.create(Math.floor(Math.random()*(1280-32)),Math.floor(Math.random()*(600-32)),'copper_coin')
+	// copper_coin.value = 50
+	// copper_coin.animations.add('rotate')
+	// copper_coin.animations.play('rotate',20,true)
+	// setTimeout(function() { copper_coin.kill() ; }, Math.floor(Math.random() * 10000)+10000)
 	//////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////////////////////// PLAYER OPTIONS
@@ -85,16 +89,16 @@ function create() {
 	/////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////// BULLET OPTIONS
-	bullets = game.add.group()
-	bullets.enableBody = true;
-	game.physics.arcade.enable(bullets)
-	bullets.setAll('anchor.x',0.5)
-	bullets.setAll('anchor.y',0.5)
-	bullets.setAll('outOfBoundsKill', true)
-	bullets.setAll('checkWorldBounds', true)
-	bullets.create(300,300,'basic_bullet_right')
-	bullets.create(400,100,'basic_bullet_right')
-	bullets.create(0,100,'basic_bullet_right')
+	Bullets = game.add.group()
+	Bullets.enableBody = true;
+	game.physics.arcade.enable(Bullets)
+	// Bullets.setAll('anchor.x',0.5)
+	// Bullets.setAll('anchor.y',0.5)
+	Bullets.setAll('outOfBoundsKill', true)
+	Bullets.setAll('checkWorldBounds', true)
+	// Bullets.create(300,300,'basic_bullet_right')
+	// Bullets.create(400,100,'basic_bullet_right')
+	// Bullets.create(0,100,'basic_bullet_right')
 	// bullets.create(player.position.x+100, player.position.y+34, 'basic_bullet_horizontal')
 	// bullets.create(200, 500, 'basic_bullet_horizontal')
 	///////////////////////////////////////////////////////////////////
@@ -102,8 +106,17 @@ function create() {
 	///////////////////////////////////////////// ENABLE PLAYER CONTROLS
 	cursors = this.input.keyboard.createCursorKeys();
 
+	
 	// this prevents spacebar from being used in the input tag
-  this.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+  // game.onFocus.add(function() {
+  // 	console.log('focused')
+	game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+  // }, this)
+  // game.onBlur.add(function() {
+  // 	console.log('blurred')
+  // 	// game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+  // }, this)
+
   // var changeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
   // changeKey.onDown.add(this.nextWeapon, this);
   ///////////////////////////////////////////////////////////////////
@@ -126,7 +139,7 @@ socket.on('player info', function(data) {
 	// console.log(data)
 	spawnPlayer(data)
 	// console.log('my user info was received')
-	Players[myID].me = true
+	Players[myID].alive = true
 })
 
 function spawnPlayer(user) {
@@ -146,12 +159,22 @@ function spawnPlayer(user) {
 	player.facing = user.facing
 	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
 
-	// socket.emit('player info',{x: player.x, y: player.y})
+
 	playerReady = true
 }
 
 function update() {
 	if (!playerReady) return
+
+	// makes it so that the mouse must be inside the game window for the client to issue any commands
+	// if (game.input.activePointer.withinGame) {
+ //    game.input.enabled = true;
+ //    // game.stage.backgroundColor = "0x999999";
+ //  }
+	// else {
+ //    game.input.enabled = false;
+ //    // game.stage.backgroundColor = "0x999999";
+	// }
 
 		// also send the direction i'm facing along with my location
 		// maybe is should put this into the conditionals that move the player
@@ -190,13 +213,24 @@ function update() {
 		})
 	}
 
-  if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && shotTimer < game.time.now) {
+	// check if i'm alive, check if shot timer is ok, check if pressed spacebar
+  if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && Players[myID].alive === true && shotTimer < game.time.now) {
   	shotTimer = game.time.now + shotCooldown;
 		socket.emit('shoot', {
 			id: myID, 
 			facing: Players[myID].facing 
 		})
 	}
+
+	////////////////////////////////////////////////////////// COLLISIONS
+  game.physics.arcade.collide(Players[myID], Bullets, playerHit, null, this);
+  // game.physics.arcade.overlap(player, bullets, playerHit, null, this);
+  // game.physics.arcade.overlap(player, gold_coins, getRich, null, this);
+  // game.physics.arcade.overlap(player, copper_coins, getRich, null, this);
+  // game.physics.arcade.overlap(player, silver_coins, getRich, null, this);
+
+  // game.physics.arcade.overlap(silver_coins, bullets, playerHit, null, this);
+  /////////////////////////////////////////////////////////////////////
 
 }
 //////////////////////////////////////////////////////////////////////////////
@@ -231,60 +265,101 @@ socket.on('shoots fired',function(data) {
 
 function shoot(shooter) {
 
-	var shooter = Players[shooter.id]
+	var player = Players[shooter.id]
 
 	// shooter is facing right
 	if (shooter.facing === "right") {
-		// console.log("shot right")
-		Bullets[shooter.bulletID] = bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
-		var bullet = Bullets[shooter.bulletID] 
+		var bullet = Bullets.create(player.x+25+30, player.y+25-4, 'basic_bullet_right')
 		bullet.body.velocity.x = 400
+		bullet.bulletID = shooter.bulletID
 	}
 	// shooter is facing down
 	else if (shooter.facing === "down") {
-		// console.log("shot down")
-		Bullets[shooter.bulletID] = bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
-		var bullet = Bullets[shooter.bulletID] 
+		var bullet = Bullets.create(player.x+25-5, player.y+25+30, 'basic_bullet_down')
 		bullet.body.velocity.y = 400
+		bullet.bulletID = shooter.bulletID
 	}
 	// shooter is facing left
 	else if (shooter.facing === "left") {
-		// console.log("shot left")
-		Bullets[shooter.bulletID] = bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
-		var bullet = Bullets[shooter.bulletID] 
+		var bullet = Bullets.create(player.x+25-30-20, player.y+25-4, 'basic_bullet_left')
 		bullet.body.velocity.x = -400
+		bullet.bulletID = shooter.bulletID
 	}
 	// shooter is facing up
 	else if (shooter.facing === "up") {
-		// console.log("shot up")
-		Bullets[shooter.bulletID] = bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
-		var bullet = Bullets[shooter.bulletID] 
+		var bullet = Bullets.create(player.x+25-5, player.y+25-30-20, 'basic_bullet_up')
 		bullet.body.velocity.y = -400
+		bullet.bulletID = shooter.bulletID
 	}
-
-
-	// 	// player is facing down
-	// 	else if (player.frame === 1) {
-	// 		var bullet = bullets.create(player.body.center.x-5, player.body.center.y+30, 'basic_bullet_down')
-	// 		bullet.body.velocity.y = 400
-	// 	}
-	// 	// player is facing left
-	// 	else if (player.frame === 2) {
-	// 		var bullet = bullets.create(player.body.center.x-30-20, player.body.center.y-4, 'basic_bullet_left')
-	// 		bullet.body.velocity.x = -400
-	// 	}
-	// 	// player is facing up
-	// 	else if (player.frame === 3) {
-	// 		var bullet = bullets.create(player.body.center.x-5, player.body.center.y-30-20, 'basic_bullet_up')
-	// 		bullet.body.velocity.y = -400
-	// 	}
-		
-	// }
 }
 
+socket.on('spawn coin', function(data) {
+	generateCoin(data)
+})
 
+function generateCoin(data) {
+	// x, y, coinID, type
+	var coin = coins.create(data.x, data.y, data.type)
+	coin.value = data.value
+	coin.animations.add('rotate')
+	coin.animations.play('rotate',20,true)
+	setTimeout(function() { 
+		coin.kill(); 
+		delete coin; 
+	}, data.expire)
+}
 
+// LOCAL CLIENT WAS HIT
+function playerHit(player, bullet) {
+	// send out player's id and bullet's id
+	socket.emit('im hit', {id: myID, bulletID: bullet.bulletID})
 
+	var me = Players[myID];
 
+	if (me.shielded === true) {
+		// shield.kill()
+		// don't kill the bubble, make it invisible again
+		bullet.kill()
+		me.shielded = false
+	}
+	else {
+		me.kill()
+		bullet.kill()
+		//  EXPLODE ANIMATION
+		var explode = game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1')
+		explode.animations.add('explode')
+		explode.animations.play('explode',10)
+		//
+	}	
+	
+}
 
+// Bullets.children have a key value starting from 0 when first created and an 'z' id of its key+1
+// Bullets.children[0].z = 1
+// use that to find the bullet u need to kill
 
+// remote player was hit
+socket.on('player hit', function(data) {
+	Bullets.children.forEach(function(bullet) {
+		if (bullet.bulletID === data.bulletID)
+			bullet.kill()
+	})
+
+	var player = Players[data.id];
+	
+	if (player.shielded === true) {
+		// shield.kill()
+		// don't kill the bubble, make it invisible again
+		player.shielded = false
+	}
+	else {
+		player.kill()
+		
+		//  EXPLODE ANIMATION
+		var explode = game.add.sprite(player.x-25, player.body.center.y-25,'explode1')
+		explode.animations.add('explode')
+		explode.animations.play('explode',10)
+		//
+		// bullet.kill()
+	}
+})
