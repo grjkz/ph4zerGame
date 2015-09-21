@@ -144,6 +144,20 @@ io.on('connection', function(client){
   	}
   })
 
+  client.on('buy omnishot', function() {
+  	if (users[client.id].bank >= 0) {
+  		users[client.id].bank -= 0;
+  		var ids = []
+  		for (var i = 0; i<8; i++) {
+  			ids.push(i)
+  		}
+  		io.emit('omnishot receipt', {id: client.id, bank: users[client.id].bank,bulletID: ids, passed: true})
+  	}
+  	else {
+  		client.emit('omnishot receipt', {passed: false})
+  	}
+  })
+
   // messaging
   client.on('chat message', function(msg){
   	if (msg === "ready") {

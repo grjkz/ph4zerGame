@@ -78,10 +78,12 @@ function create() {
   // var upgradeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
   var upgradeKey = this.input.keyboard.addKey(Phaser.Keyboard.A);
   upgradeKey.onDown.add(upgradeGun, this);
-  var shieldKey = this.input.keyboard.addKey(Phaser.Keyboard.S);
+  var shieldKey = this.input.keyboard.addKey(Phaser.Keyboard.W);
   shieldKey.onDown.add(buyShield, this);
   var verticalKey = this.input.keyboard.addKey(Phaser.Keyboard.E);
   verticalKey.onDown.add(buyVertical, this);
+  var omniKey = this.input.keyboard.addKey(Phaser.Keyboard.F);
+  omniKey.onDown.add(buyOmnishot, this);
   ///////////////////////////////////////////////////////////////////
 
   ////////////////////////////////////////////////////////// POWERUPS
@@ -404,11 +406,57 @@ socket.on('vertical receipt', function(data) {
 		// shoot down
 		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
 		bullet.body.velocity.y = 400
-		bullet.bulletID = shooter.bulletID1
+		bullet.bulletID = data.bulletID1
 		// shoot up
 		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
 		bullet.body.velocity.y = -400
-		bullet.bulletID = shooter.bulletID2
+		bullet.bulletID = data.bulletID2
+	}
+})
+////////////////////////////////////// 8 WAY SHOT!!!
+function buyOmnishot() {
+	socket.emit('buy omnishot', {})
+}
+socket.on('omnishot receipt', function(data){
+	if (data.passed) {
+		updateBank(data.id, data.bank);
+		var shooter = Players[data.id]
+		// shoot down
+		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+		bullet.body.velocity.y = 400
+		bullet.bulletID = data.bulletID[0]
+		// shoot up
+		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+		bullet.body.velocity.y = -400
+		bullet.bulletID = data.bulletID[1]
+		// shoot left	
+		var bullet = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+		bullet.body.velocity.x = -400
+		bullet.bulletID = data.bulletID[2]
+		// shoot right
+		var bullet = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+		bullet.body.velocity.x = 400
+		bullet.bulletID = data.bulletID[3]
+		// up left
+		var bullet = Bullets.create(shooter.x-5-20, shooter.y-4, 'basic_bullet_left')
+		bullet.body.velocity.y = -300
+		bullet.body.velocity.x = -300
+		bullet.bulletID = data.bulletID[4]
+		// up right
+		var bullet = Bullets.create(shooter.x+50+5, shooter.y-4, 'basic_bullet_right')
+		bullet.body.velocity.y = -300
+		bullet.body.velocity.x = 300
+		bullet.bulletID = data.bulletID[5]
+		// down left
+		var bullet = Bullets.create(shooter.x-5-20, shooter.y+50+5, 'basic_bullet_left')
+		bullet.body.velocity.y = 300
+		bullet.body.velocity.x = -300
+		bullet.bulletID = data.bulletID[6]
+		//down right
+		var bullet = Bullets.create(shooter.x+50+5, shooter.y+50+5, 'basic_bullet_right')
+		bullet.body.velocity.y = 300
+		bullet.body.velocity.x = 300
+		// bullet.bulletID = data.bulletID[7]
 	}
 })
 
