@@ -55,6 +55,7 @@ function create() {
 
 	/////////////////////////////////////////////// WORLD ITEM OPTIONS
 	coins = game.add.group()
+	coins.enableBody = true;
 	/////////////////////////// GOLD COIN
 	gold_coins = game.add.group()
 	gold_coins.enableBody = true;
@@ -157,6 +158,7 @@ function spawnPlayer(user) {
 	player.body.collideWorldBounds = true;
 	player.shielded = false
 	player.facing = user.facing
+	player.bank = user.bank
 	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
 
 
@@ -224,8 +226,7 @@ function update() {
 
 	////////////////////////////////////////////////////////// COLLISIONS
   game.physics.arcade.collide(Players[myID], Bullets, playerHit, null, this);
-  // game.physics.arcade.overlap(player, bullets, playerHit, null, this);
-  // game.physics.arcade.overlap(player, gold_coins, getRich, null, this);
+  game.physics.arcade.overlap(Players[myID], coins, getRich, null, this);
   // game.physics.arcade.overlap(player, copper_coins, getRich, null, this);
   // game.physics.arcade.overlap(player, silver_coins, getRich, null, this);
 
@@ -293,6 +294,7 @@ function shoot(shooter) {
 	}
 }
 
+// SERVER-GENERATED RANDOM COIN
 socket.on('spawn coin', function(data) {
 	generateCoin(data)
 })
@@ -301,13 +303,42 @@ function generateCoin(data) {
 	// x, y, coinID, type
 	var coin = coins.create(data.x, data.y, data.type)
 	coin.value = data.value
+	coin.coinID = data.coinID
 	coin.animations.add('rotate')
 	coin.animations.play('rotate',20,true)
 	setTimeout(function() { 
-		coin.kill(); 
+		// coin.kill(); 
 		delete coin; 
 	}, data.expire)
 }
+
+// LOCAL CLIENT PICKS UP COIN
+function getRich(player, coin) {
+	socket.emit('coin get', {
+		id: myID, 
+		coinID: coin.coinID, 
+		value: coin.value
+	})
+	
+	// add value of coin to total bank
+	// coin.kill()
+	// bank += coin.value
+	// bankOutput.text = 'Bank: '+bank;
+	// player.shielded = true
+
+	// console.log("add coin")
+}
+
+socket.on('update bank', function(data) {
+	coins.children.forEach(function(coin) {
+		if (coin.coinID === data.coinID) {
+			coin.kill()
+		}
+	})
+	Players[data.id].bank = data.bank
+	bankOutput.text = 'Bank: '+Players[myID].bank;
+})
+
 
 // LOCAL CLIENT WAS HIT
 function playerHit(player, bullet) {

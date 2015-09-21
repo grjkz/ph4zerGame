@@ -93,17 +93,21 @@ io.on('connection', function(client){
   },Math.floor(Math.random()*10000)+10000)
 
   // user picks up coin
-  client.on('add coin', function(coin) {
+  client.on('coin get', function(coin) {
 
   	// var player = users[this.id]
   	// console.log(player.id+" bank was: "+player.bank)
 
-  	users[this.id].bank += coin
+  	users[this.id].bank += coin.value
 
   	// console.log(player.id+' bank is now: '+player.bank)
 
   	// send over userID and their new bank amount
-  	client.broadcast.emit('update bank', {id: this.id, bank: users[this.id].bank})
+  	io.emit('update bank', {
+  		id: this.id, 
+  		bank: users[this.id].bank,
+  		coinID: coin.coinID
+  	})
   })
 
 
