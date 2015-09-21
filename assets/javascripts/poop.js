@@ -80,6 +80,8 @@ function create() {
   upgradeKey.onDown.add(upgradeGun, this);
   var shieldKey = this.input.keyboard.addKey(Phaser.Keyboard.S);
   shieldKey.onDown.add(buyShield, this);
+  var verticalKey = this.input.keyboard.addKey(Phaser.Keyboard.E);
+  verticalKey.onDown.add(buyVertical, this);
   ///////////////////////////////////////////////////////////////////
 
   ////////////////////////////////////////////////////////// POWERUPS
@@ -105,6 +107,7 @@ socket.on('player info', function(data) {
 
 function spawnPlayer(user) {
 	Players.counter++
+	// have server send over which ship to render as well
 	Players[user.id] = game.add.sprite(user.x, user.y, 'sship');
 
 	var player = Players[user.id]
@@ -212,7 +215,7 @@ socket.on('get other players', function(users) {
 	// display all the players
 	for (user in users) {
 		if (user !== 'counter') {
-			if (!user.observer)
+			// if (!user.observer)
 				spawnPlayer(users[user])
 		}
 	}	
@@ -389,7 +392,25 @@ socket.on('shield receipt', function(data) {
 		shields = true
 	}
 })
-
+////////////////////////////////////// VERTICAL SHOT
+function buyVertical() {
+	console.log('vertical shot requested')
+	socket.emit('buy vertical', {})
+}
+socket.on('vertical receipt', function(data) {
+	if (data.passed) {
+		updateBank(data.id, data.bank)
+		var shooter = Players[data.id]
+		// shoot down
+		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+		bullet.body.velocity.y = 400
+		bullet.bulletID = shooter.bulletID1
+		// shoot up
+		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+		bullet.body.velocity.y = -400
+		bullet.bulletID = shooter.bulletID2
+	}
+})
 
 ////////////////////////////////////////////////////////////////////////////
 

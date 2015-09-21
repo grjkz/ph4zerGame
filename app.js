@@ -129,6 +129,21 @@ io.on('connection', function(client){
   	}
   })
 
+  // user requests vertical shot
+  client.on('buy vertical', function() {
+  	if (users[client.id].bank >= 0) {
+  		users[client.id].bank -= 0;
+  		var firstID = bulletCounter
+  		bulletCounter++
+  		var secondID = bulletCounter
+  		bulletCounter++
+  		io.emit('vertical receipt', {id: client.id, bank: users[client.id].bank,bulletID1: firstID, bulletID2: secondID, passed: true})
+  	}
+  	else {
+  		client.emit('vertical receipt', {passed: false})
+  	}
+  })
+
   // messaging
   client.on('chat message', function(msg){
   	if (msg === "ready") {
@@ -180,7 +195,7 @@ generatePlayer = function(id) {
 			var y = Math.floor(Math.random()*550)
 			observer = true
 		}
-
+		//	ALSO SEND OVER THE SHIP SPRITESHEET NAME THEY ARE SUPPOSED TO RENDER
 		users[id] = {
 			id: id,
 			bank: 0,
