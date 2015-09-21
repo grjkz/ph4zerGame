@@ -62,16 +62,6 @@ function create() {
 	Bullets = game.add.group()
 	Bullets.enableBody = true;
 	game.physics.arcade.enable(Bullets)
-	// Bullets.setAll('checkWorldBounds', true)
-	// Bullets.setAll('outOfBoundsKill', true)
-
-	// Bullets.setAll('anchor.x',0.5)
-	// Bullets.setAll('anchor.y',0.5)
-	// Bullets.create(300,300,'basic_bullet_right')
-	// Bullets.create(400,100,'basic_bullet_right')
-	// Bullets.create(0,100,'basic_bullet_right')
-	// bullets.create(player.position.x+100, player.position.y+34, 'basic_bullet_horizontal')
-	// bullets.create(200, 500, 'basic_bullet_horizontal')
 	///////////////////////////////////////////////////////////////////
 
 	///////////////////////////////////////////// ENABLE PLAYER CONTROLS
@@ -367,3 +357,4 @@ socket.on('player hit', function(data) {
 		// bullet.kill()
 	}
 })
+
