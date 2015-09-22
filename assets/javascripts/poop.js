@@ -24,6 +24,10 @@ var shotCooldown = 700
 function preload() {
 	game.load.image('sky','images/sky.jpg');
 	game.load.image('bottom_bar', 'images/bottom_bar.png')
+	game.load.image('vertical_icon','images/vertical_icon.png')
+	game.load.image('shotgun_icon','images/shotgun_icon.png')
+	game.load.image('upgrade_icon','images/upgrade_icon.png')
+	game.load.image('omni_icon','images/omni_icon.png')
 	game.load.image('basic_bullet_right','images/basic_bullet_right.png')
 	game.load.image('basic_bullet_down','images/basic_bullet_down.png')
 	game.load.image('basic_bullet_left','images/basic_bullet_left.png')
@@ -43,6 +47,9 @@ function preload() {
 	game.load.spritesheet('explode1', 'images/explode1.png', 100, 100, 9)
 	// console.log("Loading sship: "+game.time.time)
 	game.load.spritesheet('sship','images/sship.png',50,50)
+	game.load.spritesheet('rship','images/redship.png',50,50)
+	game.load.spritesheet('bship','images/blueship.png',50,50)
+	game.load.spritesheet('pship','images/purpleship.png',50,50)
 	game.load.spritesheet('charging','images/charging.png',70,70)
 	
 }
@@ -156,7 +163,7 @@ socket.on('player info', function(data) {
 function spawnPlayer(user) {
 	Players.counter++
 	// have server send over which ship to render as well
-	Players[user.id] = game.add.sprite(user.x, user.y, 'sship');
+	Players[user.id] = game.add.sprite(user.x, user.y, user.ship);
 
 	var player = Players[user.id]
 	// player.weapons = []

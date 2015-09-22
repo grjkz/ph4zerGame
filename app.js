@@ -218,21 +218,25 @@ generatePlayer = function(id) {
 			var x = 100
 			var y = 100
 			var facing = "right"
+      var ship = 'sship'
 		}
 		else if (users.counter ===2) {
 			var x = 1180
 			var y = 500
 			var facing = "left"
+      var ship = 'bship'
 		}
 		else if (users.counter ===3) {
 			var x = 100
 			var y = 500
 			var facing = "right"
+      var ship = 'rship'
 		}
 		else if (users.counter ===4) {
 			var x = 1180
 			var y = 100
 			var facing = "left"
+      var ship = 'pship'
 		}
 		else {
 			var x = Math.floor(Math.random()*1230)
@@ -247,7 +251,8 @@ generatePlayer = function(id) {
 			x: x, 
 			y: y,
 			facing: facing,
-			observer: observer
+			observer: observer,
+      ship: ship
 		}
 }
 
