@@ -8,6 +8,7 @@ var coins;
 var bankOutput;
 var lives = 4;
 var Bullets;
+var Ultimates;
 var myID = 'dont have one yet'
 // var Alive = false
 var Players = { counter: 0 }
@@ -23,13 +24,17 @@ var shotCooldown = 700
 function preload() {
 	game.load.image('sky','images/sky.jpg');
 	game.load.image('bottom_bar', 'images/bottom_bar.png')
-	game.load.image('ship', 'images/ship.gif');
-	// game.load.image('ship', 'images/spaceship.png');
 	game.load.image('basic_bullet_right','images/basic_bullet_right.png')
 	game.load.image('basic_bullet_down','images/basic_bullet_down.png')
 	game.load.image('basic_bullet_left','images/basic_bullet_left.png')
 	game.load.image('basic_bullet_up','images/basic_bullet_up.png')
 	game.load.image('bubble','images/bubble.png')
+	game.load.image('ult_body_horizontal','images/ult_body_horizontal.png')
+	game.load.image('ult_body_vertical','images/ult_body_vertical.png')
+	game.load.image('ult_origin_right','images/ult_origin_right.png')
+	game.load.image('ult_origin_left','images/ult_origin_left.png')
+	game.load.image('ult_origin_up','images/ult_origin_up.png')
+	game.load.image('ult_origin_down','images/ult_origin_down.png')
 
 	// width, height [, # of frames (of sprite img)]
 	game.load.spritesheet('gold_coin', 'images/gold_coin.png', 32, 32, 8)
@@ -39,6 +44,7 @@ function preload() {
 	// console.log("Loading sship: "+game.time.time)
 	game.load.spritesheet('sship','images/sship.png',50,50)
 	game.load.spritesheet('charging','images/charging.png',70,70)
+	
 }
 
 function create() {
@@ -72,7 +78,7 @@ function create() {
 	game.add.text(630, 640, 'A', {fontSize:'16px', fill:'white'})
 	// display Ultimate
 	// game.add.sprite()
-	game.add.text(730, 690, '^ This ^: $1000', {fontSize:'16px', fill:'orange'})
+	game.add.text(730, 690, '^ This ^: $3000', {fontSize:'16px', fill:'orange'})
 	game.add.text(780, 640,'R',{fontSize:'16px', fill:'white'})
 	//////////////////////////////////////////////////////////////////
 
@@ -92,6 +98,9 @@ function create() {
 	Bullets = game.add.group()
 	Bullets.enableBody = true;
 	game.physics.arcade.enable(Bullets)
+	Ultimates = game.add.group();
+	Ultimates.enableBody = true;
+	game.physics.arcade.enable(Ultimates)
 	///////////////////////////////////////////////////////////////////
 
 	///////////////////////////////////////////// ENABLE PLAYER CONTROLS
@@ -125,7 +134,8 @@ function create() {
   ////////////////////////////////////////////////////////// POWERUPS
   Shields = game.add.group()
   ///////////////////////////////////////////////////////////////////
-
+  // laser = game.add.sprite(0,0,'laser')
+  // laser.animations.add('bwaa')
 
   // tell server that i'm done loading init stuff
   socket.emit('ready')
@@ -238,17 +248,45 @@ function update() {
 	////////////////////////////////////////////////////////// COLLISIONS
   game.physics.arcade.collide(Players[myID], Bullets, playerHit, null, this);
   game.physics.arcade.overlap(Players[myID], coins, getRich, null, this);
-  // game.physics.arcade.overlap(player, copper_coins, getRich, null, this);
-  // game.physics.arcade.overlap(player, silver_coins, getRich, null, this);
-
-  // game.physics.arcade.overlap(silver_coins, bullets, playerHit, null, this);
+  game.physics.arcade.overlap(Ultimates, Players[myID], obliterate, null, this);
+  game.physics.arcade.overlap(Ultimates, coins, obliterate, null, this);
+  game.physics.arcade.overlap(Ultimates, Bullets, obliterate, null, this);
   /////////////////////////////////////////////////////////////////////
   if (shields) {
 	  checkShield()
   }
 }
 //////////////////////////////////////////////////////////////////////////////
-
+// kill anything that touches the ultimate
+function obliterate(victim, ultimate) {
+		// debugger
+	if (Players[myID] === victim) {
+		var me = victim;
+		socket.emit('im hit', {id: myID})
+		if (me.shielded === true) {
+			Shields.children.forEach(function(shield) {
+				if (shield.playerID === myID) {
+					shield.destroy();
+				}
+			})
+			me.shielded = false
+		}
+		else {
+			me.kill()
+			me.alive = false
+			// facing unknown might disable any type of shooting
+			me.facing = 'unknown'
+			//  EXPLODE ANIMATION
+			var explode = game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1')
+			explode.animations.add('explode')
+			explode.animations.play('explode',10)
+			//
+		}	
+	}
+	else {
+		victim.destroy()
+	}
+}
 
 // new player joins the game
 socket.on('add new user', function(newPlayer) {
@@ -311,11 +349,7 @@ function shoot(shooter) {
 	// makes sure that all bullets are killed upon leaving world bounds
 	bullet.checkWorldBounds = true
 	bullet.outOfBoundsKill = true
-	Bullets.children.forEach(function(bullet) {
-		if (!bullet.visible) {
-			bullet.destroy()
-		}
-	})
+	destroyBullets();
 }
 
 // SERVER-GENERATED RANDOM COIN
@@ -348,7 +382,7 @@ function getRich(player, coin) {
 
 socket.on('update bank', function(data) {
 	coins.children.forEach(function(coin) {
-		if (coin.coinID === data.coinID) { coin.kill() }
+		if (coin.coinID === data.coinID) { coin.destroy() }
 	})
 	updateBank(data.id, data.bank)
 })
@@ -367,12 +401,15 @@ function playerHit(player, bullet) {
 				shield.destroy();
 			}
 		})
-		bullet.kill()
+		bullet.destroy()
 		me.shielded = false
 	}
 	else {
 		me.kill()
-		bullet.kill()
+		me.alive = false
+		// facing unknown might disable any type of shooting
+		me.facing = 'unknown'
+		bullet.destroy()
 		//  EXPLODE ANIMATION
 		var explode = game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1')
 		explode.animations.add('explode')
@@ -386,7 +423,7 @@ function playerHit(player, bullet) {
 socket.on('player hit', function(data) {
 	Bullets.children.forEach(function(bullet) {
 		if (bullet.bulletID === data.bulletID)
-			bullet.kill()
+			bullet.destroy()
 	})
 
 	var player = Players[data.id];
@@ -400,7 +437,6 @@ socket.on('player hit', function(data) {
 	}
 	else {
 		player.kill()
-		
 		//  EXPLODE ANIMATION
 		var explode = game.add.sprite(player.x-25, player.body.center.y-25,'explode1')
 		explode.animations.add('explode')
@@ -506,6 +542,7 @@ socket.on('shotgun receipt', function(data) {
 				rightShot.bulletID = data.bulletID3
 		}
 	}
+	setOOB()
 })
 ////////////////////////////////////// VERTICAL SHOT
 function buyVertical() {
@@ -525,6 +562,7 @@ socket.on('vertical receipt', function(data) {
 		bullet.body.velocity.y = -400
 		bullet.bulletID = data.bulletID2
 	}
+	setOOB()
 })
 ////////////////////////////////////// 8 WAY SHOT!!!
 function buyOmnishot() {
@@ -571,6 +609,7 @@ socket.on('omnishot receipt', function(data){
 		bullet.body.velocity.x = 300
 		bullet.bulletID = data.bulletID[7]
 	}
+	setOOB();
 })
 /////////////////////////////// Ultimate
 function buyUltimate() {
@@ -585,38 +624,63 @@ socket.on('ultimate receipt', function(data) {
 		var aura = game.add.sprite(shooter.x-6,shooter.y-6,'charging')
 		aura.animations.add('charge')
 		aura.animations.play('charge',40,false)
+
+		// needed these 2 to destroy later on 
+		var ultimate_origin;
+		var bulletMaker;
+
 		// countdown before firing shot
 		setTimeout(function() { 
-			console.log('first timeout')
-			// if (shooter.facing === "right") {
-			// 	var ultimate = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
-			// 	ultimate.body.velocity.x = 400
-			// 	ultimate.bulletID = shooter.bulletID
-			// }
-			// // shooter is facing down
-			// else if (shooter.facing === "down") {
-			// 	var ultimate = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
-			// 	ultimate.body.velocity.y = 400
-			// 	ultimate.bulletID = shooter.bulletID
-			// }
-			// // shooter is facing left
-			// else if (shooter.facing === "left") {
-			// 	var ultimate = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
-			// 	ultimate.body.velocity.x = -400
-			// 	ultimate.bulletID = shooter.bulletID
-			// }
-			// // shooter is facing up
-			// else if (shooter.facing === "up") {
-			// 	var ultimate = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
-			// 	ultimate.body.velocity.y = -400
-			// 	ultimate.bulletID = shooter.bulletID
-			// }
-			}, 500)
-			setTimeout(function() { 
-				console.log('second')
-				shooter.charging = false;
-				aura.destroy()
-			}, 1000)
+			// console.log('charge fired')
+			aura.destroy()
+			if (shooter.facing === "right") {
+				ultimate_origin = Ultimates.create(shooter.x+25+30, shooter.y-60, 'ult_origin_right')
+				ultimate_origin.z = 9999;
+				bulletMaker = setInterval(function() {
+					var ultimate_body = Ultimates.create(shooter.x+25+120, shooter.y-60+18.5, 'ult_body_vertical')
+					ultimate_body.body.velocity.x = 1200
+				}, 10)
+			}
+			// shooter is facing left
+			else if (shooter.facing === "left") {
+				ultimate_origin = Ultimates.create(shooter.x-5-124, shooter.y-60, 'ult_origin_left')
+				ultimate_origin.z = 9999;
+				bulletMaker = setInterval(function() {
+					var ultimate_body = Ultimates.create(shooter.x-5-120, shooter.y-60+18.5, 'ult_body_vertical')
+					ultimate_body.body.velocity.x = -1200
+				}, 10)
+			}
+			// shooter is facing down
+			else if (shooter.facing === "down") {
+				ultimate_origin = Ultimates.create(shooter.x-59, shooter.y+55, 'ult_origin_down')
+				ultimate_origin.z = 9999;
+				bulletMaker = setInterval(function() {
+					var ultimate_body = Ultimates.create(shooter.x-59+18.5, shooter.y+5+120, 'ult_body_horizontal')
+					ultimate_body.body.velocity.y = 1200
+				}, 10)
+			}
+			// shooter is facing up
+			else if (shooter.facing === "up") {
+				ultimate_origin = Ultimates.create(shooter.x-59, shooter.y-129, 'ult_origin_up')
+				ultimate_origin.z = 9999;
+				bulletMaker = setInterval(function() {
+					var ultimate_body = Ultimates.create(shooter.x-59+18.5, shooter.y-120, 'ult_body_horizontal')
+					ultimate_body.body.velocity.y = -1200
+				}, 10)
+			}
+		}, 500)
+		// called when done shooting so player can move
+		setTimeout(function() { 
+			ultimate_origin.destroy()
+			clearInterval(bulletMaker)
+			shooter.charging = false;
+		}, 1000)
+		//	destroy the ultimate's bullets
+		setTimeout(function() {
+			Ultimates.children.forEach(function(thing) {
+				thing.destroy()
+			})
+		}, 2000)
 	}
 })
 ////////////////////////////////////////////////////////////////////////////
@@ -641,8 +705,22 @@ function updateBank(id, amount) {
 	bankOutput.text = 'Bank: '+Players[myID].bank;
 }
 
+// set out of bounds for bullets
+function setOOB() {
+	Bullets.children.forEach(function(bullet) {
+		bullet.checkWorldBounds = true;
+		bullet.outOfBoundsKill = true;
+	})
+}
 
-
+// destroy all out of bound bullets
+function destroyBullets() {
+	Bullets.children.forEach(function(bullet) {
+		if (!bullet.visible) {
+			bullet.destroy()
+		}
+	})
+}
 
 
 
