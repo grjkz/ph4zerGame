@@ -30,8 +30,8 @@ var users = { counter: 0 }
 var bulletCounter = 0;
 var coinCounter = 0;
 var shieldCounter = 0;
+
 io.on('connection', function(client){
-  // console.log('a user connected');
   users.counter++
   console.log(users.counter+" user(s) connected")
 
@@ -118,8 +118,8 @@ io.on('connection', function(client){
 
   // user requests a shield
   client.on('buy shield', function() {
-  	if (users[client.id].bank >= 00) {
-  		users[client.id].bank -= 00;
+  	if (users[client.id].bank >= 350) {
+  		users[client.id].bank -= 350;
   		io.emit('shield receipt', {id: client.id, bank: users[client.id].bank,shieldID: shieldCounter, passed: true})
   		shieldCounter++
   	}
@@ -130,8 +130,8 @@ io.on('connection', function(client){
 
   // user requests shotgun shot
   client.on('buy shotgun', function() {
-  	if (users[client.id].bank >= 0) {
-  		users[client.id].bank -= 0;
+  	if (users[client.id].bank >= 250) {
+  		users[client.id].bank -= 250;
   		var firstID = bulletCounter
   		bulletCounter++
   		var secondID = bulletCounter
@@ -147,8 +147,8 @@ io.on('connection', function(client){
 
   // user requests vertical shot
   client.on('buy vertical', function() {
-  	if (users[client.id].bank >= 0) {
-  		users[client.id].bank -= 0;
+  	if (users[client.id].bank >= 150) {
+  		users[client.id].bank -= 150;
   		var firstID = bulletCounter
   		bulletCounter++
   		var secondID = bulletCounter
@@ -162,8 +162,8 @@ io.on('connection', function(client){
 
   // user requests 8-way directional shot
   client.on('buy omnishot', function() {
-  	if (users[client.id].bank >= 0) {
-  		users[client.id].bank -= 0;
+  	if (users[client.id].bank >= 500) {
+  		users[client.id].bank -= 500;
   		var ids = []
   		for (var i = 0; i<8; i++) {
   			ids.push(i)
@@ -177,8 +177,8 @@ io.on('connection', function(client){
 
   // user requests ultimate
   client.on('buy ultimate', function() {
-  	if (users[client.id].bank >= 0) {
-  		users[client.id].bank -= 0;
+  	if (users[client.id].bank >= 3000) {
+  		users[client.id].bank -= 3000;
   		io.emit('ultimate receipt', {id: client.id, bank: users[client.id].bank,bulletID: bulletCounter, passed: true})
   		bulletCounter++
   	}
@@ -190,27 +190,10 @@ io.on('connection', function(client){
 
   // messaging
   client.on('chat message', function(msg){
-  	if (msg === "ready") {
-  		client.emit('player info', users[client.id])
-  		console.log('ready was typed')
-  	}
     io.emit('chat message', msg);
   });
-
-  client.on('name change', function(name) {
-  	console.log('name change involked!!!!')
-  })
-
 });
 
-
-
-
-// var findPlayer = function(id) {
-// 	users.forEach(function(user) {
-// 		if (user.id == id) return user
-// 	})
-// }
 
 generatePlayer = function(id) {
 	var observer = false
@@ -289,15 +272,5 @@ generateCoin = function() {
 
 	return coin
 }
-
-
-
-
-
-
-
-
-
-
 
 
