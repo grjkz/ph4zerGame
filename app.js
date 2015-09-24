@@ -162,8 +162,8 @@ io.on('connection', function(client){
 
   // user requests 8-way directional shot
   client.on('buy omnishot', function() {
-  	if (users[client.id].bank >= 500) {
-  		users[client.id].bank -= 500;
+  	if (users[client.id].bank >= 00) {
+  		users[client.id].bank -= 00;
   		var ids = []
   		for (var i = 0; i<8; i++) {
   			ids.push(i)
@@ -177,8 +177,8 @@ io.on('connection', function(client){
 
   // user requests ultimate
   client.on('buy ultimate', function() {
-  	if (users[client.id].bank >= 3000) {
-  		users[client.id].bank -= 3000;
+  	if (users[client.id].bank >= 000) {
+  		users[client.id].bank -= 000;
   		io.emit('ultimate receipt', {id: client.id, bank: users[client.id].bank,bulletID: bulletCounter, passed: true})
   		bulletCounter++
   	}
