@@ -567,6 +567,12 @@ function loadSockets() {
 		}
 	})
 	
+	socket.on('reset bank', function() {
+		bankOutput.text = 'Bank: ' + Players[myID].bank / 2;
+		for (player in Players) {
+			Players[player].bank /= 2;
+		}
+	})
 }
 
 ////////////////////////////////////////////////////////////// SHOOTING

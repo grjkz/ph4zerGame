@@ -69,6 +69,7 @@ var spots = {
 
 
 io.on('connection', function(client){
+
   // get rid of user if game is full
   var userCounter = 0;
   for (user in Users) {
@@ -95,22 +96,24 @@ io.on('connection', function(client){
     // create new player object with location
     generatePlayer(spots, client.id);
 
-  for (user in Users) {
-    console.log(user)
-  }
 		// send new user his own info
 		client.emit('player info', Users[client.id])
 		// send new user to all other clients
 		client.broadcast.emit('add new user', Users[client.id])
 		// tell the chat room that a user has connected
 		io.emit('connected msg', client.id)
+
+    // reset everyone's bank when a new player joins
+    for (user in Users) {
+      Users[user].bank /= 2;
+    }
+    io.emit('reset bank')
 	})
 
   // user disconnects
   client.on('disconnect', function(){
     if (userCounter < 4) {
       // console.log("id: "+client.id+"|| spot: "+Users[client.id].spot)
-      spots[Users[client.id].spot].taken = false
       // console.log(client.id+" disconnected");
       io.emit('delete player', client.id)
       // userCounter--
@@ -129,6 +132,7 @@ io.on('connection', function(client){
   // player dies
   client.on('player died', function() {
     Users[client.id].defeated = true
+    spots[Users[client.id].spot].taken = false
     client.emit('redirect')
   })
 
@@ -278,7 +282,7 @@ io.on('connection', function(client){
 
 var generatePlayer = function(spots, id) {
 	var observer = false
-  console.log(spots)
+  
   for (spot in spots) {
     if (!spots[spot].taken) {
       //    var x = spots[spot].x
