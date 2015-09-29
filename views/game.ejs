@@ -17,16 +17,21 @@
 		</form>
 	</div>
 	
-</body>
 <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-<script src="javascripts/phaser.min.js"></script>
-<script src="javascripts/game.js"></script>
 
+<!-- <script src="javascripts/boot.js"></script>
+<script src="javascripts/load.js"></script>
+<script src="javascripts/menu.js"></script>
+<script src="javascripts/play.js"></script>
+<script src='javascripts/controller.js'></script> -->
 
 <script>
   var socket = io();
-  var a;
+
+	socket.on('redirect',function() {
+		window.location = '/'
+	})
 
   // CHAT STUFF
   $('form').submit(function(){
@@ -46,4 +51,8 @@
   	$('#messages').prepend($('<li>').text(user+" has connected"))
   })
 </script>
+
+<script src="javascripts/phaser.min.js"></script>
+<script src="javascripts/game.js"></script>
+</body>
 </html>

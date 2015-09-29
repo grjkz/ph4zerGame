@@ -26,40 +26,102 @@ app.get('*',function(req,res) {
 
 
 // server socket
-var users = { counter: 0 }
+var Users = {}
+var userCounter = 0
 var bulletCounter = 0;
 var coinCounter = 0;
 var shieldCounter = 0;
+var spots = {
+  1: {
+    x: 100,
+    y: 100,
+    taken: false,
+    ship: 'sship',
+    facing: 'right'
+  },
+  2: {
+    x: 1180,
+    y: 500,
+    taken: false,
+    ship: 'bship',
+    facing: 'left'
+  },
+  3: {
+    x: 100,
+    y: 500,
+    taken: false,
+    ship: 'rship',
+    facing: 'right'
+  },
+  4: {
+    x: 1180,
+    y: 100,
+    taken: false,
+    ship: 'pship',
+    facing: 'left'
+  }
+}
+
 
 io.on('connection', function(client){
-  users.counter++
-  console.log(users.counter+" user(s) connected")
+  // get rid of user if game is full
+  if (userCounter >= 4) {
+    client.emit('redirect')
+  } 
 
+  // try to create game states
+  // dont start he game until all players have clicked on the start menu's "ready button"
+  // restrict any new players from joining the game when the game has started. 
+  // find a way to put 4 players into a channel
+  // limit the number of players to 4 for now for testing purposes
+
+  userCounter++
+  console.log(userCounter+" user(s) connected (joined)")
+  for (user in Users) {
+    console.log(user)
+  }
   // wait for client to tell server that it's ready before sending over data
 	client.on('ready', function() {
-		// sends the new client all previous existing users
-		client.emit('get other players', users)
+		// sends the new client all previous existing Users
+		client.emit('get other players', Users)
 		
 		// create new player object with location
-		generatePlayer(client.id);
+		generatePlayer(spots, client.id);
 
 		// send new user his own info
-		client.emit('player info', users[client.id])
+		client.emit('player info', Users[client.id])
 		// send new user to all other clients
-		client.broadcast.emit('add new user', users[client.id])
+		client.broadcast.emit('add new user', Users[client.id])
 		// tell the chat room that a user has connected
 		io.emit('connected msg', client.id)
 	})
 
   // user disconnects
   client.on('disconnect', function(){
-    console.log(client.id+" disconnected");
+    // console.log(client.id+" disconnected");
     io.emit('delete player', client.id)
-    delete users[client.id]
-    users.counter--
-    console.log(users.counter+" user(s) left")
+    delete Users[client.id]
+    userCounter--
+    console.log(userCounter+" user(s) left (disconnected)")
+    for (user in Users) {
+      console.log(user+" is still logged in")
+    }
   });
 
+  // player dies
+  client.on('player died', function() {
+    Users[client.id].defeated = true
+    client.emit('redirect')
+  })
+
+  // player is last man standing
+  client.on('player wins', function() {
+    client.emit('redirect win')
+    for (user in Users) {
+      console.log('deleted '+user)
+      delete Users[user]
+    }
+  })
 
   // user position update (constantly updating)
   // not persisted on server
@@ -87,7 +149,6 @@ io.on('connection', function(client){
   	client.broadcast.emit('player hit', data)
   })
 
-
   // randomly generate coins
   // an instance of this is created upon each player connection resulting in too many coins
   setInterval(function() {
@@ -96,20 +157,20 @@ io.on('connection', function(client){
 
   // user picked up coin
   client.on('coin get', function(coin) {
-  	users[this.id].bank += coin.value
+  	Users[this.id].bank += coin.value
   	// send over userID and their new bank amount
   	io.emit('update bank', {
   		id: this.id, 
-  		bank: users[this.id].bank,
+  		bank: Users[this.id].bank,
   		coinID: coin.coinID
   	})
   })
 
   // user requests gun upgrade
   client.on('upgrade gun', function() {
-  	if (users[client.id].bank >= 500) {
-  		users[client.id].bank -= 500
-	  	io.emit('upgrade receipt', {id: client.id, bank: users[client.id].bank, passed: true})
+  	if (Users[client.id].bank >= 500) {
+  		Users[client.id].bank -= 500
+	  	io.emit('upgrade receipt', {id: client.id, bank: Users[client.id].bank, passed: true})
   	}
   	else {
   		client.emit('upgrade receipt', {passed: false})	
@@ -118,9 +179,9 @@ io.on('connection', function(client){
 
   // user requests a shield
   client.on('buy shield', function() {
-  	if (users[client.id].bank >= 350) {
-  		users[client.id].bank -= 350;
-  		io.emit('shield receipt', {id: client.id, bank: users[client.id].bank,shieldID: shieldCounter, passed: true})
+  	if (Users[client.id].bank >= 350) {
+  		Users[client.id].bank -= 350;
+  		io.emit('shield receipt', {id: client.id, bank: Users[client.id].bank,shieldID: shieldCounter, passed: true})
   		shieldCounter++
   	}
   	else {
@@ -130,14 +191,14 @@ io.on('connection', function(client){
 
   // user requests shotgun shot
   client.on('buy shotgun', function() {
-  	if (users[client.id].bank >= 250) {
-  		users[client.id].bank -= 250;
+  	if (Users[client.id].bank >= 250) {
+  		Users[client.id].bank -= 250;
   		var firstID = bulletCounter
   		bulletCounter++
   		var secondID = bulletCounter
   		bulletCounter++
   		var thirdID = bulletCounter
-  		io.emit('shotgun receipt', {id: client.id, bank: users[client.id].bank,bulletID1: firstID, bulletID2: secondID, bulletID3: thirdID, passed: true})
+  		io.emit('shotgun receipt', {id: client.id, bank: Users[client.id].bank,bulletID1: firstID, bulletID2: secondID, bulletID3: thirdID, passed: true})
   		bulletCounter++
   	}
   	else {
@@ -147,12 +208,12 @@ io.on('connection', function(client){
 
   // user requests vertical shot
   client.on('buy vertical', function() {
-  	if (users[client.id].bank >= 150) {
-  		users[client.id].bank -= 150;
+  	if (Users[client.id].bank >= 150) {
+  		Users[client.id].bank -= 150;
   		var firstID = bulletCounter
   		bulletCounter++
   		var secondID = bulletCounter
-  		io.emit('vertical receipt', {id: client.id, bank: users[client.id].bank,bulletID1: firstID, bulletID2: secondID, passed: true})
+  		io.emit('vertical receipt', {id: client.id, bank: Users[client.id].bank,bulletID1: firstID, bulletID2: secondID, passed: true})
   		bulletCounter++
   	}
   	else {
@@ -162,13 +223,13 @@ io.on('connection', function(client){
 
   // user requests 8-way directional shot
   client.on('buy omnishot', function() {
-  	if (users[client.id].bank >= 00) {
-  		users[client.id].bank -= 00;
+  	if (Users[client.id].bank >= 00) {
+  		Users[client.id].bank -= 00;
   		var ids = []
   		for (var i = 0; i<8; i++) {
   			ids.push(i)
   		}
-  		io.emit('omnishot receipt', {id: client.id, bank: users[client.id].bank,bulletID: ids, passed: true})
+  		io.emit('omnishot receipt', {id: client.id, bank: Users[client.id].bank,bulletID: ids, passed: true})
   	}
   	else {
   		client.emit('omnishot receipt', {passed: false})
@@ -177,9 +238,9 @@ io.on('connection', function(client){
 
   // user requests ultimate
   client.on('buy ultimate', function() {
-  	if (users[client.id].bank >= 000) {
-  		users[client.id].bank -= 000;
-  		io.emit('ultimate receipt', {id: client.id, bank: users[client.id].bank,bulletID: bulletCounter, passed: true})
+  	if (Users[client.id].bank >= 000) {
+  		Users[client.id].bank -= 000;
+  		io.emit('ultimate receipt', {id: client.id, bank: Users[client.id].bank,bulletID: bulletCounter, passed: true})
   		bulletCounter++
   	}
   	else {
@@ -195,47 +256,60 @@ io.on('connection', function(client){
 });
 
 
-generatePlayer = function(id) {
+
+var generatePlayer = function(spots, id) {
 	var observer = false
-	if (users.counter === 1) {
-			var x = 100
-			var y = 100
-			var facing = "right"
-      var ship = 'sship'
-		}
-		else if (users.counter ===2) {
-			var x = 1180
-			var y = 500
-			var facing = "left"
-      var ship = 'bship'
-		}
-		else if (users.counter ===3) {
-			var x = 100
-			var y = 500
-			var facing = "right"
-      var ship = 'rship'
-		}
-		else if (users.counter ===4) {
-			var x = 1180
-			var y = 100
-			var facing = "left"
-      var ship = 'pship'
-		}
-		else {
-			var x = Math.floor(Math.random()*1230)
-			var y = Math.floor(Math.random()*550)
-			observer = true
-		}
+  console.log(spots)
+  for (spot in spots) {
+    if (!spots[spot].taken) {
+      var x = spots[spot].x
+      var y = spots[spot].y
+			var facing = spots[spot].facing
+      var ship = spots[spot].ship
+      spots[spot].taken = true
+      break
+    }
+  }
+  // if (userCounter === 1) {
+  //     var x = spots[1].x
+  //     var y = spots[1].y
+  //     var facing = "right"
+  //     var ship = 'sship'
+		// }
+		// else if (userCounter ===2) {
+		// 	var x = 1180
+		// 	var y = 500
+		// 	var facing = "left"
+  //     var ship = 'bship'
+		// }
+		// else if (userCounter ===3) {
+		// 	var x = 100
+		// 	var y = 500
+		// 	var facing = "right"
+  //     var ship = 'rship'
+		// }
+		// else if (userCounter ===4) {
+		// 	var x = 1180
+		// 	var y = 100
+		// 	var facing = "left"
+  //     var ship = 'pship'
+		// }
+		// else {
+		// 	var x = Math.floor(Math.random()*1230)
+		// 	var y = Math.floor(Math.random()*550)
+		// 	observer = true
+		// }
+    Users[id] = {
+      id: id,
+      bank: 0,
+      alias: "Unknown",
+      x: x, 
+      y: y,
+      facing: facing,
+      observer: observer,
 		//	ALSO SEND OVER THE SHIP SPRITESHEET NAME THEY ARE SUPPOSED TO RENDER
-		users[id] = {
-			id: id,
-			bank: 0,
-			alias: "Unknown",
-			x: x, 
-			y: y,
-			facing: facing,
-			observer: observer,
-      ship: ship
+      ship: ship,
+      defeated: false
 		}
 }
 
