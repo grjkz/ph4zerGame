@@ -107,18 +107,20 @@ io.on('connection', function(client){
 
   // user disconnects
   client.on('disconnect', function(){
-    // console.log("id: "+client.id+"|| spot: "+Users[client.id].spot)
-    spots[Users[client.id].spot].taken = false
-    // console.log(client.id+" disconnected");
-    io.emit('delete player', client.id)
-    // userCounter--
-    // console.log(userCounter+" user(s) left (disconnected)")
-    for (user in Users) {
-      if (user === client.id) {
-        delete Users[client.id]
-        console.log('deleted '+user)
+    if (userCounter < 4) {
+      // console.log("id: "+client.id+"|| spot: "+Users[client.id].spot)
+      spots[Users[client.id].spot].taken = false
+      // console.log(client.id+" disconnected");
+      io.emit('delete player', client.id)
+      // userCounter--
+      // console.log(userCounter+" user(s) left (disconnected)")
+      for (user in Users) {
+        if (user === client.id) {
+          delete Users[client.id]
+          console.log('deleted '+user)
+        }
+        // console.log(user+" is still logged in")
       }
-      // console.log(user+" is still logged in")
     }
   });
 
