@@ -20,6 +20,10 @@ app.get('/game',function(req,res) {
 	res.render('game.ejs')
 })
 
+app.get('/game/full',function(req,res) {
+  res.render('fullerror.ejs')
+})
+
 app.get('*',function(req,res) {
 	res.redirect('/game')
 })
@@ -70,7 +74,7 @@ io.on('connection', function(client){
     userCounter++
   }
   if (userCounter >= 4) {
-    client.emit('redirect')
+    client.emit('redirect full')
   } 
 
   // try to create game states
@@ -81,7 +85,7 @@ io.on('connection', function(client){
 
   // userCounter++
   // console.log(userCounter+" user(s) connected (joined)")
-  
+
   // wait for client to tell server that it's ready before sending over data
   client.on('ready', function() {
     // sends the new client all previous existing Users
@@ -103,7 +107,7 @@ io.on('connection', function(client){
 
   // user disconnects
   client.on('disconnect', function(){
-    console.log("id: "+client.id+"|| spot: "+Users[client.id].spot)
+    // console.log("id: "+client.id+"|| spot: "+Users[client.id].spot)
     spots[Users[client.id].spot].taken = false
     // console.log(client.id+" disconnected");
     io.emit('delete player', client.id)
@@ -112,8 +116,9 @@ io.on('connection', function(client){
     for (user in Users) {
       if (user === client.id) {
         delete Users[client.id]
+        console.log('deleted '+user)
       }
-      console.log(user+" is still logged in")
+      // console.log(user+" is still logged in")
     }
   });
 
@@ -232,8 +237,8 @@ io.on('connection', function(client){
 
   // user requests 8-way directional shot
   client.on('buy omnishot', function() {
-  	if (Users[client.id].bank >= 00) {
-  		Users[client.id].bank -= 00;
+  	if (Users[client.id].bank >= 500) {
+  		Users[client.id].bank -= 500;
   		var ids = []
   		for (var i = 0; i<8; i++) {
   			ids.push(i)
@@ -247,8 +252,8 @@ io.on('connection', function(client){
 
   // user requests ultimate
   client.on('buy ultimate', function() {
-  	if (Users[client.id].bank >= 000) {
-  		Users[client.id].bank -= 000;
+  	if (Users[client.id].bank >= 3000) {
+  		Users[client.id].bank -= 3000;
   		io.emit('ultimate receipt', {id: client.id, bank: Users[client.id].bank,bulletID: bulletCounter, passed: true})
   		bulletCounter++
   	}

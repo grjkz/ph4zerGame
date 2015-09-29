@@ -32,7 +32,9 @@
 	socket.on('redirect',function() {
 		window.location = '/'
 	})
-
+	socket.on('redirect full',function() {
+		window.location = '/game/full'
+	})
   // CHAT STUFF
   $('form').submit(function(){
   	if ($('#m').val() !== /^\/name\s/) {
