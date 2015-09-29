@@ -288,6 +288,11 @@ function update() {
 //////////////////////////////////////////////////////////////////////////////
 
 function loadSockets() {
+
+	socket.on('delete player', function(id) {
+		Players[id].destroy()
+	})
+
 	socket.on('movement', function(data) {
 		Players[data.id].x = data.x
 		Players[data.id].y = data.y
@@ -333,9 +338,9 @@ function loadSockets() {
 					aliveCount++
 				}
 			}
-			if (aliveCount === 1) {
-				window.location = '/'
-			}
+			// if (aliveCount === 1) {
+			// 	socket.emit('player wins')
+			// }
 			// set interval player.reset(location)
 		}
 	})
@@ -764,10 +769,6 @@ function destroyBullets() {
 	})
 }
 
-
-socket.on('redirect',function() {
-	window.location = '/'
-})
 
 
 

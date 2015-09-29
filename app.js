@@ -27,7 +27,7 @@ app.get('*',function(req,res) {
 
 // server socket
 var Users = {}
-var userCounter = 0
+// var userCounter = 0
 var bulletCounter = 0;
 var coinCounter = 0;
 var shieldCounter = 0;
@@ -65,6 +65,10 @@ var spots = {
 
 io.on('connection', function(client){
   // get rid of user if game is full
+  var userCounter = 0;
+  for (user in Users) {
+    userCounter++
+  }
   if (userCounter >= 4) {
     client.emit('redirect')
   } 
@@ -75,19 +79,20 @@ io.on('connection', function(client){
   // find a way to put 4 players into a channel
   // limit the number of players to 4 for now for testing purposes
 
-  userCounter++
-  console.log(userCounter+" user(s) connected (joined)")
+  // userCounter++
+  // console.log(userCounter+" user(s) connected (joined)")
+  
+  // wait for client to tell server that it's ready before sending over data
+  client.on('ready', function() {
+    // sends the new client all previous existing Users
+    client.emit('get other players', Users)
+    
+    // create new player object with location
+    generatePlayer(spots, client.id);
+
   for (user in Users) {
     console.log(user)
   }
-  // wait for client to tell server that it's ready before sending over data
-	client.on('ready', function() {
-		// sends the new client all previous existing Users
-		client.emit('get other players', Users)
-		
-		// create new player object with location
-		generatePlayer(spots, client.id);
-
 		// send new user his own info
 		client.emit('player info', Users[client.id])
 		// send new user to all other clients
@@ -98,12 +103,16 @@ io.on('connection', function(client){
 
   // user disconnects
   client.on('disconnect', function(){
+    console.log("id: "+client.id+"|| spot: "+Users[client.id].spot)
+    spots[Users[client.id].spot].taken = false
     // console.log(client.id+" disconnected");
     io.emit('delete player', client.id)
-    delete Users[client.id]
-    userCounter--
-    console.log(userCounter+" user(s) left (disconnected)")
+    // userCounter--
+    // console.log(userCounter+" user(s) left (disconnected)")
     for (user in Users) {
+      if (user === client.id) {
+        delete Users[client.id]
+      }
       console.log(user+" is still logged in")
     }
   });
@@ -118,7 +127,7 @@ io.on('connection', function(client){
   client.on('player wins', function() {
     client.emit('redirect win')
     for (user in Users) {
-      console.log('deleted '+user)
+      console.log('deleting '+user)
       delete Users[user]
     }
   })
@@ -262,11 +271,24 @@ var generatePlayer = function(spots, id) {
   console.log(spots)
   for (spot in spots) {
     if (!spots[spot].taken) {
-      var x = spots[spot].x
-      var y = spots[spot].y
-			var facing = spots[spot].facing
-      var ship = spots[spot].ship
+      //    var x = spots[spot].x
+      //    var y = spots[spot].y
+      // var facing = spots[spot].facing
+      //    var ship = spots[spot].ship
       spots[spot].taken = true
+      Users[id] = {
+        id: id,
+        bank: 0,
+        alias: "Unknown",
+        x: spots[spot].x, 
+        y: spots[spot].y,
+        facing: spots[spot].facing,
+      //  ALSO SEND OVER THE SHIP SPRITESHEET NAME THEY ARE SUPPOSED TO RENDER
+        ship: spots[spot].ship,
+        defeated: false,
+        spot: spot,
+        observer: observer
+  		}
       break
     }
   }
@@ -275,42 +297,30 @@ var generatePlayer = function(spots, id) {
   //     var y = spots[1].y
   //     var facing = "right"
   //     var ship = 'sship'
-		// }
-		// else if (userCounter ===2) {
-		// 	var x = 1180
-		// 	var y = 500
-		// 	var facing = "left"
+    // }
+    // else if (userCounter ===2) {
+    //  var x = 1180
+    //  var y = 500
+    //  var facing = "left"
   //     var ship = 'bship'
-		// }
-		// else if (userCounter ===3) {
-		// 	var x = 100
-		// 	var y = 500
-		// 	var facing = "right"
+    // }
+    // else if (userCounter ===3) {
+    //  var x = 100
+    //  var y = 500
+    //  var facing = "right"
   //     var ship = 'rship'
-		// }
-		// else if (userCounter ===4) {
-		// 	var x = 1180
-		// 	var y = 100
-		// 	var facing = "left"
+    // }
+    // else if (userCounter ===4) {
+    //  var x = 1180
+    //  var y = 100
+    //  var facing = "left"
   //     var ship = 'pship'
-		// }
-		// else {
-		// 	var x = Math.floor(Math.random()*1230)
-		// 	var y = Math.floor(Math.random()*550)
-		// 	observer = true
-		// }
-    Users[id] = {
-      id: id,
-      bank: 0,
-      alias: "Unknown",
-      x: x, 
-      y: y,
-      facing: facing,
-      observer: observer,
-		//	ALSO SEND OVER THE SHIP SPRITESHEET NAME THEY ARE SUPPOSED TO RENDER
-      ship: ship,
-      defeated: false
-		}
+    // }
+    // else {
+    //  var x = Math.floor(Math.random()*1230)
+    //  var y = Math.floor(Math.random()*550)
+    //  observer = true
+    // }
 }
 
 generateCoin = function() {
