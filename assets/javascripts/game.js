@@ -700,6 +700,7 @@ function buyUltimate() {
 // kill anything that touches the ultimate
 function obliterate(victim, ultimate) {
 		// debugger
+	// local player is hit
 	if (Players[myID] === victim) {
 		var me = victim;
 		socket.emit('im hit', {id: myID})
@@ -721,9 +722,13 @@ function obliterate(victim, ultimate) {
 			explode.animations.add('explode')
 			explode.animations.play('explode',10)
 			//
-		}	
+			socket.emit('player died')
+		}
 	}
+	// non-player is hit
 	else {
+		// not actually destroying the ultimate
+		// it's destroying the victim of the ult
 		ultimate.destroy()
 	}
 }

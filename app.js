@@ -35,6 +35,7 @@ var Users = {}
 var bulletCounter = 0;
 var coinCounter = 0;
 var shieldCounter = 0;
+var coinGen = {};
 var spots = {
   1: {
     x: 100,
@@ -121,6 +122,7 @@ io.on('connection', function(client){
         }
         // console.log(user+" is still logged in")
       }
+      clearInterval(coinGen[client.id])
     }
   });
 
@@ -131,13 +133,13 @@ io.on('connection', function(client){
   })
 
   // player is last man standing
-  client.on('player wins', function() {
-    client.emit('redirect win')
-    for (user in Users) {
-      console.log('deleting '+user)
-      delete Users[user]
-    }
-  })
+  // client.on('player wins', function() {
+  //   client.emit('redirect win')
+  //   for (user in Users) {
+  //     console.log('deleting '+user)
+  //     delete Users[user]
+  //   }
+  // })
 
   // user position update (constantly updating)
   // not persisted on server
@@ -167,9 +169,10 @@ io.on('connection', function(client){
 
   // randomly generate coins
   // an instance of this is created upon each player connection resulting in too many coins
-  setInterval(function() {
-  	io.emit('spawn coin', generateCoin())
-  },Math.floor(Math.random()*10000)+10000)
+  coinGen[client.id] = setInterval(function() {
+    io.emit('spawn coin', generateCoin())
+  },Math.floor(Math.random()*10000)+5000)
+
 
   // user picked up coin
   client.on('coin get', function(coin) {
