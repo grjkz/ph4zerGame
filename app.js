@@ -12,7 +12,12 @@ app.set('view_engine', 'ejs')
 app.use(express.static('assets'))
 
 app.get('/', function(req,res) {
-	res.render('index.ejs')
+  // var userCounter = 0;
+  // have it render with the number of players currently in the game
+  // for (user in Users) {
+  //   userCounter++
+  // }
+  res.render('index.ejs')
 })
 
 // server http

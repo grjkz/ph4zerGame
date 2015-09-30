@@ -640,7 +640,7 @@ function playerHit(player, bullet) {
 		//
 		
 		// lets server know how many active players are left
-		// socket.emit('player died')
+		socket.emit('player died')
 	}	
 	// set timeout for the plaer to respawn
 	// set player status to alive
