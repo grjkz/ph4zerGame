@@ -135,7 +135,7 @@ function create() {
   shieldKey.onDown.add(buyShield, this);
   var shotgunKey = this.input.keyboard.addKey(Phaser.Keyboard.F);
   shotgunKey.onDown.add(buyShotgun, this);
-  var verticalKey = this.input.keyboard.addKey(Phaser.Keyboard.E);
+  var verticalKey = this.input.keyboard.addKey(Phaser.Keyboard.D);
   verticalKey.onDown.add(buyVertical, this);
   var omniKey = this.input.keyboard.addKey(Phaser.Keyboard.A);
   omniKey.onDown.add(buyOmnishot, this);

@@ -12,12 +12,9 @@ app.set('view_engine', 'ejs')
 app.use(express.static('assets'))
 
 app.get('/', function(req,res) {
-  // var userCounter = 0;
   // have it render with the number of players currently in the game
-  // for (user in Users) {
-  //   userCounter++
-  // }
-  res.render('index.ejs')
+  
+  res.render('index.ejs', {players: getPlayerCount()})
 })
 
 // server http
@@ -25,14 +22,26 @@ app.get('/game',function(req,res) {
 	res.render('game.ejs')
 })
 
-app.get('/game/full',function(req,res) {
-  res.render('fullerror.ejs')
+app.get('/game/gameover',function(req,res) {
+  res.render('gameover.ejs')
 })
+
+app.get('/game/full',function(req,res) {
+  res.render('fullerror.ejs', {players: getPlayerCount()})
+})
+
 
 app.get('*',function(req,res) {
 	res.redirect('/game')
 })
 
+ var getPlayerCount = function() {
+  var userCounter = 0;
+  for (user in Users) {
+    userCounter++
+  }
+  return userCounter
+}
 
 // server socket
 var Users = {}
@@ -138,7 +147,7 @@ io.on('connection', function(client){
   client.on('player died', function() {
     Users[client.id].defeated = true
     spots[Users[client.id].spot].taken = false
-    client.emit('redirect')
+    client.emit('redirect gameover')
   })
 
   // player is last man standing

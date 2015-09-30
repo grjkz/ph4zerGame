@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<link rel="stylesheet" href="stylesheets/stylesheet.css">
+	<% include partials/head %>
 	<title>Game</title>
 </head>
 <body>
@@ -29,8 +29,8 @@
 <script>
   var socket = io();
 
-	socket.on('redirect',function() {
-		window.location = '/'
+	socket.on('redirect gameover',function() {
+		window.location = '/game/gameover'
 	})
 	socket.on('redirect full',function() {
 		window.location = '/game/full'

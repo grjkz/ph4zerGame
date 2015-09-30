@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<link rel="stylesheet" href="stylesheets/stylesheet.css">
-	<title>GorEjaKz</title>
+	<% include partials/head %>
+	<title>Philip Choi</title>
 </head>
 <body>
 	<h1>Welcome to my Shooter</h1>
@@ -21,21 +21,29 @@
 			<li>Pick up coins to purchase Abilities or Upgrade!</li>
 			<li class='top-text'>Abilities:</li>
 			<ul>
-				<li><strong>E</strong> $200: Shoots UP and Down</li>
+				<li><strong>D</strong> $200: Shoots UP and Down</li>
 				<li><strong>F</strong> $250: Shoots 3 bullets forward (spread)</li>
 				<li><strong>S</strong> $350: Creates a shield that absorbs one hit</li>
 				<li><strong>Q</strong> $500: Upgrades your gun speed</li>
 				<li><strong>A</strong> $1000: Shoots in 8 directions</li>
 				<li><strong>R</strong> $3000: Big laser!</li>
+				<li>Simply: <strong>A S D F Q R</strong></li>
 			</ul>
 		</ol>
 		<h3>Notes:</h3>
 		<ol>
-			<li>Your bank will be cut in half when a new player joins</li>
-			<li>There are still bugs so Click your browser's Back button and try again if something is wrong</li>
+			<li><strike>Your bank will be cut in half when a new player joins</strike></li>
+			<li>There are still bugs so Click your browser's Back button and try again if something is wrong <strong style='color:red'>Don't refresh the page</strong></li>
 		</ol>
 	</div>
+	<% if (players === 1) { %>
+	<h3><strong><%= players %></strong> player currently in the game</h3>
+	<% } else { %>
+	<h3><strong><%= players %></strong> players currently in the game</h3>
+	<% } %>
 	
-	<h3><a href="/game">Take me to the game!</a></h3>
+	<div class="links">
+		<h3><a href="/game">Take me to the game!</a></h3>
+	</div>
 </body>
 </html>

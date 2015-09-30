@@ -1,6 +1,9 @@
+/** {
+	border: 1px solid black;
+}*/
+
 canvas {
 	margin: auto auto;
-
 }
 
 #chat-area {
@@ -17,4 +20,8 @@ strong {
 
 li {
 	margin-bottom: 1em;
+}
+
+.links { 
+	text-align: center
 }
