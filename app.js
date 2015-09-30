@@ -291,6 +291,16 @@ io.on('connection', function(client){
   client.on('chat message', function(msg){
     io.emit('chat message', msg);
   });
+
+  client.on('get all players', function() {
+    var usernames = []
+    for (user in Users) {
+      usernames.push(user)
+    }
+    client.emit('show all players', {
+      players: usernames
+    })
+  })
 });
 
 

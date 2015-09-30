@@ -9,13 +9,13 @@
 	
 	<div id="game-area"></div>
 
-	<div id="chat-area">
+	<!-- <div id="chat-area">
 		<ul id='messages'></ul>
 		<form action="">
 			<input type="text" id="m" autocomplete='off'>
 			<button>Send</button>
 		</form>
-	</div>
+	</div> -->
 	
 <script src="http://code.jquery.com/jquery-1.11.1.js"></script>
 <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
@@ -52,6 +52,13 @@
   socket.on('connected msg',function(user) {
   	$('#messages').prepend($('<li>').text(user+" has connected"))
   })
+
+ 	var getAllPlayers = function() {
+ 		socket.emit('get all players')
+ 	}
+ 	socket.on('show all players',function(data) {
+ 		console.log(data.players)
+ 	})
 </script>
 
 <script src="javascripts/phaser.min.js"></script>
