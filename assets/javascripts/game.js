@@ -159,6 +159,7 @@ socket.on('player info', function(data) {
 	if (!data.observer) {
 		spawnPlayer(data)
 		Players[myID].alive = true
+		loadSockets()
 	}
 	else {
 		Players[myID].alive = false	
@@ -189,7 +190,6 @@ function spawnPlayer(user) {
 	updateBank(user.id, user.bank)
 	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
 	playerReady = true
-	loadSockets()
 }
 
 // new player joins the game
@@ -360,7 +360,7 @@ function loadSockets() {
 		if (data.passed) {
 			updateBank(data.id, data.bank)
 			if (data.id === myID)
-				shotCooldown *= 0.8
+				shotCooldown *= 0.9
 		}
 	})
 
@@ -617,8 +617,7 @@ function playerHit(player, bullet) {
 	socket.emit('im hit', {id: myID, bulletID: bullet.bulletID})
 
 	var me = Players[myID];
-
-	if (me.shielded === true) {
+	if (me.shielded) {
 		Shields.children.forEach(function(shield) {
 			if (shield.playerID === myID) {
 				shield.destroy();
@@ -628,6 +627,7 @@ function playerHit(player, bullet) {
 		me.shielded = false
 	}
 	else {
+		debugger
 		me.kill()
 		me.alive = false
 		// facing unknown might disable any type of shooting
@@ -640,7 +640,7 @@ function playerHit(player, bullet) {
 		//
 		
 		// lets server know how many active players are left
-		socket.emit('player died')
+		// socket.emit('player died')
 	}	
 	// set timeout for the plaer to respawn
 	// set player status to alive
@@ -712,7 +712,7 @@ function obliterate(victim, ultimate) {
 	if (Players[myID] === victim) {
 		var me = victim;
 		socket.emit('im hit', {id: myID})
-		if (me.shielded === true) {
+		if (me.shielded) {
 			Shields.children.forEach(function(shield) {
 				if (shield.playerID === myID) {
 					shield.destroy();

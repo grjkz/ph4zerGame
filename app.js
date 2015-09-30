@@ -104,10 +104,10 @@ io.on('connection', function(client){
 		io.emit('connected msg', client.id)
 
     // reset everyone's bank when a new player joins
-    for (user in Users) {
-      Users[user].bank /= 2;
-    }
-    io.emit('reset bank')
+    // for (user in Users) {
+    //   Users[user].bank /= 2;
+    // }
+    // io.emit('reset bank')
 	})
 
   // user disconnects
@@ -231,8 +231,8 @@ io.on('connection', function(client){
 
   // user requests vertical shot
   client.on('buy vertical', function() {
-  	if (Users[client.id].bank >= 150) {
-  		Users[client.id].bank -= 150;
+  	if (Users[client.id].bank >= 200) {
+  		Users[client.id].bank -= 200;
   		var firstID = bulletCounter
   		bulletCounter++
   		var secondID = bulletCounter
@@ -246,8 +246,8 @@ io.on('connection', function(client){
 
   // user requests 8-way directional shot
   client.on('buy omnishot', function() {
-  	if (Users[client.id].bank >= 500) {
-  		Users[client.id].bank -= 500;
+  	if (Users[client.id].bank >= 1000) {
+  		Users[client.id].bank -= 1000;
   		var ids = []
   		for (var i = 0; i<8; i++) {
   			ids.push(i)
@@ -282,7 +282,7 @@ io.on('connection', function(client){
 
 var generatePlayer = function(spots, id) {
 	var observer = false
-  
+
   for (spot in spots) {
     if (!spots[spot].taken) {
       //    var x = spots[spot].x
