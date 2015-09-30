@@ -209,6 +209,7 @@ io.on('connection', function(client){
   client.on('buy shield', function() {
   	if (Users[client.id].bank >= 350) {
   		Users[client.id].bank -= 350;
+      Users[client.id].shielded = true;
   		io.emit('shield receipt', {id: client.id, bank: Users[client.id].bank,shieldID: shieldCounter, passed: true})
   		shieldCounter++
   	}
@@ -304,6 +305,7 @@ var generatePlayer = function(spots, id) {
         facing: spots[spot].facing,
       //  ALSO SEND OVER THE SHIP SPRITESHEET NAME THEY ARE SUPPOSED TO RENDER
         ship: spots[spot].ship,
+        shielded: false,
         defeated: false,
         spot: spot,
         observer: observer

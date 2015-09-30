@@ -188,6 +188,13 @@ function spawnPlayer(user) {
 	player.defeated = user.defeated
 	
 	updateBank(user.id, user.bank)
+
+	player.shielded = user.shielded
+	if (player.shielded) {
+		var shield = Shields.create(player.x, player.y, 'bubble')
+		shield.playerID = user.id
+		shields = true
+	}
 	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
 	playerReady = true
 }
