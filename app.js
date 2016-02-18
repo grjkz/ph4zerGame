@@ -1,50 +1,50 @@
-var express = require('express')
-var app = express()
+var express = require('express');
+var app = express();
 // var server = require('http').Server(app)
-var ejs = require('ejs')
+var ejs = require('ejs');
 
 var server = app.listen(3001,function() {
-	console.log('server is listening on 3001')
-})
+	console.log('server is listening on 3001');
+});
 var io = require('socket.io')(server);
 
-app.set('view_engine', 'ejs')
-app.use(express.static('assets'))
+app.set('view_engine', 'ejs');
+app.use(express.static('assets'));
 
 app.get('/', function(req,res) {
   // have it render with the number of players currently in the game
   
-  res.render('index.ejs', {players: getPlayerCount()})
-})
+  res.render('index.ejs', {players: getPlayerCount()});
+});
 
 // server http
 app.get('/game',function(req,res) {
-	res.render('game.ejs')
-})
+	res.render('game.ejs');
+});
 
 app.get('/game/gameover',function(req,res) {
-  res.render('gameover.ejs')
-})
+  res.render('gameover.ejs');
+});
 
 app.get('/game/full',function(req,res) {
-  res.render('fullerror.ejs', {players: getPlayerCount()})
-})
+  res.render('fullerror.ejs', {players: getPlayerCount()});
+});
 
 
 app.get('*',function(req,res) {
-	res.redirect('/game')
-})
+	res.redirect('/game');
+});
 
  var getPlayerCount = function() {
   var userCounter = 0;
-  for (user in Users) {
-    userCounter++
+  for (var user in Users) {
+    userCounter++;
   }
-  return userCounter
-}
+  return userCounter;
+};
 
 // server socket
-var Users = {}
+var Users = {};
 // var userCounter = 0
 var bulletCounter = 0;
 var coinCounter = 0;
@@ -79,76 +79,71 @@ var spots = {
     ship: 'pship',
     facing: 'left'
   }
-}
+};
 
 
 io.on('connection', function(client){
 
   // get rid of user if game is full
   var userCounter = 0;
-  for (user in Users) {
-    userCounter++
+  for (var user in Users) {
+    userCounter++;
   }
   if (userCounter >= 4) {
-    client.emit('redirect full')
+    client.emit('redirect full');
   } 
 
   // try to create game states
-  // dont start he game until all players have clicked on the start menu's "ready button"
-  // restrict any new players from joining the game when the game has started. 
   // find a way to put 4 players into a channel
-  // limit the number of players to 4 for now for testing purposes
 
-  // userCounter++
-  // console.log(userCounter+" user(s) connected (joined)")
 
   // wait for client to tell server that it's ready before sending over data
   client.on('ready', function() {
     // sends the new client all previous existing Users
-    client.emit('get other players', Users)
+    client.emit('get other players', Users);
     
     // create new player object with location
     generatePlayer(spots, client.id);
 
 		// send new user his own info
-		client.emit('player info', Users[client.id])
+		client.emit('player info', Users[client.id]);
 		// send new user to all other clients
-		client.broadcast.emit('add new user', Users[client.id])
+		client.broadcast.emit('add new user', Users[client.id]);
 		// tell the chat room that a user has connected
-		io.emit('connected msg', client.id)
+		io.emit('connected msg', client.id);
 
     // reset everyone's bank when a new player joins
     // for (user in Users) {
     //   Users[user].bank /= 2;
     // }
     // io.emit('reset bank')
-	})
+	});
 
   // user disconnects
   client.on('disconnect', function(){
     if (userCounter < 4) {
       // console.log("id: "+client.id+"|| spot: "+Users[client.id].spot)
       // console.log(client.id+" disconnected");
-      io.emit('delete player', client.id)
+      io.emit('delete player', client.id);
       // userCounter--
       // console.log(userCounter+" user(s) left (disconnected)")
       for (user in Users) {
         if (user === client.id) {
-          delete Users[client.id]
-          console.log('deleted '+user)
+          delete Users[client.id];
+          console.log('deleted '+user);
         }
         // console.log(user+" is still logged in")
       }
-      clearInterval(coinGen[client.id])
+      clearInterval(coinGen[client.id]);
     }
   });
 
   // player dies
   client.on('player died', function() {
-    Users[client.id].defeated = true
-    spots[Users[client.id].spot].taken = false
-    client.emit('redirect gameover')
-  })
+    Users[client.id].defeated = true;
+    spots[Users[client.id].spot].taken = false;
+    client.emit('redirect gameover');
+  });
 
   // player is last man standing
   // client.on('player wins', function() {
@@ -167,8 +162,8 @@ io.on('connection', function(client){
   		x: position.x, 
   		y: position.y, 
   		facing: position.facing
-  	})
-  })
+  	});
+  });
 
   // user fires
   client.on('shoot', function(data) {
@@ -176,115 +171,115 @@ io.on('connection', function(client){
 			id: data.id,
 			facing: data.facing,
 			bulletID: bulletCounter
-		})
-		bulletCounter++
-	})
+		});
+		bulletCounter++;
+	});
 
   // user gets hit
   client.on('im hit', function(data) {
-  	client.broadcast.emit('player hit', data)
-  })
+  	client.broadcast.emit('player hit', data);
+  });
 
   // randomly generate coins
   // an instance of this is created upon each player connection resulting in too many coins
   coinGen[client.id] = setInterval(function() {
-    io.emit('spawn coin', generateCoin())
-  },Math.floor(Math.random()*10000)+5000)
+    io.emit('spawn coin', generateCoin());
+  },Math.floor(Math.random()*10000)+5000);
 
 
   // user picked up coin
   client.on('coin get', function(coin) {
-  	Users[this.id].bank += coin.value
+  	Users[this.id].bank += coin.value;
   	// send over userID and their new bank amount
   	io.emit('update bank', {
   		id: this.id, 
   		bank: Users[this.id].bank,
   		coinID: coin.coinID
-  	})
-  })
+  	});
+  });
 
   // user requests gun upgrade
   client.on('upgrade gun', function() {
   	if (Users[client.id].bank >= 500) {
-  		Users[client.id].bank -= 500
-	  	io.emit('upgrade receipt', {id: client.id, bank: Users[client.id].bank, passed: true})
+  		Users[client.id].bank -= 500;
+	  	io.emit('upgrade receipt', {id: client.id, bank: Users[client.id].bank, passed: true});
   	}
   	else {
-  		client.emit('upgrade receipt', {passed: false})	
+  		client.emit('upgrade receipt', {passed: false});
   	}
-  })
+  });
 
   // user requests a shield
   client.on('buy shield', function() {
   	if (Users[client.id].bank >= 350) {
   		Users[client.id].bank -= 350;
       Users[client.id].shielded = true;
-  		io.emit('shield receipt', {id: client.id, bank: Users[client.id].bank,shieldID: shieldCounter, passed: true})
-  		shieldCounter++
+  		io.emit('shield receipt', {id: client.id, bank: Users[client.id].bank,shieldID: shieldCounter, passed: true});
+  		shieldCounter++;
   	}
   	else {
-  		client.emit('shield receipt', {passed: false})		
+  		client.emit('shield receipt', {passed: false});
   	}
-  })
+  });
 
   // user requests shotgun shot
   client.on('buy shotgun', function() {
   	if (Users[client.id].bank >= 250) {
   		Users[client.id].bank -= 250;
-  		var firstID = bulletCounter
-  		bulletCounter++
-  		var secondID = bulletCounter
-  		bulletCounter++
-  		var thirdID = bulletCounter
-  		io.emit('shotgun receipt', {id: client.id, bank: Users[client.id].bank,bulletID1: firstID, bulletID2: secondID, bulletID3: thirdID, passed: true})
-  		bulletCounter++
+  		var firstID = bulletCounter;
+  		bulletCounter++;
+  		var secondID = bulletCounter;
+  		bulletCounter++;
+  		var thirdID = bulletCounter;
+  		io.emit('shotgun receipt', {id: client.id, bank: Users[client.id].bank,bulletID1: firstID, bulletID2: secondID, bulletID3: thirdID, passed: true});
+  		bulletCounter++;
   	}
   	else {
-  		client.emit('shotgun receipt', {passed: false})
+  		client.emit('shotgun receipt', {passed: false});
   	}
-  })
+  });
 
   // user requests vertical shot
   client.on('buy vertical', function() {
   	if (Users[client.id].bank >= 200) {
   		Users[client.id].bank -= 200;
-  		var firstID = bulletCounter
-  		bulletCounter++
-  		var secondID = bulletCounter
-  		io.emit('vertical receipt', {id: client.id, bank: Users[client.id].bank,bulletID1: firstID, bulletID2: secondID, passed: true})
-  		bulletCounter++
+  		var firstID = bulletCounter;
+  		bulletCounter++;
+  		var secondID = bulletCounter;
+  		io.emit('vertical receipt', {id: client.id, bank: Users[client.id].bank,bulletID1: firstID, bulletID2: secondID, passed: true});
+  		bulletCounter++;
   	}
   	else {
-  		client.emit('vertical receipt', {passed: false})
+  		client.emit('vertical receipt', {passed: false});
   	}
-  })
+  });
 
   // user requests 8-way directional shot
   client.on('buy omnishot', function() {
   	if (Users[client.id].bank >= 1000) {
   		Users[client.id].bank -= 1000;
-  		var ids = []
+  		var ids = [];
   		for (var i = 0; i<8; i++) {
-  			ids.push(i)
+  			ids.push(i);
   		}
-  		io.emit('omnishot receipt', {id: client.id, bank: Users[client.id].bank,bulletID: ids, passed: true})
+  		io.emit('omnishot receipt', {id: client.id, bank: Users[client.id].bank,bulletID: ids, passed: true});
   	}
   	else {
-  		client.emit('omnishot receipt', {passed: false})
+  		client.emit('omnishot receipt', {passed: false});
   	}
-  })
+  });
 
   // user requests ultimate
   client.on('buy ultimate', function() {
   	if (Users[client.id].bank >= 3000) {
   		Users[client.id].bank -= 3000;
-  		io.emit('ultimate receipt', {id: client.id, bank: Users[client.id].bank,bulletID: bulletCounter, passed: true})
-  		bulletCounter++
+  		io.emit('ultimate receipt', {id: client.id, bank: Users[client.id].bank,bulletID: bulletCounter, passed: true});
+  		bulletCounter++;
   	}
   	else {
-  		client.emit('ultimate receipt', {passed: false})	
+  		client.emit('ultimate receipt', {passed: false});
   	}
-  })
+  });
 
 
   // messaging
@@ -293,28 +288,28 @@ io.on('connection', function(client){
   });
 
   client.on('get all players', function() {
-    var usernames = []
-    for (user in Users) {
-      usernames.push(user)
+    var usernames = [];
+    for (var user in Users) {
+      usernames.push(user);
     }
     client.emit('show all players', {
       players: usernames
-    })
-  })
+    });
+  });
 });
 
 
 
 var generatePlayer = function(spots, id) {
-	var observer = false
+	var observer = false;
 
-  for (spot in spots) {
+  for (var spot in spots) {
     if (!spots[spot].taken) {
       //    var x = spots[spot].x
       //    var y = spots[spot].y
       // var facing = spots[spot].facing
       //    var ship = spots[spot].ship
-      spots[spot].taken = true
+      spots[spot].taken = true;
       Users[id] = {
         id: id,
         bank: 0,
@@ -328,8 +323,8 @@ var generatePlayer = function(spots, id) {
         defeated: false,
         spot: spot,
         observer: observer
-  		}
-      break
+  		};
+      break;
     }
   }
   // if (userCounter === 1) {
@@ -361,27 +356,27 @@ var generatePlayer = function(spots, id) {
     //  var y = Math.floor(Math.random()*550)
     //  observer = true
     // }
-}
+};
 
 generateCoin = function() {
-	var name = ''
-	var timer = 0
-	var value = 0
-	var randomNum = Math.floor(Math.random()*100)
+	var name = '';
+	var timer = 0;
+	var value = 0;
+	var randomNum = Math.floor(Math.random()*100);
 	if (randomNum < 13) {
-		name = "gold_coin"
-		timer = Math.floor(Math.random() * 10000)+5000
-		value = 500
+		name = "gold_coin";
+		timer = Math.floor(Math.random() * 10000)+5000;
+		value = 500;
 	}
 	else if (randomNum < 50) {
-		name = "silver_coin"
-		timer = Math.floor(Math.random() * 10000)+10000
-		value = 200
+		name = "silver_coin";
+		timer = Math.floor(Math.random() * 10000)+10000;
+		value = 200;
 	}
 	else {
-		name = "copper_coin"
-		timer = Math.floor(Math.random() * 10000)+10000
-		value = 50
+		name = "copper_coin";
+		timer = Math.floor(Math.random() * 10000)+10000;
+		value = 50;
 	}
 
 	coin = {
@@ -391,10 +386,10 @@ generateCoin = function() {
 		value: value,
 		coinID: coinCounter,
 		expire: timer
-	}
-	coinCounter++
+	};
+	coinCounter++;
 
-	return coin
-}
+	return coin;
+};
 
 
