@@ -1,7 +1,8 @@
 var menuState = {
 	create: function() {
 		// render menu stuff here
-		Game.add.text(80,80, 'Enter your Alias', {font: '50px Arial', fill: 'orange'});
+		Game.add.text(400,130, 'Enter your Alias', {font: '70px Arial', fill: 'orange'});
+		Game.add.text(590,250, 'max 24 characters', {font: '12px Arial', fill: '#777777'});
 		document.getElementById('alias-form').style.visibility = 'visible';
 
 		// submit alias to server
@@ -9,11 +10,14 @@ var menuState = {
 			e.preventDefault();
 
 			var alias = document.getElementsByClassName('alias')[0].value.trim();
-			if (alias) {
-				socket.emit('add alias', {alias: alias});
-				this.style.visibility = 'hidden';
+			if (!alias) {
+				alias = "Noob";
 			}
-
+			else if (alias.length > 24) {
+				alias = alias.substring(0,24);
+			}
+			socket.emit('add alias', {alias: alias});
+			this.style.visibility = 'hidden';
 		});
 		// start playState when the OK from server has been receieved
 		socket.on('start playState', function() {
