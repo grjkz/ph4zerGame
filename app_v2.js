@@ -41,8 +41,10 @@ io.on('connection', function(client) {
 	console.log(getUserCount(), "Users")
 
 	// user enters name and clicks "next"
-	client.on('add alias',function(alias) {
-		Users[client.id].alias = alias;
+	client.on('add alias', function(alias) {
+		Users[client.id].alias = alias.alias;
+		console.log(alias);
+		client.emit('start playState');
 	});
 
 	// user clicks "join game"
@@ -50,7 +52,7 @@ io.on('connection', function(client) {
 		client.broadcast.emit('add new challenger', {player: Users[client.id]});
 	});
 
-	
+
 
 
 });
