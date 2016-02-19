@@ -2,19 +2,21 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
+	<link rel="stylesheet" href="../stylesheets/gamev2.css">
 	<title>ph4zerGame</title>
 </head>
 <body>
 	
-	<div id="game-area"></div>
-
-	<!-- Alias Input form -->
-	<div id="alias-form">
-		<form class="alias-form">
-			<input type="text" class='alias' placeholder="unknown">
-			<button>Join Game!</button>
-		</form>
+	<div id="game-area">
+		<!-- Alias Input form -->
+		<div id="alias-form">
+			<form class="alias-form">
+				<input type="text" class='alias' placeholder="unknown">
+				<button>Join Game!</button>
+			</form>
+		</div>		
 	</div>
+
 
 	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
 	<script>
