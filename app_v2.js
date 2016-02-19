@@ -20,11 +20,19 @@ app.get('/game_v2', function(req,res) {
 });
 
 
+////////////////
+// GAME STUFF //
+////////////////
+
+var Users = {};
+var bulletCounter = 0; // generate a unique id for each bullet; helps to destroy this bullet on impact
+var shieldCounter = 0;
+var coinCounter = 0;
+
 /////////////////////
 // SOCKET IO STUFF //
 /////////////////////
 
-var Users = {};
 
 io.on('connection', function(client) {
 	// delete user from Users when disconnecting (refreshing page, etc)
@@ -44,18 +52,38 @@ io.on('connection', function(client) {
 	client.on('add alias', function(alias) {
 		Users[client.id].alias = alias.alias;
 		console.log(alias);
-		client.emit('start playState'); // command to menu.js
+		client.emit('start playState'); // command to menu.js that starts playState
 	});
 
 	// user finishes loading playState environment
 	client.on('environment loaded', function() {
+		if (!Users[client.id]) {
+			console.log("ERROR: user id in Users not found");
+			return;
+		}
+		// send player his data
 		client.emit('player init', Users[client.id]);
-
 
 		// send new player info to other players
 		client.broadcast.emit('add new challenger', {player: Users[client.id]});
 	});
 
+	// send player movement data to all other players
+	client.on('movement', function(data) {
+		console.log(data)
+		client.broadcast.emit('movement', data);
+	});
+
+
+	// send player bullet data to all other players
+	client.on('shoot', function(data) {
+		client.broadcast.emit('shots fired', {
+			id: data.id,
+			facing: data.facing,
+			bulletID: bulletCounter
+		});
+		bulletCounter++;
+	});
 
 
 
