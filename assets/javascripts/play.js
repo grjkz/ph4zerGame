@@ -19,65 +19,65 @@ var playState = {
 
 	create: function() {
 	//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
-	game.add.sprite(0, 0, 'sky');
-	game.add.sprite(0, 600, 'bottom_bar')
+	Game.add.sprite(0, 0, 'sky');
+	Game.add.sprite(0, 600, 'bottom_bar');
 	///////////////////////// WINDOW SHOPPING
 	// display shield
-	game.add.sprite(30, 620, 'bubble')
-	game.add.text(53, 640, 'S', {fontSize:'16px',fill:'white'})
-	game.add.text(10, 690, 'Shield: $350', {fontSize:'16px', fill:'orange'})
+	Game.add.sprite(30, 620, 'bubble');
+	Game.add.text(53, 640, 'S', {fontSize:'16px',fill:'white'});
+	Game.add.text(10, 690, 'Shield: $350', {fontSize:'16px', fill:'orange'});
 	// display shotgun
-	game.add.sprite(155, 620, 'shotgun_icon')
-	game.add.text(140, 690, 'Shotgun: $250', {fontSize:'16px', fill:'orange'})
-	game.add.text(210, 640, 'F', {fontSize:'16px',fill:'white'})
+	Game.add.sprite(155, 620, 'shotgun_icon');
+	Game.add.text(140, 690, 'Shotgun: $250', {fontSize:'16px', fill:'orange'});
+	Game.add.text(210, 640, 'F', {fontSize:'16px',fill:'white'});
 	// display gun upgrade
-	game.add.sprite(310, 615, 'upgrade_icon')
-	game.add.text(290, 690, 'Upgrade: $500', {fontSize:'16px', fill:'orange'})
-	game.add.text(340, 655, 'Q', {fontSize:'16px',fill:'white'})
+	Game.add.sprite(310, 615, 'upgrade_icon');
+	Game.add.text(290, 690, 'Upgrade: $500', {fontSize:'16px', fill:'orange'});
+	Game.add.text(340, 655, 'Q', {fontSize:'16px',fill:'white'});
 	// display veritcal
-	game.add.sprite(450, 620, 'vertical_icon')
-	game.add.text(435, 690, 'Vertical: $200', {fontSize:'16px', fill:'orange'})
-	game.add.text(480, 640, 'E', {fontSize:'16px', fill:'white'})
+	Game.add.sprite(450, 620, 'vertical_icon');
+	Game.add.text(435, 690, 'Vertical: $200', {fontSize:'16px', fill:'orange'});
+	Game.add.text(480, 640, 'E', {fontSize:'16px', fill:'white'});
 	// display Omni
-	game.add.sprite(600, 620, 'omni_icon')
-	game.add.text(575, 690, 'Omnishot: $500', {fontSize:'16px', fill:'orange'})
-	game.add.text(630, 640, 'A', {fontSize:'16px', fill:'white'})
+	Game.add.sprite(600, 620, 'omni_icon');
+	Game.add.text(575, 690, 'Omnishot: $500', {fontSize:'16px', fill:'orange'});
+	Game.add.text(630, 640, 'A', {fontSize:'16px', fill:'white'});
 	// display Ultimate
-	game.add.sprite(770, 625, 'ult_icon')
-	game.add.text(730, 690, '^^^^^^^^: $3000', {fontSize:'16px', fill:'orange'})
-	game.add.text(750, 640,'R',{fontSize:'16px', fill:'white'})
+	Game.add.sprite(770, 625, 'ult_icon');
+	Game.add.text(730, 690, '^^^^^^^^: $3000', {fontSize:'16px', fill:'orange'});
+	Game.add.text(750, 640,'R',{fontSize:'16px', fill:'white'});
 	//////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////// GAME OPTIONS
-	game.world.setBounds(0, 0, 1280, 600);
-	game.physics.startSystem(Phaser.Physics.ARCADE);
-	game.renderer.renderSession.roundPixels = true;
-	bankOutput = game.add.text(550, 600, 'Bank: 0',{fontSize: '16px', fill: '#83FF59'})
+	Game.world.setBounds(0, 0, 1280, 600);
+	Game.physics.startSystem(Phaser.Physics.ARCADE);
+	Game.renderer.renderSession.roundPixels = true;
+	bankOutput = Game.add.text(550, 600, 'Bank: 0',{fontSize: '16px', fill: '#83FF59'});
 	/////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////////////////// WORLD ITEM OPTIONS
-	coins = game.add.group()
+	coins = Game.add.group();
 	coins.enableBody = true;
 	//////////////////////////////////////////////////////////////////
 
 	//////////////////////////////////////////////////// BULLET OPTIONS
-	Bullets = game.add.group()
+	Bullets = Game.add.group()
 	Bullets.enableBody = true;
-	game.physics.arcade.enable(Bullets)
-	Ultimates = game.add.group();
+	Game.physics.arcade.enable(Bullets)
+	Ultimates = Game.add.group();
 	Ultimates.enableBody = true;
-	game.physics.arcade.enable(Ultimates)
+	Game.physics.arcade.enable(Ultimates)
 	///////////////////////////////////////////////////////////////////
 
 	///////////////////////////////////////////// ENABLE PLAYER CONTROLS
 	cursors = this.input.keyboard.createCursorKeys();
 
 	// this prevents spacebar from being used in the input tag
-  // game.onFocus.add(function() {
-	game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+  // Game.onFocus.add(function() {
+	Game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
   // }, this)
-  // game.onBlur.add(function() {
-  // 	// game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
+  // Game.onBlur.add(function() {
+  // 	// Game.input.keyboard.addKeyCapture([ Phaser.Keyboard.SPACEBAR ]);
   // }, this)
 
   // var upgradeKey = this.input.keyboard.addKey(Phaser.Keyboard.ENTER);
@@ -96,9 +96,9 @@ var playState = {
   ///////////////////////////////////////////////////////////////////
 
   ////////////////////////////////////////////////////////// POWERUPS
-  Shields = game.add.group()
+  Shields = Game.add.group()
   ///////////////////////////////////////////////////////////////////
-  // laser = game.add.sprite(0,0,'laser')
+  // laser = Game.add.sprite(0,0,'laser')
   // laser.animations.add('bwaa')
 
   // tell server that i'm done loading init stuff
@@ -118,7 +118,7 @@ var playState = {
 		}
 	}.bind(this))
 
-	// new player joins the game
+	// new player joins the Game
 	socket.on('add new user', function(newPlayer) {
 		if (!newPlayer.observer) {
 			this.spawnPlayer(newPlayer)
@@ -166,7 +166,7 @@ socket.on('player hit', function(data) {
 	else {
 		player.kill()
 		//  EXPLODE ANIMATION
-		var explode = game.add.sprite(player.x-25, player.body.center.y-25,'explode1')
+		var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1')
 		explode.animations.add('explode')
 		explode.animations.play('explode',10)
 		//
@@ -328,7 +328,7 @@ socket.on('ultimate receipt', function(data) {
 		var shooter = Players[data.id]
 		shooter.charging = true // stops the player from moving
 		// play charging animation
-		var aura = game.add.sprite(shooter.x-18,shooter.y-9,'charging')
+		var aura = Game.add.sprite(shooter.x-18,shooter.y-9,'charging')
 		aura.animations.add('charge')
 		aura.animations.play('charge',50,false)
 
@@ -397,7 +397,7 @@ socket.on('ultimate receipt', function(data) {
 spawnPlayer: function(user) {
 	this.Players.counter++
 	// have server send over which ship to render as well
-	this.Players[user.id] = game.add.sprite(user.x, user.y, user.ship);
+	this.Players[user.id] = Game.add.sprite(user.x, user.y, user.ship);
 
 	var player = this.Players[user.id]
 	// player.weapons = []
@@ -406,14 +406,14 @@ spawnPlayer: function(user) {
 	player.animations.add('left',[2],1,true);
 	player.animations.add('up',[3],1,true);
 	player.animations.play(user.facing)
-	game.physics.arcade.enable(player);
+	Game.physics.arcade.enable(player);
 	player.body.collideWorldBounds = true;
 	player.shielded = false
 	player.facing = user.facing
 	player.charging = false;
 	// player.bank = user.bank
 	this.updateBank(user.id, user.bank)
-	// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
+	// shield = Game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
 
 	this.playerReady = true
 },
@@ -425,14 +425,14 @@ spawnPlayer: function(user) {
 update: function() {
 	if (!this.playerReady) return
 
-	// makes it so that the mouse must be inside the game window for the client to issue any commands
-	// if (game.input.activePointer.withinGame) {
- //    game.input.enabled = true;
- //    // game.stage.backgroundColor = "0x999999";
+	// makes it so that the mouse must be inside the Game window for the client to issue any commands
+	// if (Game.input.activePointer.withinGame) {
+ //    Game.input.enabled = true;
+ //    // Game.stage.backgroundColor = "0x999999";
  //  }
 	// else {
- //    game.input.enabled = false;
- //    // game.stage.backgroundColor = "0x999999";
+ //    Game.input.enabled = false;
+ //    // Game.stage.backgroundColor = "0x999999";
 	// }
 
 	////////////////////////// PLAYER CONTROLS
@@ -477,8 +477,8 @@ update: function() {
 	}
 
 	// check if i'm alive, check if shot timer is ok, check if pressed spacebar
-  if (game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.Players[myID].alive === true && this.shotTimer < game.time.now) {
-  	this.shotTimer = game.time.now + this.shotCooldown;
+  if (Game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.Players[myID].alive === true && this.shotTimer < Game.time.now) {
+  	this.shotTimer = Game.time.now + this.shotCooldown;
 		socket.emit('shoot', {
 			id: myID, 
 			facing: this.Players[myID].facing 
@@ -486,11 +486,11 @@ update: function() {
 	}
 
 	/////////////////////////////// COLLISIONS
-  game.physics.arcade.collide(this.Players[myID], this.Bullets, this.playerHit, null, this);
-  game.physics.arcade.overlap(this.Players[myID], this.coins, this.getRich, null, this);
-  game.physics.arcade.overlap(this.Ultimates, this.Players[myID], this.obliterate, null, this);
-  game.physics.arcade.overlap(this.Ultimates, this.coins, this.obliterate, null, this);
-  game.physics.arcade.overlap(this.Ultimates, this.Bullets, this.obliterate, null, this);
+  Game.physics.arcade.collide(this.Players[myID], this.Bullets, this.playerHit, null, this);
+  Game.physics.arcade.overlap(this.Players[myID], this.coins, this.getRich, null, this);
+  Game.physics.arcade.overlap(this.Ultimates, this.Players[myID], this.obliterate, null, this);
+  Game.physics.arcade.overlap(this.Ultimates, this.coins, this.obliterate, null, this);
+  Game.physics.arcade.overlap(this.Ultimates, this.Bullets, this.obliterate, null, this);
   
   //////////////////////////////// OTHERS
   if (this.shields) {
@@ -559,7 +559,7 @@ playerHit: function(player, bullet) {
 		me.facing = 'unknown'
 		bullet.destroy()
 		//  EXPLODE ANIMATION
-		var explode = game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1')
+		var explode = Game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1')
 		explode.animations.add('explode')
 		explode.animations.play('explode',10)
 		//
@@ -655,7 +655,7 @@ obliterate: function(victim, ultimate) {
 			// facing unknown might disable any type of shooting
 			me.facing = 'unknown'
 			//  EXPLODE ANIMATION
-			var explode = game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1')
+			var explode = Game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1')
 			explode.animations.add('explode')
 			explode.animations.play('explode',10)
 			//
