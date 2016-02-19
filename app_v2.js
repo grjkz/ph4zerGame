@@ -38,6 +38,7 @@ io.on('connection', function(client) {
 	// delete user from Users when disconnecting (refreshing page, etc)
 	client.on('disconnect', function() {
 		// emit to all other players to remove disconnecting player
+		client.broadcast.emit('remove player', client.id);
 		delete Users[client.id];
 		console.log(Users);
 		console.log(getUserCount(), "Users Remain")
@@ -55,17 +56,27 @@ io.on('connection', function(client) {
 		client.emit('start playState'); // command to menu.js that starts playState
 	});
 
-	// user finishes loading playState environment
+	// user finished loading playState environment
 	client.on('environment loaded', function() {
 		if (!Users[client.id]) {
 			console.log("ERROR: user id in Users not found");
 			return;
 		}
-		// send player his data
-		client.emit('player init', Users[client.id]);
+
+		// send player his own data
+		client.emit('player init', {
+			id: client.id,
+			alias: Users[client.id].alias
+		});
+
+		// send player the data of all existing players
+		// includes himself
+		client.emit('generate players', Users);
 
 		// send new player info to other players
-		client.broadcast.emit('add new challenger', {player: Users[client.id]});
+		if (getUserCount() > 1) {
+			client.broadcast.emit('add new challenger', Users[client.id]);
+		}
 	});
 
 	// send player movement data to all other players
