@@ -40,15 +40,19 @@ io.on('connection', function(client) {
 	console.log(Users)
 	console.log(getUserCount(), "Users")
 
-	// user enters name and clicks "next"
+	// user enters name and clicks "join game"
 	client.on('add alias', function(alias) {
 		Users[client.id].alias = alias.alias;
 		console.log(alias);
-		client.emit('start playState');
+		client.emit('start playState'); // command to menu.js
 	});
 
-	// user clicks "join game"
-	client.on('join game', function() {
+	// user finishes loading playState environment
+	client.on('environment loaded', function() {
+		client.emit('player init', Users[client.id]);
+
+
+		// send new player info to other players
 		client.broadcast.emit('add new challenger', {player: Users[client.id]});
 	});
 
@@ -68,20 +72,26 @@ io.on('connection', function(client) {
 // player constructor
 function Player(id) {
 	this.id = id;
-	this.alias = "unknown";
+	this.alias = "";
 	this.bank = 0;
-	this.x = 0; // coordinates
-	this.y = 0;
-	this.facing = undefined;
+	this.x = Math.floor(Math.random()*1181); // create random spawn location
+	this.y = Math.floor(Math.random()*501); // floor makes max range exclusive
+	this.facing = "right";
+	this.ship = randomShip();
+	this.shielded = false;
+
 }
 
-
-// create random spawn location
-function spawnPoint() {
-	return {
-		x: Math.floor(Math.random()*1181), // floor makes max range exclusive
-		y: Math.floor(Math.random()*501)
-	};
+function randomShip() {
+	var x = Math.floor(Math.random()*4);
+	if (x == 0)
+		return "sship";
+	if (x == 1)
+		return "bship";
+	if (x == 2)
+		return "rship";
+	if (x == 3)
+		return "pship";
 }
 
 
