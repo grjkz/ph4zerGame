@@ -15,10 +15,12 @@ var playState = {
 	Players: {},
 	shields: false, // client shield status
 	playerReady: false,
-	// decreasing shotLevel towards 0 will increase frequency
+	
 	shotTimer: 0,
-	shotLevel: 1,
+	shotLevel: 1, // decreasing shotLevel towards 0 will increase frequency
 	shotCooldown: 700,
+
+	coinTimer: 4000,
 
 	create: function() {
 		console.log('create state initialized')
@@ -119,7 +121,7 @@ var playState = {
 			// render all players
 			var users = data.users;
 			for (var user in users) {
-				this.spawnPlayer(users[user]);			
+				this.spawnPlayer(users[user]);
 			}
 			// players' data and ship has been initialized and rendered
 			this.playerReady = true; // enables update() function
@@ -562,9 +564,12 @@ var playState = {
 	  Game.physics.arcade.overlap(this.Ultimates, this.Bullets, this.obliterate, null, this);
 	  
 	  //////////////////////////////// OTHERS
-	  // if (this.shields) {
-		 //  this.checkShield()
-	  // }
+	  // tell server to generate coins
+	  if (this.coinTimer < Game.time.now) {
+	  	this.coinTimer = Game.time.now + Math.floor(Math.random()*8000+4000);
+	  	console.log('telling server to create coin')
+	  	socket.emit('create coin');
+	  }
 	},
 	//////////////////////////////////////////////////////////////////////////////
 
@@ -752,10 +757,10 @@ var playState = {
 				bullet.destroy();
 			}
 		});
-	}
+	},
 
-
-
+	
 
 
 }
+

@@ -122,6 +122,12 @@ io.on('connection', function(client) {
 	});
 
 
+	client.on('create coin', function() {
+		console.log('generating coin')
+		io.emit('spawn coin', genCoin());
+	});
+
+
 
 });
 
@@ -167,7 +173,7 @@ function randomShip() {
 
 
 // generate coins
-function genCoins() {
+function genCoin() {
 	var name = '';
 	var timer = 0;
 	var value = 0;
