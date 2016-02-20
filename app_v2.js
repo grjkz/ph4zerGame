@@ -25,6 +25,7 @@ app.get('/game_v2', function(req,res) {
 ////////////////
 
 var Users = {}; // users who are are on the game_v2.ejs page
+// needed to create a seperate object for in-game Players; if you send all the Users, all those not past the menu are generated as well
 var Players = {}; // users who are active in the game (clicked 'join game')
 var bulletCounter = 0; // generate a unique id for each bullet; helps to destroy this bullet on impact
 var shieldCounter = 0;
@@ -42,6 +43,7 @@ io.on('connection', function(client) {
 		client.broadcast.emit('remove player', client.id);
 		console.log('emit to delete player:', client.id)
 		delete Users[client.id];
+		// remember to delete Player as well else it will send non-existent ships to generate
 		delete Players[client.id];
 		// console.log(Users);
 		console.log(getUserCount(Users), "Users Remain")
@@ -72,6 +74,7 @@ io.on('connection', function(client) {
 		}
 		// send player his own data
 		// send player the data of all in-game players (includes himself)
+		// needed to create a seperate object for in-game players; if you send all the Users, all those not past the menu are generated as well
 		client.emit('generate players', {
 			id: client.id,
 			alias: Players[client.id].alias,
