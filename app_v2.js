@@ -87,6 +87,16 @@ io.on('connection', function(client) {
 	});
 
 
+	// respawn player at waiting 2 seconds
+	client.on('respawn me', function() {
+		var data = genCoords();
+		data.id = client.id;
+		console.log('respawn data:')
+		console.log(data)
+		io.emit('respawn player', data);
+	});
+
+
 	// send player movement data to all other players
 	client.on('movement', function(data) {
 		// console.log(data)

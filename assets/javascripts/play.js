@@ -126,6 +126,20 @@ var playState = {
 		}.bind(this));
 
 
+		// respawn a dead player
+		socket.on('respawn player', function(data) {
+			var player = this.Players[data.id];
+			player.reset();
+			player.x = data.x;
+			player.y = data.y;
+			// set player status to alive if self, to enable controls
+			if (data.id == this.myID) {
+				this.alive = true;
+			}
+			// reset() the player
+		}.bind(this));
+
+
 		// new player joins the Game
 		socket.on('add new challenger', function(newPlayer) {
 			this.spawnPlayer(newPlayer);
@@ -401,7 +415,6 @@ var playState = {
 	},
 
 	spawnPlayer: function(user) {
-		console.log('spawnPlayer ran')
 		// have server send over which ship to render as well
 		this.Players[user.id] = Game.add.sprite(user.x, user.y, user.ship);
 
@@ -462,8 +475,8 @@ var playState = {
 
 	/////////////////////////////////////////////////////// PHASER UPDATE()
 	update: function() {
-		if (!this.playerReady) {
-			console.log('player not ready, update() stopping')
+		if (!this.playerReady || !this.alive) {
+			console.log('player not ready, update() stopping');
 			return;
 		}
 
@@ -524,7 +537,7 @@ var playState = {
 		// }
 
 		// check if i'm alive, check if shot timer is ok, check if pressed spacebar
-	  if (Game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.alive === true && this.shotTimer < Game.time.now) {
+	  if (Game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.shotTimer < Game.time.now) {
 	  	this.shotTimer = Game.time.now + this.shotCooldown;
 	  	console.log('taking a shot')
 			socket.emit('shoot', {
@@ -583,35 +596,35 @@ var playState = {
 	// LOCAL CLIENT WAS HIT
 	playerHit: function(player, bullet) {
 		// send out player's id and bullet's id
-		socket.emit('im hit', {id: this.myID, bulletID: bullet.bulletID})
+		socket.emit('im hit', {
+			id: this.myID,
+			bulletID: bullet.bulletID
+		});
 
 		var me = this.Players[this.myID];
 
+		bullet.destroy();
+		
 		if (me.shielded === true) {
-			this.Shields.children.forEach(function(shield) {
-				if (shield.playerID === this.myID) {
+			for (var shield in this.Shields.children) {
+				if (shield.playerID == this.myID) {
 					shield.destroy();
 				}
-			})
-			bullet.destroy()
-			me.shielded = false
+			}
+			me.shielded = false;
 		}
 		else {
-			me.kill()
-			me.alive = false
-			// facing unknown might disable any type of shooting
-			me.facing = 'unknown'
-			bullet.destroy()
+			me.kill();
+			me.alive = false;
 			//  EXPLODE ANIMATION
-			var explode = Game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1')
-			explode.animations.add('explode')
-			explode.animations.play('explode',10)
-			//
+			var explode = Game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1');
+			explode.animations.add('explode');
+			explode.animations.play('explode',10);
 		}	
-		// set timeout for the plaer to respawn
-		// set player status to alive
-		// decrease number of lives as necessary
-		// reset() the player
+		// set timeout for the player to respawn
+		setTimeout(function() {
+			socket.emit('respawn me');
+		}, 2000);
 	},
 
 	///////////////////////////////////////////////////////////////////////////
@@ -646,36 +659,41 @@ var playState = {
 	/////////////////////////////////////////////////////////// SHOPPING FUCTIONS
 	//////////////////////////////////////////////// UPGRADE GUN
 	upgradeGun: function() {
-		socket.emit('upgrade gun', {})
+		if (this.alive)
+			socket.emit('upgrade gun', {})
 	},
 
 	//////////////////////////////////////////////////////////// SHIELD
 	buyShield: function() {
-		if (!this.Players[this.myID].shielded) {
+		if (!this.Players[this.myID].shielded && this.alive) {
 			socket.emit('buy shield', {});
 		}
 	},
 
 	/////////////////////////////////////////////////////////// SHOTGUN SHOT
 	buyShotgun: function() {
-		socket.emit('buy shotgun', {});
+		if (this.alive)
+			socket.emit('buy shotgun', {});
 	},
 
 
 	/////////////////////////////////////////////////////////// VERTICAL SHOT
 	buyVertical: function() {
-		socket.emit('buy vertical', {});
+		if (this.alive)
+			socket.emit('buy vertical', {});
 	},
 
 	///////////////////////////////////////////////////////////// 8 WAY SHOT!!!
 	buyOmnishot: function() {
-		socket.emit('buy omnishot', {});
+		if (this.alive)
+			socket.emit('buy omnishot', {});
 	},
 
 
 	//////////////////////////////////////////////////////////////// Ultimate
 	buyUltimate: function() {
-		socket.emit('buy ultimate', {});
+		if (this.alive)
+			socket.emit('buy ultimate', {});
 	},
 
 	///////////////////////////////////////////////////// ULTIMATE HITS SOMETHING
