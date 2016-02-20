@@ -170,24 +170,24 @@ var playState = {
 
 		// remote player was hit
 		socket.on('player hit', function(data) {
-
-			this.Bullets.children.forEach(function(bullet) {
-				if (bullet.bulletID === data.bulletID) {
-					bullet.destroy();
+			var player = this.Players[data.id];
+			var bullets = this.Bullets.children;
+			// destroy bullet
+			for (var i = 0; i < bullets.length; i++) {
+				if (bullets[i].bulletID == data.bulletID) {
+					bullets[i].destroy();
 					break;
 				}
-			}.bind(this));
-
-			var player = this.Players[data.id];
-
-
+			}
+			// destroy shield if exists
 			if (player.shielded === true) {
-				this.Shields.children.forEach(function(shield) {
-					if (shield.playerID === data.id) {
-						shield.destroy();
+				var shields = this.Shields.children;
+				for (var s = 0; s < shields.length; i++) {
+					if (shields[s] == data.playerID) {
+						shields[s].destroy();
 						break;
 					}
-				});
+				}
 				player.shielded = false;
 			}
 			else {
@@ -200,7 +200,7 @@ var playState = {
 				explode.animations.add('explode');
 				explode.animations.play('explode',10);
 			}
-		});
+		}.bind(this));
 	// socket.on('spawn coin', function(data) {
 	// 	this.generateCoin(data)
 	// }.bind(this))

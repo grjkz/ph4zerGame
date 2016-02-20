@@ -116,6 +116,12 @@ io.on('connection', function(client) {
 	});
 
 
+	// a player has been hit
+	client.on('im hit', function(data) {
+		io.emit('player hit', data);
+	});
+
+
 
 });
 
