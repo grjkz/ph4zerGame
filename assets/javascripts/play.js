@@ -65,12 +65,12 @@ var playState = {
 		//////////////////////////////////////////////////////////////////
 
 		//////////////////////////////////////////////////// BULLET OPTIONS
-		Bullets = Game.add.group();
-		Bullets.enableBody = true;
-		Game.physics.arcade.enable(Bullets);
-		Ultimates = Game.add.group();
-		Ultimates.enableBody = true;
-		Game.physics.arcade.enable(Ultimates);
+		this.Bullets = Game.add.group();
+		this.Bullets.enableBody = true;
+		Game.physics.arcade.enable(this.Bullets);
+		this.Ultimates = Game.add.group();
+		this.Ultimates.enableBody = true;
+		Game.physics.arcade.enable(this.Ultimates);
 		///////////////////////////////////////////////////////////////////
 
 		///////////////////////////////////////////// ENABLE PLAYER CONTROLS
@@ -100,7 +100,7 @@ var playState = {
 	  ///////////////////////////////////////////////////////////////////
 
 	  ////////////////////////////////////////////////////////// POWERUPS
-	  Shields = Game.add.group();
+	  this.Shields = Game.add.group();
 	  ///////////////////////////////////////////////////////////////////
 	  // laser = Game.add.sprite(0,0,'laser')
 	  // laser.animations.add('bwaa')
@@ -111,64 +111,18 @@ var playState = {
 
 	  /////////////////////////////////////////////////////// PLAYER SPAWNING
 
-	 //  spawnPlayer: function(user) {
-		// playerCounter++;
-		// // have server send over which ship to render as well
-		// Players[user.id] = game.add.sprite(user.x, user.y, user.ship);
-
-		// var player = Players[user.id];
-		
-		// player.animations.add('right',[0],1,true);
-		// player.animations.add('down',[1],1,true);
-		// player.animations.add('left',[2],1,true);
-		// player.animations.add('up',[3],1,true);
-		// player.animations.play(user.facing);
-		
-		// game.physics.arcade.enable(player);
-		// player.body.collideWorldBounds = true;
-		
-		// player.shielded = false;
-		// player.facing = user.facing;
-		// player.charging = false;
-		// player.defeated = user.defeated;
-		
-		// this.updateBank(user.id, user.bank);
-
-		// player.shielded = user.shielded
-		// if (player.shielded) {
-		// 	var shield = Shields.create(player.x, player.y, 'bubble')
-		// 	shield.playerID = user.id;
-		// 	shields = true;
-		// }
-		// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
-		
-	// },
-
-
-		// gets own id and info
-		// socket.on('player init', function(data) {
-		// 	this.myID = data.id;
-		// 	this.alias = data.alias;
-		// 	this.alive = true;
-		// 	// this player's data and ship has been initialized and rendered
-		// 	this.playerReady = true; // enables update() function
-		// }.bind(this));
-
-
-		// init: grab all other players' info
+		// init: grab all players' info
 		socket.on('generate players', function(data) {
 			this.myID = data.id;
 			this.alias = data.alias;
 			this.alive = true;
-			// this player's data and ship has been initialized and rendered
-			this.playerReady = true; // enables update() function
-
-			// display all the players
+			// render all players
 			var users = data.users;
 			for (var user in users) {
 				this.spawnPlayer(users[user]);			
 			}
-			this.playerReady = true;
+			// players' data and ship has been initialized and rendered
+			this.playerReady = true; // enables update() function
 		}.bind(this));
 
 
@@ -193,9 +147,11 @@ var playState = {
 			this.Players[data.id].animations.play(data.facing);
 		}.bind(this));
 
-	// 	socket.on('shoots fired',function(data) {
-	// 		this.shoot(data)
-	// 	}.bind(this))
+
+		// a player has shot (includes me)
+		socket.on('shots fired',function(data) {
+			this.shoot(data);
+		}.bind(this));
 
 	// 	// remote player was hit
 	// socket.on('player hit', function(data) {
@@ -301,38 +257,38 @@ var playState = {
 	// 		updateBank(data.id, data.bank);
 	// 		var shooter = Players[data.id]
 	// 		// shoot down
-	// 		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
 	// 		bullet.body.velocity.y = 400
 	// 		bullet.bulletID = data.bulletID[0]
 	// 		// shoot up
-	// 		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
 	// 		bullet.body.velocity.y = -400
 	// 		bullet.bulletID = data.bulletID[1]
 	// 		// shoot left	
-	// 		var bullet = Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+	// 		var bullet = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
 	// 		bullet.body.velocity.x = -400
 	// 		bullet.bulletID = data.bulletID[2]
 	// 		// shoot right
-	// 		var bullet = Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+	// 		var bullet = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
 	// 		bullet.body.velocity.x = 400
 	// 		bullet.bulletID = data.bulletID[3]
 	// 		// up left
-	// 		var bullet = Bullets.create(shooter.x-5-20, shooter.y-4, 'basic_bullet_left')
+	// 		var bullet = this.Bullets.create(shooter.x-5-20, shooter.y-4, 'basic_bullet_left')
 	// 		bullet.body.velocity.y = -300
 	// 		bullet.body.velocity.x = -300
 	// 		bullet.bulletID = data.bulletID[4]
 	// 		// up right
-	// 		var bullet = Bullets.create(shooter.x+50+5, shooter.y-4, 'basic_bullet_right')
+	// 		var bullet = this.Bullets.create(shooter.x+50+5, shooter.y-4, 'basic_bullet_right')
 	// 		bullet.body.velocity.y = -300
 	// 		bullet.body.velocity.x = 300
 	// 		bullet.bulletID = data.bulletID[5]
 	// 		// down left
-	// 		var bullet = Bullets.create(shooter.x-5-20, shooter.y+50+5, 'basic_bullet_left')
+	// 		var bullet = this.Bullets.create(shooter.x-5-20, shooter.y+50+5, 'basic_bullet_left')
 	// 		bullet.body.velocity.y = 300
 	// 		bullet.body.velocity.x = -300
 	// 		bullet.bulletID = data.bulletID[6]
 	// 		//down right
-	// 		var bullet = Bullets.create(shooter.x+50+5, shooter.y+50+5, 'basic_bullet_right')
+	// 		var bullet = this.Bullets.create(shooter.x+50+5, shooter.y+50+5, 'basic_bullet_right')
 	// 		bullet.body.velocity.y = 300
 	// 		bullet.body.velocity.x = 300
 	// 		bullet.bulletID = data.bulletID[7]
@@ -344,11 +300,11 @@ var playState = {
 	// 		updateBank(data.id, data.bank)
 	// 		var shooter = Players[data.id]
 	// 		// shoot down
-	// 		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
 	// 		bullet.body.velocity.y = 400
 	// 		bullet.bulletID = data.bulletID1
 	// 		// shoot up
-	// 		var bullet = Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
 	// 		bullet.body.velocity.y = -400
 	// 		bullet.bulletID = data.bulletID2
 	// 	}
@@ -570,6 +526,7 @@ var playState = {
 		// check if i'm alive, check if shot timer is ok, check if pressed spacebar
 	  if (Game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.alive === true && this.shotTimer < Game.time.now) {
 	  	this.shotTimer = Game.time.now + this.shotCooldown;
+	  	console.log('taking a shot')
 			socket.emit('shoot', {
 				id: this.myID, 
 				facing: this.Players[this.myID].facing 
@@ -577,11 +534,11 @@ var playState = {
 		}
 
 		/////////////////////////////// COLLISIONS
-	  // Game.physics.arcade.collide(this.Players[myID], this.Bullets, this.playerHit, null, this);
-	  // Game.physics.arcade.overlap(this.Players[myID], this.coins, this.getRich, null, this);
-	  // Game.physics.arcade.overlap(this.Ultimates, this.Players[myID], this.obliterate, null, this);
-	  // Game.physics.arcade.overlap(this.Ultimates, this.coins, this.obliterate, null, this);
-	  // Game.physics.arcade.overlap(this.Ultimates, this.Bullets, this.obliterate, null, this);
+	  Game.physics.arcade.collide(this.Players[this.myID], this.Bullets, this.playerHit, null, this);
+	  Game.physics.arcade.overlap(this.Players[this.myID], this.coins, this.getRich, null, this);
+	  Game.physics.arcade.overlap(this.Ultimates, this.Players[this.myID], this.obliterate, null, this);
+	  Game.physics.arcade.overlap(this.Ultimates, this.coins, this.obliterate, null, this);
+	  Game.physics.arcade.overlap(this.Ultimates, this.Bullets, this.obliterate, null, this);
 	  
 	  //////////////////////////////// OTHERS
 	  // if (this.shields) {
@@ -594,36 +551,32 @@ var playState = {
 	////////////////////////////////////////////////////////////// SHOOTING
 
 	shoot: function(shooter) {
-
-		var player = this.Players[shooter.id]
-
+		var player = this.Players[shooter.id];
+		var bullet;
 		// shooter is facing right
 		if (shooter.facing === "right") {
-			var bullet = this.Bullets.create(player.x+25+30, player.y+25-4, 'basic_bullet_right')
-			bullet.body.velocity.x = 400
-			bullet.bulletID = shooter.bulletID
+			bullet = this.Bullets.create(player.x+25+30, player.y+25-4, 'basic_bullet_right');
+			bullet.body.velocity.x = 00;
 		}
 		// shooter is facing down
 		else if (shooter.facing === "down") {
-			var bullet = this.Bullets.create(player.x+25-5, player.y+25+30, 'basic_bullet_down')
-			bullet.body.velocity.y = 400
-			bullet.bulletID = shooter.bulletID
+			bullet = this.Bullets.create(player.x+25-5, player.y+25+30, 'basic_bullet_down');
+			bullet.body.velocity.y = 400;
 		}
 		// shooter is facing left
 		else if (shooter.facing === "left") {
-			var bullet = this.Bullets.create(player.x+25-30-20, player.y+25-4, 'basic_bullet_left')
-			bullet.body.velocity.x = -400
-			bullet.bulletID = shooter.bulletID
+			bullet = this.Bullets.create(player.x+25-30-20, player.y+25-4, 'basic_bullet_left');
+			bullet.body.velocity.x = -400;
 		}
 		// shooter is facing up
 		else if (shooter.facing === "up") {
-			var bullet = this.Bullets.create(player.x+25-5, player.y+25-30-20, 'basic_bullet_up')
-			bullet.body.velocity.y = -400
-			bullet.bulletID = shooter.bulletID
+			bullet = this.Bullets.create(player.x+25-5, player.y+25-30-20, 'basic_bullet_up');
+			bullet.body.velocity.y = -400;
 		}
+		bullet.bulletID = shooter.bulletID;
 		// makes sure that all bullets are killed upon leaving world bounds
-		bullet.checkWorldBounds = true
-		bullet.outOfBoundsKill = true
+		bullet.checkWorldBounds = true;
+		bullet.outOfBoundsKill = true;
 		this.destroyBullets();
 	},
 	//////////////////////////////////////////////////////////// PLAYER HIT
@@ -632,7 +585,7 @@ var playState = {
 		// send out player's id and bullet's id
 		socket.emit('im hit', {id: this.myID, bulletID: bullet.bulletID})
 
-		var me = this.Players[myID];
+		var me = this.Players[this.myID];
 
 		if (me.shielded === true) {
 			this.Shields.children.forEach(function(shield) {
@@ -698,7 +651,7 @@ var playState = {
 
 	//////////////////////////////////////////////////////////// SHIELD
 	buyShield: function() {
-		if (!this.Players[myID].shielded) {
+		if (!this.Players[this.myID].shielded) {
 			socket.emit('buy shield', {});
 		}
 	},
@@ -787,13 +740,13 @@ var playState = {
 		})
 	},
 
-	// destroy all out of bound bullets
+	// destroy all out of bound bullets (when they're invisible) to free memory
 	destroyBullets: function() {
 		this.Bullets.children.forEach(function(bullet) {
 			if (!bullet.visible) {
-				bullet.destroy()
+				bullet.destroy();
 			}
-		})
+		});
 	}
 
 

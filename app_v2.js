@@ -96,11 +96,12 @@ io.on('connection', function(client) {
 
 	// send player bullet data to all other players
 	client.on('shoot', function(data) {
-		client.broadcast.emit('shots fired', {
+		io.emit('shots fired', {
 			id: data.id,
 			facing: data.facing,
 			bulletID: bulletCounter
 		});
+		console.log(bulletCounter, "-th bullet shot")
 		bulletCounter++;
 	});
 
@@ -118,17 +119,24 @@ io.on('connection', function(client) {
 
 // player constructor
 function Player(id) {
+	var coords = genCoords();
 	this.id = id;
 	this.alias = "";
 	this.bank = 0;
-	this.x = Math.floor(Math.random()*1181); // create random spawn location
-	this.y = Math.floor(Math.random()*501); // floor makes max range exclusive
+	this.x = coords.x; // create random spawn location
+	this.y = coords.y; // floor makes max range exclusive
 	this.facing = "right";
 	this.ship = randomShip();
 	this.shielded = false;
-
 }
-
+// generate random coordinate
+function genCoords() {
+	return {
+		x: Math.floor(Math.random()*1181),
+		y: Math.floor(Math.random()*501)
+	};
+}
+// pick a random ship
 function randomShip() {
 	var x = Math.floor(Math.random()*4);
 	if (x == 0)
