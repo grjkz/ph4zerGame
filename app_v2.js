@@ -24,7 +24,8 @@ app.get('/game_v2', function(req,res) {
 // GAME STUFF //
 ////////////////
 
-var Users = {};
+var Users = {}; // users who are are on the game_v2.ejs page
+var Players = {}; // users who are active in the game (clicked 'join game')
 var bulletCounter = 0; // generate a unique id for each bullet; helps to destroy this bullet on impact
 var shieldCounter = 0;
 var coinCounter = 0;
@@ -39,49 +40,53 @@ io.on('connection', function(client) {
 	client.on('disconnect', function() {
 		// emit to all other players to remove disconnecting player
 		client.broadcast.emit('remove player', client.id);
+		console.log('emit to delete player:', client.id)
 		delete Users[client.id];
-		console.log(Users);
-		console.log(getUserCount(), "Users Remain")
+		delete Players[client.id];
+		// console.log(Users);
+		console.log(getUserCount(Users), "Users Remain")
 	});
 
-	// Add new player to Users
+
+	// Add new user to Users
 	Users[client.id] = new Player(client.id);
-	console.log(Users)
-	console.log(getUserCount(), "Users")
+	// console.log(Users)
+	console.log(getUserCount(Users), "Users")
+
 
 	// user enters name and clicks "join game"
 	client.on('add alias', function(alias) {
+		// add alias to User and push into Players
 		Users[client.id].alias = alias.alias;
+		Players[client.id] = Users[client.id];
 		console.log(alias);
 		client.emit('start playState'); // command to menu.js that starts playState
 	});
 
-	// user finished loading playState environment
+
+	// new user finished loading playState environment
 	client.on('environment loaded', function() {
 		if (!Users[client.id]) {
 			console.log("ERROR: user id in Users not found");
 			return;
 		}
-
 		// send player his own data
-		client.emit('player init', {
+		// send player the data of all in-game players (includes himself)
+		client.emit('generate players', {
 			id: client.id,
-			alias: Users[client.id].alias
+			alias: Players[client.id].alias,
+			users: Players
 		});
-
-		// send player the data of all existing players
-		// includes himself
-		client.emit('generate players', Users);
-
 		// send new player info to other players
-		if (getUserCount() > 1) {
-			client.broadcast.emit('add new challenger', Users[client.id]);
+		if (getUserCount(Players) > 1) {
+			client.broadcast.emit('add new challenger', Players[client.id]);
 		}
 	});
 
+
 	// send player movement data to all other players
 	client.on('movement', function(data) {
-		console.log(data)
+		// console.log(data)
 		client.broadcast.emit('movement', data);
 	});
 
@@ -170,17 +175,18 @@ function genCoins() {
 }
 
 
-// get player count
-function getUserCount() {
+/**
+ * Get count of Users or Players
+ * @param  {object} clients Users{} or Players{}
+ * @return {[type]}         [description]
+ */
+function getUserCount(clients) {
 	var count = 0;
-	for (var user in Users) {
+	for (var client in clients) {
 		count++;
 	}
 	return count;
 }
-
-
-
 
 
 

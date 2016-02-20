@@ -146,34 +146,46 @@ var playState = {
 
 
 		// gets own id and info
-		socket.on('player init', function(data) {
-			// this.spawnPlayer(data);
+		// socket.on('player init', function(data) {
+		// 	this.myID = data.id;
+		// 	this.alias = data.alias;
+		// 	this.alive = true;
+		// 	// this player's data and ship has been initialized and rendered
+		// 	this.playerReady = true; // enables update() function
+		// }.bind(this));
+
+
+		// init: grab all other players' info
+		socket.on('generate players', function(data) {
 			this.myID = data.id;
 			this.alias = data.alias;
 			this.alive = true;
 			// this player's data and ship has been initialized and rendered
 			this.playerReady = true; // enables update() function
+
+			// display all the players
+			var users = data.users;
+			for (var user in users) {
+				this.spawnPlayer(users[user]);			
+			}
+			this.playerReady = true;
 		}.bind(this));
+
 
 		// new player joins the Game
 		socket.on('add new challenger', function(newPlayer) {
 			this.spawnPlayer(newPlayer);
 		}.bind(this));
 
-		// init: grab all other players' info
-		socket.on('generate players', function(users) {
-			// display all the players
-			for (var user in users) {
-				// if (!user.observer)
-				this.spawnPlayer(users[user]);			
-			}
-		}.bind(this));
 
 		// delete player from game on disconnect
 		socket.on('remove player', function(id) {
+			this.Players[id].destroy();
 			delete this.Players[id];
-		});
+		}.bind(this));
 
+
+		// update player positions
 		socket.on('movement', function(data) {
 			this.Players[data.id].x = data.x;
 			this.Players[data.id].y = data.y;
