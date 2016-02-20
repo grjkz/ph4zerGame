@@ -167,32 +167,40 @@ var playState = {
 			this.shoot(data);
 		}.bind(this));
 
-	// 	// remote player was hit
-	// socket.on('player hit', function(data) {
-	// 	this.Bullets.children.forEach(function(bullet) {
-	// 		if (bullet.bulletID === data.bulletID)
-	// 			bullet.destroy()
-	// 	}.bind(this))
 
-	// 	var player = this.Players[data.id];
-	// 	if (player.shielded === true) {
-	// 		this.Shields.children.forEach(function(shield) {
-	// 			if (shield.playerID === data.id) {
-	// 				shield.destroy();
-	// 			}
-	// 		})
-	// 		player.shielded = false
-	// 	}
-	// 	else {
-	// 		player.kill()
-	// 		//  EXPLODE ANIMATION
-	// 		var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1')
-	// 		explode.animations.add('explode')
-	// 		explode.animations.play('explode',10)
-	// 		//
-	// 		// set interval player.reset(location)
-	// 	}
-	// })
+		// remote player was hit
+		socket.on('player hit', function(data) {
+
+			this.Bullets.children.forEach(function(bullet) {
+				if (bullet.bulletID === data.bulletID) {
+					bullet.destroy();
+					break;
+				}
+			}.bind(this));
+
+			var player = this.Players[data.id];
+
+
+			if (player.shielded === true) {
+				this.Shields.children.forEach(function(shield) {
+					if (shield.playerID === data.id) {
+						shield.destroy();
+						break;
+					}
+				});
+				player.shielded = false;
+			}
+			else {
+				if (data.id == this.myID) {
+					this.alive = false;
+				}
+				player.kill();
+				//  EXPLODE ANIMATION
+				var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
+				explode.animations.add('explode');
+				explode.animations.play('explode',10);
+			}
+		});
 	// socket.on('spawn coin', function(data) {
 	// 	this.generateCoin(data)
 	// }.bind(this))
@@ -600,27 +608,6 @@ var playState = {
 			id: this.myID,
 			bulletID: bullet.bulletID
 		});
-
-		var me = this.Players[this.myID];
-
-		bullet.destroy();
-		
-		if (me.shielded === true) {
-			for (var shield in this.Shields.children) {
-				if (shield.playerID == this.myID) {
-					shield.destroy();
-				}
-			}
-			me.shielded = false;
-		}
-		else {
-			me.kill();
-			me.alive = false;
-			//  EXPLODE ANIMATION
-			var explode = Game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1');
-			explode.animations.add('explode');
-			explode.animations.play('explode',10);
-		}	
 		// set timeout for the player to respawn
 		setTimeout(function() {
 			socket.emit('respawn me');
