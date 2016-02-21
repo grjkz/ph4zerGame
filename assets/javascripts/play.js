@@ -2,7 +2,7 @@ var playState = {
 
 	bank: 0,
 	coins: null,
-	bankOutput: {},
+	bankOutput: null,
 	Bullets: null, // group of all bullets ever created in game
 	Shields: null, // group of all shields
 	Ultimates: null,
@@ -58,7 +58,7 @@ var playState = {
 		Game.world.setBounds(0, 0, 1280, 600);
 		Game.physics.startSystem(Phaser.Physics.ARCADE);
 		Game.renderer.renderSession.roundPixels = true;
-		bankOutput = Game.add.text(550, 600, 'Bank: 0',{fontSize: '16px', fill: '#83FF59'});
+		this.bankOutput = Game.add.text(550, 600, 'Bank: 0',{fontSize: '16px', fill: '#83FF59'});
 		/////////////////////////////////////////////////////////////////
 
 		/////////////////////////////////////////////// WORLD ITEM OPTIONS
@@ -209,12 +209,20 @@ var playState = {
 			this.generateCoin(data);
 		}.bind(this));
 
-	// socket.on('update bank', function(data) {
-	// 	this.coins.children.forEach(function(coin) {
-	// 		if (coin.coinID === data.coinID) { coin.destroy() }
-	// 	})
-	// 	this.updateBank(data.id, data.bank)
-	// }.bind(this))
+		// someone picked up a coin; update their bank info and destroy that coin
+		socket.on('update bank', function(data) {
+			console.log('destroying coin')
+			var coins = this.coins.children;
+			for (var i = 0; i < coins.length; i++) {
+				if (coins[i].coinID == data.coinID) {
+					coins[i].destroy();
+					break;
+				}
+			}
+			this.updateBank(data.id, data.bank);
+		}.bind(this));
+
+
 	// socket.on('shotgun receipt', function(data) {
 	// 	if (data.passed) {
 	// 		this.updateBank(data.id, data.bank)
@@ -639,8 +647,9 @@ var playState = {
 
 	// LOCAL CLIENT PICKS UP COIN
 	getRich: function(player, coin) {
+		console.log('coin touched',coin.value,coin.coinID)
 		// only send the information over so that only one person is picking up the coin to avoid conflict
-		socket.emit('coin get', {
+		socket.emit('coin touched', {
 			id: this.myID,
 			coinID: coin.coinID, 
 			value: coin.value
@@ -738,9 +747,9 @@ var playState = {
 		})
 	},
 
-	updateBank: function(id, amount) {
-		this.Players[id].bank = amount
-		this.bankOutput.text = 'Bank: '+this.Players[myID].bank;
+	updateBank: function(id, newBank) {
+		this.Players[id].bank = newBank;
+		this.bankOutput.text = 'Bank: ' + this.Players[this.myID].bank;
 	},
 
 	// set out of bounds for bullets

@@ -128,6 +128,18 @@ io.on('connection', function(client) {
 	});
 
 
+	// player picks up a coin
+	client.on('coin touched', function(data) {
+		Users[client.id].bank += data.value;
+		io.emit('update bank', {
+			id: client.id,
+			coinID: data.coinID,
+			bank: Users[client.id].bank
+		});
+		console.log(client.id, Users[client.id].bank)
+	});
+
+
 
 });
 
