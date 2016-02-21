@@ -62,8 +62,8 @@ var playState = {
 		/////////////////////////////////////////////////////////////////
 
 		/////////////////////////////////////////////// WORLD ITEM OPTIONS
-		coins = Game.add.group();
-		coins.enableBody = true;
+		this.coins = Game.add.group();
+		this.coins.enableBody = true;
 		//////////////////////////////////////////////////////////////////
 
 		//////////////////////////////////////////////////// BULLET OPTIONS
@@ -203,9 +203,11 @@ var playState = {
 				explode.animations.play('explode',10);
 			}
 		}.bind(this));
-	// socket.on('spawn coin', function(data) {
-	// 	this.generateCoin(data)
-	// }.bind(this))
+
+
+		socket.on('spawn coin', function(data) {
+			this.generateCoin(data);
+		}.bind(this));
 
 	// socket.on('update bank', function(data) {
 	// 	this.coins.children.forEach(function(coin) {
@@ -625,25 +627,24 @@ var playState = {
 	// SERVER-GENERATED RANDOM COIN
 	generateCoin: function(data) {
 		// x, y, coinID, type
-		var coin = this.coins.create(data.x, data.y, data.type)
-		coin.value = data.value
-		coin.coinID = data.coinID
-		coin.animations.add('rotate')
-		coin.animations.play('rotate',20,true)
-		setTimeout(function() { 
-			// coin.kill(); 
+		var coin = this.coins.create(data.x, data.y, data.type);
+		coin.value = data.value;
+		coin.coinID = data.coinID;
+		coin.animations.add('rotate');
+		coin.animations.play('rotate',20,true);
+		setTimeout(function() {
 			coin.destroy();
-		}, data.expire)
+		}, data.expire);
 	},
 
 	// LOCAL CLIENT PICKS UP COIN
 	getRich: function(player, coin) {
 		// only send the information over so that only one person is picking up the coin to avoid conflict
 		socket.emit('coin get', {
-			id: this.myID, 
+			id: this.myID,
 			coinID: coin.coinID, 
 			value: coin.value
-		})
+		});
 	},
 
 	//////////////////////////////////////////////////////////////////////////
