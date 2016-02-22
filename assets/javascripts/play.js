@@ -1,4 +1,11 @@
 /*
+notes:
+shot cd starts at 800
+at 4 upgrades, it drops to 327.68
+at 5 upgrades, it goes drops to 262.144
+	you can still dodge between bullets at this shot interval
+
+
 Bugs
 Laggy computers get to pick up one coin multiple times
 	make it so that the one who picked it up deletes it off their own computer
@@ -13,6 +20,7 @@ paint usernames above ships
 paint banks below ships in tiny font
 
 uses for empty space at bottom right corner
+show upgrade level
 show shot cooldown
 show total shots fired / fired by player in session / fired in one life
 
@@ -38,8 +46,8 @@ var playState = {
 	playerReady: false,
 	
 	shotTimer: 0,
-	shotLevel: 1, // decreasing shotLevel towards 0 will increase frequency
-	shotCooldown: 700,
+	shotLevel: 0,
+	shotCooldown: 800,
 
 	coinTimer: 4000,
 
@@ -252,8 +260,9 @@ var playState = {
 			this.updateBank(data.id, data.bank);
 			console.log('shot cd was:',this.shotCooldown)
 			if (data.id === this.myID)
+				this.shotLevel++;
 				this.shotCooldown *= 0.8;
-			console.log('now:',this.shotCooldown)
+			console.log('now:',this.shotCooldown,this.shotLevel)
 		}.bind(this));
 
 
@@ -696,7 +705,7 @@ var playState = {
 	/////////////////////////////////////////////////////////// SHOPPING FUCTIONS
 	//////////////////////////////////////////////// UPGRADE GUN
 	upgradeGun: function() {
-		if (this.Players[this.myID].bank >= 400 && this.alive)
+		if (this.Players[this.myID].bank >= 400 && this.alive && this.shotLevel > 5)
 			socket.emit('upgrade');
 	},
 	//////////////////////////////////////////////////////////// SHIELD
