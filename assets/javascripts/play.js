@@ -239,10 +239,10 @@ var playState = {
 
 		socket.on('upgrade receipt', function(data) {
 			this.updateBank(data.id, data.bank);
-			// if (data.id === this.myID) {
+			if (data.id === this.myID) {
 				this.shotLevel++;
 				this.shotCooldown *= 0.8;
-			// }
+			}
 		}.bind(this));
 
 
@@ -713,7 +713,6 @@ var playState = {
 	///////////////////////////////////////////////////// ULTIMATE HITS SOMETHING
 	// kill anything that touches the ultimate
 	obliterate: function(victim, ultimate) {
-			// debugger
 		if (this.Players[myID] === victim) {
 			var me = victim;
 			socket.emit('im hit', {id: this.myID});
@@ -746,7 +745,6 @@ var playState = {
 
 	// redraw shields so they follow its ship
 	redrawShields: function() {
-		// debugger
 		this.Shields.children.forEach(function(shield) {
 			var player = this.Players[shield.playerID];
 			shield.position.set(player.x-2.5,player.y-2.5);
@@ -790,36 +788,43 @@ var playState = {
 	// 	}
 	// },
 
-	// destroys a shield or kills a ship
-	hitTaken: function(player, me) {
+
+	/**
+	 * Destroys a shield or kills player
+	 * @param  {object} player Player that was shot
+	 * @param  {string} me     myID
+	 * @return {bool}        Is player still alive?
+	 */
+	hitTaken: function(player, myID) {
 		if (player.shielded) { // if shielded
 			player.shielded = false;
 			var shields = this.Shields.children;
-			for (var s = 0; s < shields.length; i++) {
-				if (shields[s] == data.playerID) {
+			for (var s = 0; s < shields.length; s++) {
+				if (shields[s].playerID == myID) {
 					shields[s].destroy();
 					// return true if play is still alive
 					return true;
 				}
 			}
 		}
-		else {
-			// if killed ship is me
-			if (me) {
-				// set timeout for the player to respawn
-				setTimeout(function() {
-					socket.emit('respawn me');
-				}, 2000);
-			}
-			// destroy the ship
-			player.kill();
-			//  EXPLODE ANIMATION
-			var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
-			explode.animations.add('explode');
-			explode.animations.play('explode',10);
-			// return false if player exploded (had no shield)
-			return false;
+		// else
+		// if killed ship is me
+		if (myID) {
+			this.alive = false;
+			// set timeout for the player to respawn
+			setTimeout(function() {
+				socket.emit('respawn me');
+			}, 2000);
 		}
+		// destroy the ship
+		player.kill();
+		//  EXPLODE ANIMATION
+		var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
+		explode.animations.add('explode');
+		explode.animations.play('explode',10);
+		// return false if player exploded (had no shield)
+		return false;
+	
 	},
 
 	// destroys a single bullet that hit a ship
@@ -827,7 +832,7 @@ var playState = {
 		var bullets = this.Bullets.children;
 			// destroy bullet
 			for (var i = 0; i < bullets.length; i++) {
-				if (bullets[i].bulletID == data.bulletID) {
+				if (bullets[i].bulletID == bulletID) {
 					bullets[i].destroy();
 					return;
 				}
