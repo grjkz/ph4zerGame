@@ -72,13 +72,13 @@ io.on('connection', function(client) {
 			console.log("ERROR: user id in Users not found");
 			return;
 		}
-		// send player his own data
+		// send player his own id and alias
 		// send player the data of all in-game players (includes himself)
 		// needed to create a seperate object for in-game players; if you send all the Users, all those not past the menu are generated as well
 		client.emit('generate players', {
 			id: client.id,
 			alias: Players[client.id].alias,
-			users: Players
+			players: Players
 		});
 		// send new player info to other players
 		if (getUserCount(Players) > 1) {
@@ -87,12 +87,15 @@ io.on('connection', function(client) {
 	});
 
 
-	// respawn player at waiting 2 seconds
+	// respawn player (2 seconds)
 	client.on('respawn me', function() {
+		// set alive status to true
+		Players[client.id].alive = true;
 		var data = genCoords();
 		data.id = client.id;
 		console.log('respawn data:')
 		console.log(data)
+		// notify everyone to render respawning player
 		io.emit('respawn player', data);
 	});
 
@@ -118,7 +121,9 @@ io.on('connection', function(client) {
 
 	// a player has been hit
 	client.on('im hit', function(data) {
-		io.emit('player hit', data);
+		// update player's alive status
+		Players[client.id].alive = data.alive;
+		client.broadcast.emit('player hit', data);
 	});
 
 
@@ -157,6 +162,7 @@ io.on('connection', function(client) {
 	client.on('shield', function() {
 		if (Users[client.id].bank >= 350) {
 			Users[client.id].bank -= 350;
+			Users[client.id].shielded = true;
 			client.emit('shield receipt', {
 				// string, int, int
 				id: client.id,
@@ -239,6 +245,7 @@ function Player(id) {
 	this.facing = "right";
 	this.ship = randomShip();
 	this.shielded = false;
+	this.alive = false;
 }
 // generate random coordinate
 function genCoords() {

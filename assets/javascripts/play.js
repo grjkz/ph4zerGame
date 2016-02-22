@@ -1,4 +1,8 @@
 /*
+
+find "note:" for things I should add into the code
+
+
 notes:
 shot cd starts at 800
 at 4 upgrades, it drops to 327.68
@@ -147,9 +151,9 @@ var playState = {
 			this.alias = data.alias;
 			this.alive = true;
 			// render all players
-			var users = data.users;
-			for (var user in users) {
-				this.spawnPlayer(users[user]);
+			var players = data.players;
+			for (var player in players) {
+				this.spawnPlayer(players[player]);
 			}
 			// players' data and ship has been initialized and rendered
 			this.playerReady = true; // enables update() function
@@ -159,6 +163,7 @@ var playState = {
 		// respawn a dead player
 		socket.on('respawn player', function(data) {
 			var player = this.Players[data.id];
+			// reset() the player first: it sets x/y to zero
 			player.reset();
 			player.x = data.x;
 			player.y = data.y;
@@ -166,7 +171,6 @@ var playState = {
 			if (data.id == this.myID) {
 				this.alive = true;
 			}
-			// reset() the player
 		}.bind(this));
 
 
@@ -198,38 +202,13 @@ var playState = {
 		}.bind(this));
 
 
-		// remote player was hit
+		// other player was hit // not this player
 		socket.on('player hit', function(data) {
 			var player = this.Players[data.id];
-			var bullets = this.Bullets.children;
+			// destroy shield or player
+			this.hitTaken(player);
 			// destroy bullet
-			for (var i = 0; i < bullets.length; i++) {
-				if (bullets[i].bulletID == data.bulletID) {
-					bullets[i].destroy();
-					break;
-				}
-			}
-			// destroy shield if exists
-			if (player.shielded === true) {
-				var shields = this.Shields.children;
-				for (var s = 0; s < shields.length; i++) {
-					if (shields[s] == data.playerID) {
-						shields[s].destroy();
-						break;
-					}
-				}
-				player.shielded = false;
-			}
-			else {
-				if (data.id == this.myID) {
-					this.alive = false;
-				}
-				player.kill();
-				//  EXPLODE ANIMATION
-				var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
-				explode.animations.add('explode');
-				explode.animations.play('explode',10);
-			}
+			this.destroyBullet(data.bulletID);
 		}.bind(this));
 
 
@@ -264,16 +243,16 @@ var playState = {
 		}.bind(this));
 
 
-		// socket.on('shield receipt', function(data) {
-		// 	if (data.passed) {
-		// 		var player = Players[data.id]
-		// 		var shield = Shields.create(player.x, player.y, 'bubble')
-		// 		shield.playerID = data.id
-		// 		this.updateBank(data.id, data.bank)
-		// 		player.shielded = true
-		// 		shields = true
-		// 	}
-		// }.bind(this))
+		socket.on('shield receipt', function(data) {
+			this.updateBank(data.id, data.bank);
+			var player = this.Players[data.id];
+			// create shield at owner's location
+			var shield = this.Shields.create(player.x, player.y, 'bubble');
+			// give shield the owner's ID
+			shield.playerID = data.id;
+			// need this for 'player hit' conditionals
+			player.shielded = true;
+		}.bind(this));
 		
 	// socket.on('shotgun receipt', function(data) {
 	// 	if (data.passed) {
@@ -482,6 +461,8 @@ var playState = {
 
 		var player = this.Players[user.id];
 		player.facing = user.facing;
+		player.shielded = user.shielded;
+		player.charging = false; // note: might have to have this data stored on server in case user connects while player is charging as opposed to respawning
 		player.animations.add('right',[0],1,true);
 		player.animations.add('down',[1],1,true);
 		player.animations.add('left',[2],1,true);
@@ -490,22 +471,12 @@ var playState = {
 		
 		Game.physics.arcade.enable(player);
 		player.body.collideWorldBounds = true;
-		
-		// player.shielded = false;
-		// player.facing = user.facing;
-		// player.charging = false;
-		// player.defeated = user.defeated;
-		
-		// this.updateBank(user.id, user.bank);
+		this.updateBank(user.id, user.bank);
 
-		// player.shielded = user.shielded
-		// if (player.shielded) {
-		// 	var shield = Shields.create(player.x, player.y, 'bubble')
-		// 	shield.playerID = user.id;
-		// 	shields = true;
-		// }
-		// shield = game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
-		// this.playerReady = true
+		if (player.shielded) {
+			var shield = this.Shields.create(player.x, player.y, 'bubble');
+			shield.playerID = user.id;
+		}
 		this.playerCounter++;
 	},
 
@@ -655,20 +626,21 @@ var playState = {
 		// makes sure that all bullets are killed upon leaving world bounds
 		bullet.checkWorldBounds = true;
 		bullet.outOfBoundsKill = true;
-		this.destroyBullets();
+		this.destroyBullets(); // note: move this as a set interval or something in create so that it's not called every frame
 	},
 	//////////////////////////////////////////////////////////// PLAYER HIT
 	// LOCAL CLIENT WAS HIT
 	playerHit: function(player, bullet) {
+		// destroy shield or bullet
+		var alive = this.hitTaken(player, this.myID);
+		// destroy bullet
+		this.destroyBullet(bullet.bulletID);
 		// send out player's id and bullet's id
 		socket.emit('im hit', {
 			id: this.myID,
-			bulletID: bullet.bulletID
+			bulletID: bullet.bulletID,
+			alive: alive
 		});
-		// set timeout for the player to respawn
-		setTimeout(function() {
-			socket.emit('respawn me');
-		}, 2000);
 	},
 
 	///////////////////////////////////////////////////////////////////////////
@@ -765,25 +737,29 @@ var playState = {
 
 	////////////////////////////////////////////////////////////////////////////
 
-	// damn update is too fast to let this work
-	checkShield: function() {
-		// this blocks the error mentioned above
-		if (this.Shields.children.length < 1) {
-			this.shields = false
-			return false
-		}
-		this.Shields.children.forEach(function(shield) {
-			if (shield.playerID) {
-				var player = this.Players[shield.playerID]
-				shield.position.set(player.x-2.5,player.y-2.5)
-			}
-		})
-	},
+	// // damn update is too fast to let this work
+	// checkShield: function() {
+	// 	// this blocks the error mentioned above
+	// 	if (this.Shields.children.length < 1) {
+	// 		this.shields = false
+	// 		return false
+	// 	}
+	// 	this.Shields.children.forEach(function(shield) {
+	// 		if (shield.playerID) {
+	// 			var player = this.Players[shield.playerID]
+	// 			shield.position.set(player.x-2.5,player.y-2.5)
+	// 		}
+	// 	})
+	// },
 
 	updateBank: function(id, newBank) {
 		this.Players[id].bank = newBank;
-		if (id == this.myID)
+		if (id == this.myID) {
 			this.bankOutput.text = 'Bank: ' + newBank;
+		}
+		else {
+			// note: for other players if you want to display their bank under their ship
+		}
 	},
 
 	// set out of bounds for bullets
@@ -803,8 +779,61 @@ var playState = {
 		});
 	},
 
+	// destroyShield: function(id) {
+	// 	var shields = this.Shields.children;
+	// 	for (var s = 0; s < shields.length; i++) {
+	// 		if (shields[s] == data.playerID) {
+	// 			shields[s].destroy();
+	// 			return;
+	// 		}
+	// 	}
+	// },
+
+	// destroys a shield or kills a ship
+	hitTaken: function(player, me) {
+		if (player.shielded) { // if shielded
+			player.shielded = false;
+			var shields = this.Shields.children;
+			for (var s = 0; s < shields.length; i++) {
+				if (shields[s] == data.playerID) {
+					shields[s].destroy();
+					// return true if play is still alive
+					return true;
+				}
+			}
+		}
+		else {
+			// if killed ship is me
+			if (me) {
+				// set timeout for the player to respawn
+				setTimeout(function() {
+					socket.emit('respawn me');
+				}, 2000);
+			}
+			// destroy the ship
+			player.kill();
+			//  EXPLODE ANIMATION
+			var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
+			explode.animations.add('explode');
+			explode.animations.play('explode',10);
+			// return false if player exploded (had no shield)
+			return false;
+		}
+	},
+
+	// destroys a single bullet that hit a ship
+	destroyBullet: function(bulletID) {
+		var bullets = this.Bullets.children;
+			// destroy bullet
+			for (var i = 0; i < bullets.length; i++) {
+				if (bullets[i].bulletID == data.bulletID) {
+					bullets[i].destroy();
+					return;
+				}
+			}
+	}
 	
 
 
-}
+};
 
