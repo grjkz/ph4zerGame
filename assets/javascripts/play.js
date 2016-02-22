@@ -609,7 +609,7 @@ var playState = {
 		// shooter is facing right
 		if (shooter.facing === "right") {
 			bullet = this.Bullets.create(player.x+25+30, player.y+25-4, 'basic_bullet_right');
-			bullet.body.velocity.x = 00;
+			bullet.body.velocity.x = 400;
 		}
 		// shooter is facing down
 		else if (shooter.facing === "down") {
