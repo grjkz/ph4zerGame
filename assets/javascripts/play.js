@@ -662,52 +662,40 @@ var playState = {
 	//////////////////////////////////////////////// UPGRADE GUN
 	upgradeGun: function() {
 		if (this.alive)
-			socket.emit('purchase', {
-				type: 'upgrade'
-			});
+			socket.emit('upgrade');
 	},
 
 	//////////////////////////////////////////////////////////// SHIELD
 	buyShield: function() {
 		if (!this.Players[this.myID].shielded && this.alive) {
-			socket.emit('purchase', {
-				type: 'shield'
-			});
+			socket.emit('shield');
 		}
 	},
 
 	/////////////////////////////////////////////////////////// SHOTGUN SHOT
 	buyShotgun: function() {
 		if (this.alive)
-			socket.emit('purchase', {
-				type: 'shotgun'
-			});
+			socket.emit('shotgun');
 	},
 
 
 	/////////////////////////////////////////////////////////// VERTICAL SHOT
 	buyVertical: function() {
 		if (this.alive)
-			socket.emit('purchase', {
-				type: 'vertical'
-			});
+			socket.emit('verical');
 	},
 
 	///////////////////////////////////////////////////////////// 8 WAY SHOT!!!
 	buyOmnishot: function() {
 		if (this.alive)
-			socket.emit('purchase', {
-				type: 'omnishot'
-			});
+			socket.emit('omnishot');
 	},
 
 
 	//////////////////////////////////////////////////////////////// Ultimate
 	buyUltimate: function() {
 		if (this.alive)
-			socket.emit('purchase', {
-				type: 'ultimate'
-			});
+			socket.emit('ultimate');
 	},
 
 	///////////////////////////////////////////////////// ULTIMATE HITS SOMETHING
