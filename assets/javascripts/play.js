@@ -705,7 +705,7 @@ var playState = {
 	/////////////////////////////////////////////////////////// SHOPPING FUCTIONS
 	//////////////////////////////////////////////// UPGRADE GUN
 	upgradeGun: function() {
-		if (this.Players[this.myID].bank >= 400 && this.alive && this.shotLevel > 5)
+		if (this.Players[this.myID].bank >= 400 && this.alive && this.shotLevel < 5)
 			socket.emit('upgrade');
 	},
 	//////////////////////////////////////////////////////////// SHIELD
