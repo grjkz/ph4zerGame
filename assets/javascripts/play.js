@@ -1,3 +1,15 @@
+/*
+Bugs
+Laggy computers get to pick up one coin multiple times
+	make it so that the one who picked it up deletes it off their own computer
+	send data to server
+	server process the value and stuff
+	client.broadcast.emit to all other users to delete and update bank of client.id
+	client.id has the coin already deleted, so only send him his own bank info only
+		or create conditional where myID = coinID or something, ignore
+
+ */
+
 var playState = {
 
 	bank: 0,
