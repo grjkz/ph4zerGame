@@ -144,82 +144,76 @@ io.on('connection', function(client) {
 	// POWERUP SHOP //
 	//////////////////
 	client.on('upgrade', function(type) {
-		var userBank = Users[client.id].bank;
-		if (userBank >= 400) {
-			userBank -= 400;
+		if (Users[client.id].bank >= 400) {
+			Users[client.id].bank -= 400;
 			client.emit('upgrade receipt', {
 				// string, int
 				id: client.id,
-				bank: userBank
+				bank: Users[client.id].bank
 			});
 		}
 	});
 			
 	client.on('shield', function() {
-		var userBank = Users[client.id].bank;
-		if (userBank >= 350) {
-			userBank -= 350;
+		if (Users[client.id].bank >= 350) {
+			Users[client.id].bank -= 350;
 			client.emit('shield receipt', {
 				// string, int, int
 				id: client.id,
 				shieldID: shieldCounter++,
-				bank: userBank
+				bank: Users[client.id].bank
 			});
 			shieldCounter++;
 		}
 	});
 
-	client.on('vertical', function() {
-		var userBank = Users[client.id].bank;
-		if (userBank >= 350) {
-			userBank -= 350;
+	client.on('vertical', function() {		
+		if (Users[client.id].bank >= 350) {
+			Users[client.id].bank -= 350;
 			var bulletID = [bulletCounter++, bulletCounter++];
 			client.emit('vertical receipt', {
 				// string, array, int
 				id: client.id,
 				bulletID: bulletID,
-				bank: userBank
+				bank: Users[client.id].bank
 			});
 		}
 	});
 	
 	client.on('shotgun', function() {
-		var userBank = Users[client.id].bank;
-		if (userBank >= 500) {
-			userBank -= 500;
+		if (Users[client.id].bank >= 500) {
+			Users[client.id].bank -= 500;
 			var bulletID = [bulletCounter++, bulletCounter++, bulletCounter++];
 			// string, array, int
 			client.emit('shotgun receipt', {
 				id: client.id,
 				bulletID: bulletID,
-				bank: userBank
+				bank: Users[client.id].bank
 			});
 		}
 	});
 	
 	client.on('omnishot', function() {
-		var userBank = Users[client.id].bank;
-		if (userBank >= 800) {
-			userBank -= 800;
+		if (Users[client.id].bank >= 800) {
+			Users[client.id].bank -= 800;
 			var bulletID = [bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++];
 			client.emit('receipt', {
 				// string, array, int
 				id: client.id,
 				bulletID: bulletID,
-				bank: userBank
+				bank: Users[client.id].bank
 			});
 		}
 	});
 	
 	client.on('ultimate', function() {
-		var userBank = Users[client.id].bank;
-		if (userBank >= 900) {
-			userBank -= 900;
+		if (Users[client.id].bank >= 900) {
+			Users[client.id].bank -= 900;
 			// string, int, int
 			client.emit('ultimate receipt', {
 				id: client.id,
 				bulletID: bulletCounter++,
-				bank: userBank
+				bank: Users[client.id].bank
 			});
 		}
 	});

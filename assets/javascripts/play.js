@@ -235,17 +235,17 @@ var playState = {
 		}.bind(this));
 
 
-		///////////////////////
-		// PURCHASE RECEIPTS //
-		///////////////////////
+																																				///////////////////////
+////////////////////////////////////////////////////////////////////////// PURCHASE RECEIPTS //
+																																				///////////////////////
 
 		socket.on('upgrade receipt', function(data) {
 			this.updateBank(data.id, data.bank);
 			console.log('shot cd was:',this.shotCooldown)
-			if (data.id === myID)
-				shotCooldown *= 0.8;
+			if (data.id === this.myID)
+				this.shotCooldown *= 0.8;
 			console.log('now:',this.shotCooldown)
-		});
+		}.bind(this));
 
 
 		// socket.on('shield receipt', function(data) {
@@ -257,7 +257,7 @@ var playState = {
 		// 		player.shielded = true
 		// 		shields = true
 		// 	}
-		// })
+		// }.bind(this))
 		
 	// socket.on('shotgun receipt', function(data) {
 	// 	if (data.passed) {
