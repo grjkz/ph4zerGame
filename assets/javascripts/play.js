@@ -221,7 +221,6 @@ var playState = {
 
 		// someone picked up a coin; update their bank info and destroy that coin
 		socket.on('update bank', function(data) {
-			console.log('destroying coin')
 			var coins = this.coins.children;
 			for (var i = 0; i < coins.length; i++) {
 				if (coins[i].coinID == data.coinID) {
@@ -526,7 +525,7 @@ var playState = {
 	 //    // Game.stage.backgroundColor = "0x999999";
 		// }
 
-		////////////////////////// PLAYER CONTROLS
+		////////////////////////// PLAYER MOVEMENT
 		this.Players[this.myID].body.velocity.set(0);
 	  if (cursors.down.isDown && cursors.up.isDown) { return; }
 	  else if (cursors.up.isDown) {
@@ -575,7 +574,6 @@ var playState = {
 		// check if i'm alive, check if shot timer is ok, check if pressed spacebar
 	  if (Game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.shotTimer < Game.time.now) {
 	  	this.shotTimer = Game.time.now + this.shotCooldown;
-	  	console.log('taking a shot')
 			socket.emit('shoot', {
 				id: this.myID, 
 				facing: this.Players[this.myID].facing 
@@ -592,11 +590,10 @@ var playState = {
 	  //////////////////////////////// OTHERS
 	  // tell server to generate coins
 	  if (this.coinTimer < Game.time.now) {
-	  	this.coinTimer = Game.time.now + Math.floor(Math.random()+1000);
-	  	console.log('telling server to create coin')
+	  	this.coinTimer = Game.time.now + Math.floor(Math.random()*8000+4000);
 	  	socket.emit('create coin');
 	  }
-
+	  // redraw shields if any exist
 	  if (this.Shields.children.length > 0) {
 	  	this.redrawShields();
 	  }
@@ -668,8 +665,8 @@ var playState = {
 
 	// LOCAL CLIENT PICKS UP COIN
 	getRich: function(player, coin) {
-		console.log('coin touched',coin.value,coin.coinID)
-		// note: delete coin from my own screen to prevent multiple pickups due to laggy computer
+		// remove coin from my own screen to prevent multiple pickups due to laggy computer
+		coin.kill();
 		socket.emit('coin touched', {
 			id: this.myID,
 			coinID: coin.coinID, 
@@ -766,7 +763,7 @@ var playState = {
 		this.Bullets.children.forEach(function(bullet) {
 			bullet.checkWorldBounds = true;
 			bullet.outOfBoundsKill = true;
-		})
+		});
 	},
 
 	// destroy all out of bound bullets (when they're invisible) to free memory
