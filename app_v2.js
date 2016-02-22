@@ -148,7 +148,7 @@ io.on('connection', function(client) {
 			Users[client.id].bank -= 400;
 			client.emit('upgrade receipt', {
 				// string, int
-				id: client.id,
+				// id: client.id,
 				bank: Users[client.id].bank
 			});
 		}

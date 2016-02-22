@@ -52,7 +52,6 @@ var playState = {
 	coinTimer: 4000,
 
 	create: function() {
-		console.log('create state initialized')
 		//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
 		Game.add.sprite(0, 0, 'sky');
 		Game.add.sprite(0, 600, 'bottom_bar');
@@ -258,11 +257,10 @@ var playState = {
 
 		socket.on('upgrade receipt', function(data) {
 			this.updateBank(data.id, data.bank);
-			console.log('shot cd was:',this.shotCooldown)
-			if (data.id === this.myID)
+			// if (data.id === this.myID) {
 				this.shotLevel++;
 				this.shotCooldown *= 0.8;
-			console.log('now:',this.shotCooldown,this.shotLevel)
+			// }
 		}.bind(this));
 
 
