@@ -240,7 +240,7 @@ var playState = {
 		///////////////////////
 
 		socket.on('upgrade receipt', function(data) {
-			updateBank(data.id, data.bank);
+			this.updateBank(data.id, data.bank);
 			console.log('shot cd was:',this.shotCooldown)
 			if (data.id === myID)
 				shotCooldown *= 0.8;
@@ -253,7 +253,7 @@ var playState = {
 		// 		var player = Players[data.id]
 		// 		var shield = Shields.create(player.x, player.y, 'bubble')
 		// 		shield.playerID = data.id
-		// 		updateBank(data.id, data.bank)
+		// 		this.updateBank(data.id, data.bank)
 		// 		player.shielded = true
 		// 		shields = true
 		// 	}
@@ -322,9 +322,11 @@ var playState = {
 	// 	}
 	// 	this.setOOB()
 	// }.bind(this))
+
+
 	// socket.on('omnishot receipt', function(data){
 	// 	if (data.passed) {
-	// 		updateBank(data.id, data.bank);
+	// 		this.updateBank(data.id, data.bank);
 	// 		var shooter = Players[data.id]
 	// 		// shoot down
 	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
@@ -364,10 +366,13 @@ var playState = {
 	// 		bullet.bulletID = data.bulletID[7]
 	// 	}
 	// 	setOOB();
-	// })
+	// }.bind(this))
+
+
+
 	// 	socket.on('vertical receipt', function(data) {
 	// 	if (data.passed) {
-	// 		updateBank(data.id, data.bank)
+	// 		this.updateBank(data.id, data.bank)
 	// 		var shooter = Players[data.id]
 	// 		// shoot down
 	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
@@ -379,13 +384,13 @@ var playState = {
 	// 		bullet.bulletID = data.bulletID2
 	// 	}
 	// 	setOOB()
-	// })
+	// }.bind(this))
 
 
 
 	// socket.on('ultimate receipt', function(data) {
 	// 	if (data.passed) {
-	// 		updateBank(data.id, data.bank)
+	// 		this.updateBank(data.id, data.bank)
 	// 		var shooter = Players[data.id]
 	// 		shooter.charging = true // stops the player from moving
 	// 		// play charging animation
@@ -449,7 +454,7 @@ var playState = {
 	// 			})
 	// 		}, 2000)
 	// 	}
-	// })
+	// }.bind(this))
 
 
 
@@ -761,7 +766,8 @@ var playState = {
 
 	updateBank: function(id, newBank) {
 		this.Players[id].bank = newBank;
-		this.bankOutput.text = 'Bank: ' + this.Players[this.myID].bank;
+		if (id == this.myID)
+			this.bankOutput.text = 'Bank: ' + newBank;
 	},
 
 	// set out of bounds for bullets
