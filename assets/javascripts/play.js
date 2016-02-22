@@ -223,6 +223,30 @@ var playState = {
 		}.bind(this));
 
 
+		///////////////////////
+		// PURCHASE RECEIPTS //
+		///////////////////////
+
+		socket.on('upgrade receipt', function(data) {
+			updateBank(data.id, data.bank);
+			console.log('shot cd was:',this.shotCooldown)
+			if (data.id === myID)
+				shotCooldown *= 0.8;
+			console.log('now:',this.shotCooldown)
+		});
+
+
+		// socket.on('shield receipt', function(data) {
+		// 	if (data.passed) {
+		// 		var player = Players[data.id]
+		// 		var shield = Shields.create(player.x, player.y, 'bubble')
+		// 		shield.playerID = data.id
+		// 		updateBank(data.id, data.bank)
+		// 		player.shielded = true
+		// 		shields = true
+		// 	}
+		// })
+		
 	// socket.on('shotgun receipt', function(data) {
 	// 	if (data.passed) {
 	// 		this.updateBank(data.id, data.bank)
@@ -345,23 +369,8 @@ var playState = {
 	// 	setOOB()
 	// })
 
-	// socket.on('upgrade receipt', function(data) {
-	// 	if (data.passed) {
-	// 		updateBank(data.id, data.bank)
-	// 		if (data.id === myID)
-	// 			shotCooldown *= 0.8
-	// 	}
-	// })
-	// socket.on('shield receipt', function(data) {
-	// 	if (data.passed) {
-	// 		var player = Players[data.id]
-	// 		var shield = Shields.create(player.x, player.y, 'bubble')
-	// 		shield.playerID = data.id
-	// 		updateBank(data.id, data.bank)
-	// 		player.shielded = true
-	// 		shields = true
-	// 	}
-	// })
+
+
 	// socket.on('ultimate receipt', function(data) {
 	// 	if (data.passed) {
 	// 		updateBank(data.id, data.bank)
@@ -661,43 +670,34 @@ var playState = {
 	/////////////////////////////////////////////////////////// SHOPPING FUCTIONS
 	//////////////////////////////////////////////// UPGRADE GUN
 	upgradeGun: function() {
-		if (this.alive)
+		if (this.Players[this.myID].bank >= 400 && this.alive)
 			socket.emit('upgrade');
 	},
-
 	//////////////////////////////////////////////////////////// SHIELD
 	buyShield: function() {
-		if (!this.Players[this.myID].shielded && this.alive) {
+		if (this.Players[this.myID].bank >= 350 && !this.Players[this.myID].shielded && this.alive)
 			socket.emit('shield');
-		}
 	},
-
-	/////////////////////////////////////////////////////////// SHOTGUN SHOT
-	buyShotgun: function() {
-		if (this.alive)
-			socket.emit('shotgun');
-	},
-
-
 	/////////////////////////////////////////////////////////// VERTICAL SHOT
 	buyVertical: function() {
-		if (this.alive)
+		if (this.Players[this.myID].bank >= 350 && this.alive)
 			socket.emit('verical');
 	},
-
+	/////////////////////////////////////////////////////////// SHOTGUN SHOT
+	buyShotgun: function() {
+		if (this.Players[this.myID].bank >= 500 && this.alive)
+			socket.emit('shotgun');
+	},
 	///////////////////////////////////////////////////////////// 8 WAY SHOT!!!
 	buyOmnishot: function() {
-		if (this.alive)
+		if (this.Players[this.myID].bank >= 800 && this.alive)
 			socket.emit('omnishot');
 	},
-
-
 	//////////////////////////////////////////////////////////////// Ultimate
 	buyUltimate: function() {
-		if (this.alive)
+		if (this.Players[this.myID].bank >= 900 && this.alive)
 			socket.emit('ultimate');
 	},
-
 	///////////////////////////////////////////////////// ULTIMATE HITS SOMETHING
 	// kill anything that touches the ultimate
 	obliterate: function(victim, ultimate) {
