@@ -8,6 +8,15 @@ Laggy computers get to pick up one coin multiple times
 	client.id has the coin already deleted, so only send him his own bank info only
 		or create conditional where myID = coinID or something, ignore
 
+paint usernames above ships
+
+paint banks below ships in tiny font
+
+uses for empty space at bottom right corner
+show shot cooldown
+show total shots fired / fired by player in session / fired in one life
+
+
  */
 
 var playState = {
