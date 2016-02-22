@@ -53,7 +53,7 @@ var playState = {
 	shotLevel: 0,
 	shotCooldown: 800,
 
-	coinTimer: 4000,
+	coinTimer: 0,
 
 	create: function() {
 		//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
@@ -147,6 +147,9 @@ var playState = {
 
 		// init: grab all players' info
 		socket.on('generate players', function(data) {
+			// initialize coin timer to prevent coin spawns while in menu
+			this.coinTimer = Game.time.now + 4000;
+
 			this.myID = data.id;
 			this.alias = data.alias;
 			this.alive = true;
@@ -589,9 +592,13 @@ var playState = {
 	  //////////////////////////////// OTHERS
 	  // tell server to generate coins
 	  if (this.coinTimer < Game.time.now) {
-	  	this.coinTimer = Game.time.now + Math.floor(Math.random()*8000+4000);
+	  	this.coinTimer = Game.time.now + Math.floor(Math.random()+1000);
 	  	console.log('telling server to create coin')
 	  	socket.emit('create coin');
+	  }
+
+	  if (this.Shields.children.length > 0) {
+	  	this.redrawShields();
 	  }
 	},
 	//////////////////////////////////////////////////////////////////////////////
@@ -662,7 +669,7 @@ var playState = {
 	// LOCAL CLIENT PICKS UP COIN
 	getRich: function(player, coin) {
 		console.log('coin touched',coin.value,coin.coinID)
-		// only send the information over so that only one person is picking up the coin to avoid conflict
+		// note: delete coin from my own screen to prevent multiple pickups due to laggy computer
 		socket.emit('coin touched', {
 			id: this.myID,
 			coinID: coin.coinID, 
@@ -737,20 +744,14 @@ var playState = {
 
 	////////////////////////////////////////////////////////////////////////////
 
-	// // damn update is too fast to let this work
-	// checkShield: function() {
-	// 	// this blocks the error mentioned above
-	// 	if (this.Shields.children.length < 1) {
-	// 		this.shields = false
-	// 		return false
-	// 	}
-	// 	this.Shields.children.forEach(function(shield) {
-	// 		if (shield.playerID) {
-	// 			var player = this.Players[shield.playerID]
-	// 			shield.position.set(player.x-2.5,player.y-2.5)
-	// 		}
-	// 	})
-	// },
+	// redraw shields so they follow its ship
+	redrawShields: function() {
+		// debugger
+		this.Shields.children.forEach(function(shield) {
+			var player = this.Players[shield.playerID];
+			shield.position.set(player.x-2.5,player.y-2.5);
+		}.bind(this));
+	},
 
 	updateBank: function(id, newBank) {
 		this.Players[id].bank = newBank;
