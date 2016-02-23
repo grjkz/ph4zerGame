@@ -1,9 +1,13 @@
 /*
 
+Bugs:
+shields dont appear on my screen when opponent purchases it
+opponent doesn't respawn on my screen but does on his. if we kill each other once each, we never see each other again since Players[id].alive = false forever
+
 find "note:" for things I should add into the code
 
 
-notes:
+FYI:
 shot cd starts at 800
 at 4 upgrades, it drops to 327.68
 at 5 upgrades, it goes drops to 262.144
@@ -170,6 +174,7 @@ var playState = {
 			player.reset();
 			player.x = data.x;
 			player.y = data.y;
+			player.alive = true;
 			// set player status to alive if self, to enable controls
 			if (data.id == this.myID) {
 				this.alive = true;
@@ -209,7 +214,7 @@ var playState = {
 		socket.on('player hit', function(data) {
 			var player = this.Players[data.id];
 			// destroy shield or player
-			this.hitTaken(player);
+			this.hitTaken(player, data.id);
 			// destroy bullet
 			this.destroyBullet(data.bulletID);
 		}.bind(this));
@@ -792,12 +797,12 @@ var playState = {
 	 * @param  {string} me     myID
 	 * @return {bool}        Is player still alive?
 	 */
-	hitTaken: function(player, myID) {
+	hitTaken: function(player, id) {
 		if (player.shielded) { // if shielded
 			player.shielded = false;
 			var shields = this.Shields.children;
 			for (var s = 0; s < shields.length; s++) {
-				if (shields[s].playerID == myID) {
+				if (shields[s].playerID == id) {
 					shields[s].destroy();
 					// return true if play is still alive
 					return true;
@@ -806,7 +811,7 @@ var playState = {
 		}
 		// else
 		// if killed ship is me
-		if (myID) {
+		if (id == this.myID) {
 			this.alive = false;
 			// set timeout for the player to respawn
 			setTimeout(function() {
@@ -815,6 +820,7 @@ var playState = {
 		}
 		// destroy the ship
 		player.kill();
+		this.Players[id].alive = false;
 		//  EXPLODE ANIMATION
 		var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
 		explode.animations.add('explode');
