@@ -212,11 +212,11 @@ var playState = {
 
 		// other player was hit // not this player
 		socket.on('player hit', function(data) {
-			var player = this.Players[data.id];
-			// destroy shield or player
-			this.hitTaken(player, data.id);
 			// destroy bullet
 			this.destroyBullet(data.bulletID);
+			var player = this.Players[data.id];
+			// destroy shield or player
+			this.hitTaken(player);
 		}.bind(this));
 
 
@@ -812,6 +812,8 @@ var playState = {
 					return true;
 				}
 			}
+			console.log("ERROR: Couldn't find shield but player.shielded was = true");
+			return true;
 		}
 		// else
 		// if killed ship is me
