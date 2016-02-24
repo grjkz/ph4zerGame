@@ -214,9 +214,8 @@ var playState = {
 		socket.on('player hit', function(data) {
 			// destroy bullet
 			this.destroyBullet(data.bulletID);
-			var player = this.Players[data.id];
 			// destroy shield or player
-			this.hitTaken(player);
+			this.hitTaken(this.Players[data.id]);
 		}.bind(this));
 
 
@@ -640,10 +639,10 @@ var playState = {
 	//////////////////////////////////////////////////////////// PLAYER HIT
 	// LOCAL CLIENT WAS HIT
 	imHit: function(player, bullet) {
-		// destroy shield or bullet
-		var alive = this.hitTaken(player);
 		// destroy bullet
 		this.destroyBullet(bullet.bulletID);
+		// destroy shield or playser
+		var alive = this.hitTaken(player);
 		// send out player's id and bullet's id
 		socket.emit('im hit', {
 			id: player.id,

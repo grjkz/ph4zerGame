@@ -123,6 +123,7 @@ io.on('connection', function(client) {
 	client.on('im hit', function(data) {
 		// update player's alive status
 		Players[client.id].alive = data.alive;
+		// broadcast only; reason: player that send 'im hit' has already resolved hitTaken
 		client.broadcast.emit('player hit', data);
 	});
 
