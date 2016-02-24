@@ -806,9 +806,9 @@ var playState = {
 			player.shielded = false;
 			var shields = this.Shields.children;
 			for (var s = 0; s < shields.length; s++) {
-				if (shields[s].playerID == id) {
+				if (shields[s].playerID == player.id) {
 					shields[s].destroy();
-					// return true if play is still alive
+					// return true if player is still alive
 					return true;
 				}
 			}
