@@ -50,7 +50,7 @@ var playState = {
 	playerMoved: false, // true == send server my new coordinates & facing
 	playerCounter: 0, // greater than 1 == same as above
 	Players: {},
-	shields: false, // client shield status
+	// shields: false, // client shield status
 	playerReady: false,
 	
 	shotTimer: 0,
@@ -253,12 +253,12 @@ var playState = {
 		socket.on('shield receipt', function(data) {
 			this.updateBank(data.id, data.bank);
 			var player = this.Players[data.id];
+			// need this for 'player hit' conditionals
+			player.shielded = true;
 			// create shield at owner's location
 			var shield = this.Shields.create(player.x, player.y, 'bubble');
 			// give shield the owner's ID
 			shield.playerID = data.id;
-			// need this for 'player hit' conditionals
-			player.shielded = true;
 		}.bind(this));
 		
 	// socket.on('shotgun receipt', function(data) {
@@ -586,7 +586,7 @@ var playState = {
 		}
 
 		/////////////////////////////// COLLISIONS
-	  Game.physics.arcade.collide(this.Players[this.myID], this.Bullets, this.playerHit, null, this);
+	  Game.physics.arcade.collide(this.Players[this.myID], this.Bullets, this.imHit, null, this);
 	  Game.physics.arcade.overlap(this.Players[this.myID], this.coins, this.getRich, null, this);
 	  Game.physics.arcade.overlap(this.Ultimates, this.Players[this.myID], this.obliterate, null, this);
 	  Game.physics.arcade.overlap(this.Ultimates, this.coins, this.obliterate, null, this);
@@ -639,7 +639,7 @@ var playState = {
 	},
 	//////////////////////////////////////////////////////////// PLAYER HIT
 	// LOCAL CLIENT WAS HIT
-	playerHit: function(player, bullet) {
+	imHit: function(player, bullet) {
 		// destroy shield or bullet
 		var alive = this.hitTaken(player);
 		// destroy bullet

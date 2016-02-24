@@ -28,7 +28,7 @@ var Users = {}; // users who are are on the game_v2.ejs page
 // needed to create a seperate object for in-game Players; if you send all the Users, all those not past the menu are generated as well
 var Players = {}; // users who are active in the game (clicked 'join game')
 var bulletCounter = 0; // generate a unique id for each bullet; helps to destroy this bullet on impact
-var shieldCounter = 0;
+// var shieldCounter = 0;
 var coinCounter = 0;
 
 /////////////////////
@@ -163,13 +163,13 @@ io.on('connection', function(client) {
 		if (Users[client.id].bank >= 350) {
 			Users[client.id].bank -= 350;
 			Users[client.id].shielded = true;
-			client.emit('shield receipt', {
+			io.emit('shield receipt', {
 				// string, int, int
 				id: client.id,
-				shieldID: shieldCounter++,
+				// shieldID: shieldCounter++,
 				bank: Users[client.id].bank
 			});
-			shieldCounter++;
+			// shieldCounter++;
 		}
 	});
 
