@@ -641,12 +641,12 @@ var playState = {
 	// LOCAL CLIENT WAS HIT
 	playerHit: function(player, bullet) {
 		// destroy shield or bullet
-		var alive = this.hitTaken(player, this.myID);
+		var alive = this.hitTaken(player);
 		// destroy bullet
 		this.destroyBullet(bullet.bulletID);
 		// send out player's id and bullet's id
 		socket.emit('im hit', {
-			id: this.myID,
+			id: player.id,
 			bulletID: bullet.bulletID,
 			alive: alive
 		});
@@ -673,7 +673,7 @@ var playState = {
 		// remove coin from my own screen to prevent multiple pickups due to laggy computer
 		coin.kill();
 		socket.emit('coin touched', {
-			id: this.myID,
+			id: player.id,
 			coinID: coin.coinID, 
 			value: coin.value
 		});
@@ -753,6 +753,11 @@ var playState = {
 		}.bind(this));
 	},
 
+	/**
+	 * Updates a player's bank
+	 * @param  {string} id      Player ID
+	 * @param  {int} newBank Current bank value of player
+	 */
 	updateBank: function(id, newBank) {
 		this.Players[id].bank = newBank;
 		if (id == this.myID) {
@@ -794,10 +799,9 @@ var playState = {
 	/**
 	 * Destroys a shield or kills player
 	 * @param  {object} player Player that was shot
-	 * @param  {string} me     myID
 	 * @return {bool}        Is player still alive?
 	 */
-	hitTaken: function(player, id) {
+	hitTaken: function(player) {
 		if (player.shielded) { // if shielded
 			player.shielded = false;
 			var shields = this.Shields.children;
@@ -811,7 +815,7 @@ var playState = {
 		}
 		// else
 		// if killed ship is me
-		if (id == this.myID) {
+		if (player.id == this.myID) {
 			this.alive = false;
 			// set timeout for the player to respawn
 			setTimeout(function() {
@@ -820,7 +824,7 @@ var playState = {
 		}
 		// destroy the ship
 		player.kill();
-		this.Players[id].alive = false;
+		this.Players[player.id].alive = false;
 		//  EXPLODE ANIMATION
 		var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
 		explode.animations.add('explode');
