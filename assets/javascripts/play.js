@@ -30,36 +30,40 @@ paint banks below ships in tiny font
 uses for empty space at bottom right corner
 show upgrade level
 show shot cooldown
-show total shots fired / fired by player in session / fired in one life
+shots fired by player in session / fired in one life
 
 
  */
 
 var playState = {
 
-	bank: 0,
-	coins: null,
-	bankOutput: null,
-	Bullets: null, // group of all bullets ever created in game
-	sessionShots: 0, // total number of shots made since joining the game
-	lifetimeShots: 0, // number of shots made since last (re)spawn
-	Shields: null, // group of all shields
-	Ultimates: null,
 	myID: "",
 	alias: "",
-
 	alive: false,
 	playerMoved: false, // true == send server my new coordinates & facing
-	playerCounter: 0, // greater than 1 == same as above
-	Players: {},
-	// shields: false, // client shield status
 	playerReady: false,
 	
+	bank: 0,
+	Coins: null, // group of all coins created in game
+	bankOutput: null,
+	coinTimer: 0,
+
+	Bullets: null, // group of all bullets ever created in game
+	sessionShots: 0, // total number of shots made since joining the game
+	sessionShotText: null,
+	sessionShotNum: null,
+	lifetimeShots: 0, // number of shots made since last (re)spawn
+	lifetimeShotText: null,
+	lifetimeShotNum: null,
 	shotTimer: 0,
 	shotLevel: 0,
 	shotCooldown: 800,
+	
+	Shields: null, // group of all shields
+	Ultimates: null,
 
-	coinTimer: 0,
+	Players: {},
+	playerCounter: 0, // greater than 1 == send server movement data
 
 	create: function() {
 		//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
@@ -88,7 +92,7 @@ var playState = {
 		Game.add.text(630, 640, 'A', {fontSize:'16px', fill:'white'});
 		// display Ultimate
 		Game.add.sprite(770, 625, 'ult_icon');
-		Game.add.text(730, 690, '^^^^^^^^: $3000', {fontSize:'16px', fill:'orange'});
+		Game.add.text(735, 690, 'Ka***ha: $3000', {fontSize:'16px', fill:'orange'});
 		Game.add.text(750, 640,'R',{fontSize:'16px', fill:'white'});
 		//////////////////////////////////////////////////////////////////
 
@@ -97,7 +101,7 @@ var playState = {
 		Game.physics.startSystem(Phaser.Physics.ARCADE);
 		Game.renderer.renderSession.roundPixels = true;
 		this.bankOutput = Game.add.text(550, 600, 'Bank: 0',{fontSize: '16px', fill: '#83FF59'});
-
+		Game.add.text(1030, 605, "STATS", {fontSize: '14px', fill: 'black', fontStyle: 'italic'});
 		// Clean Up Bullets
 		var clearbullets = this.destroyBullets.bind(this);
 		setInterval(function() {
@@ -106,8 +110,8 @@ var playState = {
 		/////////////////////////////////////////////////////////////////
 
 		/////////////////////////////////////////////// WORLD ITEM OPTIONS
-		this.coins = Game.add.group();
-		this.coins.enableBody = true;
+		this.Coins = Game.add.group();
+		this.Coins.enableBody = true;
 		//////////////////////////////////////////////////////////////////
 
 		//////////////////////////////////////////////////// BULLET OPTIONS
@@ -117,6 +121,11 @@ var playState = {
 		this.Ultimates = Game.add.group();
 		this.Ultimates.enableBody = true;
 		Game.physics.arcade.enable(this.Ultimates);
+		// bullet meta output
+		this.sessionShotText = Game.add.text(870, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
+		this.sessionShotNum = Game.add.text(980, 630, "0", {fontSize: '14px', fill: 'orange'});
+		this.lifetimeShotText = Game.add.text(870, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
+		this.lifetimeShotNum = Game.add.text(980, 650, "0", {fontSize: '14px', fill: 'orange'});
 		///////////////////////////////////////////////////////////////////
 
 		///////////////////////////////////////////// ENABLE PLAYER CONTROLS
@@ -230,10 +239,10 @@ var playState = {
 
 		// someone picked up a coin; update their bank info and destroy that coin
 		socket.on('update bank', function(data) {
-			var coins = this.coins.children;
-			for (var i = 0; i < coins.length; i++) {
-				if (coins[i].coinID == data.coinID) {
-					coins[i].destroy();
+			var Coins = this.Coins.children;
+			for (var i = 0; i < Coins.length; i++) {
+				if (Coins[i].coinID == data.coinID) {
+					Coins[i].destroy();
 					break;
 				}
 			}
@@ -605,9 +614,9 @@ var playState = {
 
 		/////////////////////////////// COLLISIONS
 	  Game.physics.arcade.collide(this.Players[this.myID], this.Bullets, this.imHit, null, this);
-	  Game.physics.arcade.overlap(this.Players[this.myID], this.coins, this.getRich, null, this);
+	  Game.physics.arcade.overlap(this.Players[this.myID], this.Coins, this.getRich, null, this);
 	  Game.physics.arcade.overlap(this.Ultimates, this.Players[this.myID], this.obliterate, null, this);
-	  Game.physics.arcade.overlap(this.Ultimates, this.coins, this.obliterate, null, this);
+	  Game.physics.arcade.overlap(this.Ultimates, this.Coins, this.obliterate, null, this);
 	  Game.physics.arcade.overlap(this.Ultimates, this.Bullets, this.obliterate, null, this);
 	  
 	  //////////////////////////////// OTHERS
@@ -676,7 +685,7 @@ var playState = {
 	// SERVER-GENERATED RANDOM COIN
 	generateCoin: function(data) {
 		// x, y, coinID, type
-		var coin = this.coins.create(data.x, data.y, data.type);
+		var coin = this.Coins.create(data.x, data.y, data.type);
 		coin.value = data.value;
 		coin.coinID = data.coinID;
 		coin.animations.add('rotate');
@@ -886,7 +895,9 @@ var playState = {
 	 */
 	incrementShotCounter: function(n) {
 		this.sessionShots += n;
+		this.sessionShotNum.text = this.sessionShots;
 		this.lifetimeShots += n;
+		this.lifetimeShotNum.text = this.lifetimeShots;
 	}
 	
 
