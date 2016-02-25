@@ -57,7 +57,7 @@ var playState = {
 	shotLevel: 0,
 	shotCooldown: 800,
 
-	coinTimer: Game.time.now + 4000, // initialize with Game.time.now because time still increases in previous menus
+	coinTimer: 0,
 
 	create: function() {
 		//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
@@ -97,8 +97,9 @@ var playState = {
 		this.bankOutput = Game.add.text(550, 600, 'Bank: 0',{fontSize: '16px', fill: '#83FF59'});
 
 		// Clean Up Bullets
+		var clearbullets = this.destroyBullets.bind(this);
 		setInterval(function() {
-			this.destroyBullets();
+			clearbullets();
 		}, 5000);
 		/////////////////////////////////////////////////////////////////
 
@@ -157,6 +158,9 @@ var playState = {
 		// Init: grab all players' info
 		// Spawn all players
 		socket.on('generate players', function(data) {
+			// initialize coin timer to prevent coin spawns while in menu
+			this.coinTimer = Game.time.now + 4000;
+
 			this.myID = data.id;
 			this.alias = data.alias;
 			this.alive = true;
@@ -193,6 +197,7 @@ var playState = {
 
 		// Delete player from game on disconnect
 		socket.on('remove player', function(id) {
+			this.Players[id].displayName.destroy();
 			this.Players[id].destroy();
 			delete this.Players[id];
 		}.bind(this));
@@ -200,10 +205,12 @@ var playState = {
 
 		// Update player positions
 		socket.on('movement', function(data) {
-			this.Players[data.id].x = data.x;
-			this.Players[data.id].y = data.y;
-			this.Players[data.id].facing = data.facing;
-			this.Players[data.id].animations.play(data.facing);
+			var player = this.Players[data.id];
+			player.x = data.x;
+			player.y = data.y;
+			player.facing = data.facing;
+			player.animations.play(data.facing);
+			this.redrawName(player);
 		}.bind(this));
 
 		// Other player was hit (not this player)
@@ -479,6 +486,9 @@ var playState = {
 		player.body.collideWorldBounds = true;
 		this.updateBank(user.id, user.bank);
 
+		// Display Name above ship
+		player.displayName = Game.add.text(user.x, user.y, user.id, {fontSize: '10px', fill:'black'});
+
 		if (player.shielded) {
 			var shield = this.Shields.create(player.x, player.y, 'bubble');
 			shield.playerID = user.id;
@@ -567,6 +577,8 @@ var playState = {
 	  }
 		// check of another user is connected before blasting the server
 		// if (this.playerCounter > 1 && this.playerMoved) {
+			// Display Name above ship
+			this.redrawName(this.Players[this.myID]);
 			socket.emit('movement', {
 				id: this.myID,
 				x: this.Players[this.myID].body.x,
@@ -746,6 +758,16 @@ var playState = {
 	////////////////////////////////////////////////////////////////////////////
 
 	/**
+	 * Redraw Name
+	 */
+	redrawName: function(player) {
+		// Display Name above ship
+		player.displayName.x = player.x;
+		player.displayName.y = player.y;
+	},
+
+
+	/**
 	 * Redraws shields so they follow its ship
 	 */
 	redrawShields: function() {
@@ -785,6 +807,7 @@ var playState = {
 	 * Destroy all out-of-bound bullets (technically, when they're invisible) to free memory
 	 */
 	destroyBullets: function() {
+		console.log('clearing bullets')
 		this.Bullets.children.forEach(function(bullet) {
 			if (!bullet.visible) {
 				bullet.destroy();
@@ -822,6 +845,7 @@ var playState = {
 		}
 		// destroy the ship
 		player.kill();
+		debugger
 		this.Players[player.id].alive = false;
 		//  EXPLODE ANIMATION
 		var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
