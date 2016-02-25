@@ -321,7 +321,7 @@ var playState = {
 	// 				rightShot.bulletID = data.bulletID3
 	// 		}
 	// 	}
-	// 	this.setOOB()
+	// 	this.setOOB([centerShot, leftShot, rightShot])
 	// }.bind(this))
 
 
@@ -330,43 +330,43 @@ var playState = {
 	// 		this.updateBank(data.id, data.bank);
 	// 		var shooter = Players[data.id]
 	// 		// shoot down
-	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+	// 		var bullet1 = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
 	// 		bullet.body.velocity.y = 400
 	// 		bullet.bulletID = data.bulletID[0]
 	// 		// shoot up
-	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+	// 		var bullet2 = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
 	// 		bullet.body.velocity.y = -400
 	// 		bullet.bulletID = data.bulletID[1]
 	// 		// shoot left	
-	// 		var bullet = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
+	// 		var bullet3 = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
 	// 		bullet.body.velocity.x = -400
 	// 		bullet.bulletID = data.bulletID[2]
 	// 		// shoot right
-	// 		var bullet = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
+	// 		var bullet4 = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
 	// 		bullet.body.velocity.x = 400
 	// 		bullet.bulletID = data.bulletID[3]
 	// 		// up left
-	// 		var bullet = this.Bullets.create(shooter.x-5-20, shooter.y-4, 'basic_bullet_left')
+	// 		var bullet5 = this.Bullets.create(shooter.x-5-20, shooter.y-4, 'basic_bullet_left')
 	// 		bullet.body.velocity.y = -300
 	// 		bullet.body.velocity.x = -300
 	// 		bullet.bulletID = data.bulletID[4]
 	// 		// up right
-	// 		var bullet = this.Bullets.create(shooter.x+50+5, shooter.y-4, 'basic_bullet_right')
+	// 		var bullet6 = this.Bullets.create(shooter.x+50+5, shooter.y-4, 'basic_bullet_right')
 	// 		bullet.body.velocity.y = -300
 	// 		bullet.body.velocity.x = 300
 	// 		bullet.bulletID = data.bulletID[5]
 	// 		// down left
-	// 		var bullet = this.Bullets.create(shooter.x-5-20, shooter.y+50+5, 'basic_bullet_left')
+	// 		var bullet7 = this.Bullets.create(shooter.x-5-20, shooter.y+50+5, 'basic_bullet_left')
 	// 		bullet.body.velocity.y = 300
 	// 		bullet.body.velocity.x = -300
 	// 		bullet.bulletID = data.bulletID[6]
 	// 		//down right
-	// 		var bullet = this.Bullets.create(shooter.x+50+5, shooter.y+50+5, 'basic_bullet_right')
+	// 		var bullet8 = this.Bullets.create(shooter.x+50+5, shooter.y+50+5, 'basic_bullet_right')
 	// 		bullet.body.velocity.y = 300
 	// 		bullet.body.velocity.x = 300
 	// 		bullet.bulletID = data.bulletID[7]
 	// 	}
-	// 	setOOB();
+	// 	setOOB([bullet1, bullet2, bullet3, bullet4, bullet5, bullet6, bullet7, bullet8]);
 	// }.bind(this))
 
 
@@ -376,15 +376,15 @@ var playState = {
 	// 		this.updateBank(data.id, data.bank)
 	// 		var shooter = Players[data.id]
 	// 		// shoot down
-	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
+	// 		var bulletDown = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
 	// 		bullet.body.velocity.y = 400
 	// 		bullet.bulletID = data.bulletID1
 	// 		// shoot up
-	// 		var bullet = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
+	// 		var bulletUp = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
 	// 		bullet.body.velocity.y = -400
 	// 		bullet.bulletID = data.bulletID2
 	// 	}
-	// 	setOOB()
+	// 	setOOB([bulletDown, bulletUp])
 	// }.bind(this))
 
 
@@ -744,7 +744,9 @@ var playState = {
 
 	////////////////////////////////////////////////////////////////////////////
 
-	// redraw shields so they follow its ship
+	/**
+	 * Redraws shields so they follow its ship
+	 */
 	redrawShields: function() {
 		this.Shields.children.forEach(function(shield) {
 			var player = this.Players[shield.playerID];
@@ -767,9 +769,12 @@ var playState = {
 		}
 	},
 
-	// set out of bounds for bullets
-	setOOB: function() {
-		this.Bullets.children.forEach(function(bullet) {
+	/**
+	 * Set out-of-bounds for bullets so they can be destroyed later
+	 * @param {array} bullets Set of bullets to be given out-of-bounds parameter
+	 */
+	setOOB: function(bullets) {
+		bullets.forEach(function(bullet) {
 			bullet.checkWorldBounds = true;
 			bullet.outOfBoundsKill = true;
 		});
