@@ -41,6 +41,8 @@ var playState = {
 	coins: null,
 	bankOutput: null,
 	Bullets: null, // group of all bullets ever created in game
+	sessionShots: 0, // total number of shots made since joining the game
+	lifetimeShots: 0, // number of shots made since last (re)spawn
 	Shields: null, // group of all shields
 	Ultimates: null,
 	myID: "",
