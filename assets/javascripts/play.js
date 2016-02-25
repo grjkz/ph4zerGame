@@ -845,9 +845,11 @@ var playState = {
 		// if killed ship is me
 		if (player.id == this.myID) {
 			this.alive = false;
-			// set timeout for the player to respawn
+			// set timeout for the player to respawn and reset shotCounter
+			var lifetimeShots = this.lifetimeShots;
 			setTimeout(function() {
 				socket.emit('respawn me');
+				lifetimeShots = 0;
 			}, 2000);
 		}
 		// destroy the ship
