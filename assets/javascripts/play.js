@@ -473,6 +473,7 @@ var playState = {
 		this.Players[user.id] = Game.add.sprite(user.x, user.y, user.ship);
 
 		var player = this.Players[user.id];
+		player.id = user.id;
 		player.facing = user.facing;
 		player.shielded = user.shielded;
 		player.charging = false; // note: might have to have this data stored on server in case user connects while player is charging as opposed to respawning
@@ -845,7 +846,6 @@ var playState = {
 		}
 		// destroy the ship
 		player.kill();
-		debugger
 		this.Players[player.id].alive = false;
 		//  EXPLODE ANIMATION
 		var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
