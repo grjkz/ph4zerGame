@@ -95,6 +95,11 @@ var playState = {
 		Game.physics.startSystem(Phaser.Physics.ARCADE);
 		Game.renderer.renderSession.roundPixels = true;
 		this.bankOutput = Game.add.text(550, 600, 'Bank: 0',{fontSize: '16px', fill: '#83FF59'});
+
+		// Clean Up Bullets
+		setInterval(function() {
+			this.destroyBullets();
+		}, 5000);
 		/////////////////////////////////////////////////////////////////
 
 		/////////////////////////////////////////////// WORLD ITEM OPTIONS
@@ -634,7 +639,6 @@ var playState = {
 		// makes sure that all bullets are killed upon leaving world bounds
 		bullet.checkWorldBounds = true;
 		bullet.outOfBoundsKill = true;
-		this.destroyBullets(); // note: move this as a set interval or something in create so that it's not called every frame
 	},
 	//////////////////////////////////////////////////////////// PLAYER HIT
 	// LOCAL CLIENT WAS HIT
@@ -780,7 +784,9 @@ var playState = {
 		});
 	},
 
-	// destroy all out of bound bullets (when they're invisible) to free memory
+	/**
+	 * Destroy all out-of-bound bullets (technically, when they're invisible) to free memory
+	 */
 	destroyBullets: function() {
 		this.Bullets.children.forEach(function(bullet) {
 			if (!bullet.visible) {
