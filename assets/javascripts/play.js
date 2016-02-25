@@ -851,7 +851,7 @@ var playState = {
 		player.kill();
 		this.Players[player.id].alive = false;
 		//  EXPLODE ANIMATION
-		var explode = Game.add.sprite(player.x-35, player.body.center.y-35,'explode1');
+		var explode = Game.add.sprite(player.x-35, player.body.center.y-40,'explode1');
 		explode.animations.add('explode');
 		explode.animations.play('explode',10);
 		// return false if player exploded (had no shield)
