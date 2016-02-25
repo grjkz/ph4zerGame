@@ -596,6 +596,7 @@ var playState = {
 		// check if i'm alive, check if shot timer is ok, check if pressed spacebar
 	  if (Game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.shotTimer < Game.time.now) {
 	  	this.shotTimer = Game.time.now + this.shotCooldown;
+	  	this.incrementShotCounter(1);
 			socket.emit('shoot', {
 				id: this.myID, 
 				facing: this.Players[this.myID].facing 
@@ -875,6 +876,15 @@ var playState = {
 					return;
 				}
 			}
+	},
+
+	/**
+	 * Increase shot counters by specified number
+	 * @param  {int} n Number to increase counters by
+	 */
+	incrementShotCounter: function(n) {
+		this.sessionShots += n;
+		this.lifetimeShots += n;
 	}
 	
 
