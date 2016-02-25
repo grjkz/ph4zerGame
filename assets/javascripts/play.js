@@ -488,8 +488,11 @@ var playState = {
 		this.updateBank(user.id, user.bank);
 
 		// Display Name above ship
-		player.displayName = Game.add.text(user.x, user.y, user.id, {fontSize: '10px', fill:'black'});
-
+		player.displayName = Game.add.text(user.x, user.y, user.id, {fontSize: '10px', fill:'red'});
+		// set self name color to black
+		if (player.id == this.myID) {
+			player.displayName.fill = 'black';
+		}
 		if (player.shielded) {
 			var shield = this.Shields.create(player.x, player.y, 'bubble');
 			shield.playerID = user.id;
@@ -848,7 +851,7 @@ var playState = {
 		player.kill();
 		this.Players[player.id].alive = false;
 		//  EXPLODE ANIMATION
-		var explode = Game.add.sprite(player.x-25, player.body.center.y-25,'explode1');
+		var explode = Game.add.sprite(player.x-35, player.body.center.y-35,'explode1');
 		explode.animations.add('explode');
 		explode.animations.play('explode',10);
 		// return false if player exploded (had no shield)
