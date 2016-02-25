@@ -57,7 +57,7 @@ var playState = {
 	shotLevel: 0,
 	shotCooldown: 800,
 
-	coinTimer: 0,
+	coinTimer: Game.time.now + 4000, // initialize with Game.time.now because time still increases in previous menus
 
 	create: function() {
 		//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
@@ -154,15 +154,13 @@ var playState = {
 
 	  /////////////////////////////////////////////////////// PLAYER SPAWNING
 
-		// init: grab all players' info
+		// Init: grab all players' info
+		// Spawn all players
 		socket.on('generate players', function(data) {
-			// initialize coin timer to prevent coin spawns while in menu
-			this.coinTimer = Game.time.now + 4000;
-
 			this.myID = data.id;
 			this.alias = data.alias;
 			this.alive = true;
-			// render all players
+			// Render all players
 			var players = data.players;
 			for (var player in players) {
 				this.spawnPlayer(players[player]);
@@ -172,7 +170,7 @@ var playState = {
 		}.bind(this));
 
 
-		// respawn a dead player
+		// Respawn a dead player
 		socket.on('respawn player', function(data) {
 			var player = this.Players[data.id];
 			// reset() the player first: it sets x/y to zero
@@ -187,20 +185,20 @@ var playState = {
 		}.bind(this));
 
 
-		// new player joins the Game
+		// New player joins the Game
 		socket.on('add new challenger', function(newPlayer) {
 			this.spawnPlayer(newPlayer);
 		}.bind(this));
 
 
-		// delete player from game on disconnect
+		// Delete player from game on disconnect
 		socket.on('remove player', function(id) {
 			this.Players[id].destroy();
 			delete this.Players[id];
 		}.bind(this));
 
 
-		// update player positions
+		// Update player positions
 		socket.on('movement', function(data) {
 			this.Players[data.id].x = data.x;
 			this.Players[data.id].y = data.y;
@@ -208,14 +206,7 @@ var playState = {
 			this.Players[data.id].animations.play(data.facing);
 		}.bind(this));
 
-
-		// a player has shot (includes me)
-		socket.on('shots fired',function(data) {
-			this.shoot(data);
-		}.bind(this));
-
-
-		// other player was hit // not this player
+		// Other player was hit (not this player)
 		socket.on('player hit', function(data) {
 			// destroy bullet
 			this.destroyBullet(data.bulletID);
@@ -223,7 +214,7 @@ var playState = {
 			this.hitTaken(this.Players[data.id]);
 		}.bind(this));
 
-
+		// Spawn a coin
 		socket.on('spawn coin', function(data) {
 			this.generateCoin(data);
 		}.bind(this));
@@ -240,6 +231,10 @@ var playState = {
 			this.updateBank(data.id, data.bank);
 		}.bind(this));
 
+		// A player has shot (includes me)
+		socket.on('shots fired',function(data) {
+			this.shoot(data);
+		}.bind(this));
 
 																																				///////////////////////
 ////////////////////////////////////////////////////////////////////////// PURCHASE RECEIPTS //
@@ -515,9 +510,9 @@ var playState = {
 	// }
 
 
-	///////////////////////////////////////////////////////////////////////
+	///////////////////////////////////////////////////////////////////////////////////////
 
-	/////////////////////////////////////////////////////// PHASER UPDATE()
+	/////////////////////////////////////////////////////////////////////// PHASER UPDATE()
 	update: function() {
 		if (!this.playerReady || !this.alive) {
 			console.log('player not ready, update() stopping');
@@ -534,7 +529,7 @@ var playState = {
 	 //    // Game.stage.backgroundColor = "0x999999";
 		// }
 
-		////////////////////////// PLAYER MOVEMENT
+		////////////////////////////////////////////////////////// PLAYER MOVEMENT
 		this.Players[this.myID].body.velocity.set(0);
 	  if (cursors.down.isDown && cursors.up.isDown) { return; }
 	  else if (cursors.up.isDown) {
@@ -597,7 +592,7 @@ var playState = {
 	  Game.physics.arcade.overlap(this.Ultimates, this.Bullets, this.obliterate, null, this);
 	  
 	  //////////////////////////////// OTHERS
-	  // tell server to generate coins
+	  // tell server to generate coins every 4-12 seconds
 	  if (this.coinTimer < Game.time.now) {
 	  	this.coinTimer = Game.time.now + Math.floor(Math.random()*8000+4000);
 	  	socket.emit('create coin');
@@ -640,6 +635,7 @@ var playState = {
 		bullet.checkWorldBounds = true;
 		bullet.outOfBoundsKill = true;
 	},
+
 	//////////////////////////////////////////////////////////// PLAYER HIT
 	// LOCAL CLIENT WAS HIT
 	imHit: function(player, bullet) {
@@ -666,6 +662,7 @@ var playState = {
 		coin.coinID = data.coinID;
 		coin.animations.add('rotate');
 		coin.animations.play('rotate',20,true);
+		// Coin expires as set by server
 		setTimeout(function() {
 			coin.destroy();
 		}, data.expire);
@@ -795,17 +792,6 @@ var playState = {
 		});
 	},
 
-	// destroyShield: function(id) {
-	// 	var shields = this.Shields.children;
-	// 	for (var s = 0; s < shields.length; i++) {
-	// 		if (shields[s] == data.playerID) {
-	// 			shields[s].destroy();
-	// 			return;
-	// 		}
-	// 	}
-	// },
-
-
 	/**
 	 * Destroys a shield or kills player
 	 * @param  {object} player Player that was shot
@@ -846,7 +832,11 @@ var playState = {
 	
 	},
 
-	// destroys a single bullet that hit a ship
+	/**
+	 * Destroys a single bullet that hit a ship
+	 * @param  {int} bulletID ID of the bullet to be destroyed
+	 * @return {null}          Used to end for loop when bullet is found and destroyed
+	 */
 	destroyBullet: function(bulletID) {
 		var bullets = this.Bullets.children;
 			// destroy bullet
