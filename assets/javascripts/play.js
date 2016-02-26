@@ -434,37 +434,37 @@ var playState = {
 			setTimeout(function() {
 				aura.destroy(); // remove aura from memory
 				if (shooter.facing === "right") {
-					ultimate_origin = Ultimates.create(shooter.x+60, shooter.y-60, 'ult_origin_right'); //x+30+30 | y-60
+					ultimate_origin = this.Ultimates.create(shooter.x+60, shooter.y-60, 'ult_origin_right'); //x+30+30 | y-60
 					ultimate_origin.z = 9999; // overlaps anything on screen
 					bulletMaker = setInterval(function() {
-						var ultimate_body = Ultimates.create(shooter.x+150, shooter.y-41.5, 'ult_body_vertical'); //x+30+120 | y-60+18.5
+						var ultimate_body = this.Ultimates.create(shooter.x+150, shooter.y-41.5, 'ult_body_vertical'); //x+30+120 | y-60+18.5
 						ultimate_body.body.velocity.x = ultSpeed;
 					}, 10);
 				}
 				// shooter is facing left
 				else if (shooter.facing === "left") {
-					ultimate_origin = Ultimates.create(shooter.x-139, shooter.y-60, 'ult_origin_left'); //x-15-124 | y-60
+					ultimate_origin = this.Ultimates.create(shooter.x-139, shooter.y-60, 'ult_origin_left'); //x-15-124 | y-60
 					ultimate_origin.z = 9999;
 					bulletMaker = setInterval(function() {
-						var ultimate_body = Ultimates.create(shooter.x-125, shooter.y-41.5, 'ult_body_vertical'); //x-5-120 | y-60+18.5
+						var ultimate_body = this.Ultimates.create(shooter.x-125, shooter.y-41.5, 'ult_body_vertical'); //x-5-120 | y-60+18.5
 						ultimate_body.body.velocity.x = -ultSpeed;
 					}, 10);
 				}
 				// shooter is facing down
 				else if (shooter.facing === "down") {
-					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y+60, 'ult_origin_down');
+					ultimate_origin = this.Ultimates.create(shooter.x-59, shooter.y+60, 'ult_origin_down');
 					ultimate_origin.z = 9999;
 					bulletMaker = setInterval(function() {
-						var ultimate_body = Ultimates.create(shooter.x-40.5, shooter.y+125, 'ult_body_horizontal'); //x-59+18.5 | y+5+120
+						var ultimate_body = this.Ultimates.create(shooter.x-40.5, shooter.y+125, 'ult_body_horizontal'); //x-59+18.5 | y+5+120
 						ultimate_body.body.velocity.y = ultSpeed;
 					}, 10);
 				}
 				// shooter is facing up
 				else if (shooter.facing === "up") {
-					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y-135, 'ult_origin_up');
+					ultimate_origin = this.Ultimates.create(shooter.x-59, shooter.y-135, 'ult_origin_up');
 					ultimate_origin.z = 9999;
 					bulletMaker = setInterval(function() {
-						var ultimate_body = Ultimates.create(shooter.x-40.5, shooter.y-120, 'ult_body_horizontal'); //x-59+18.5 | y-120
+						var ultimate_body = this.Ultimates.create(shooter.x-40.5, shooter.y-120, 'ult_body_horizontal'); //x-59+18.5 | y-120
 						ultimate_body.body.velocity.y = -ultSpeed;
 					}, 10);
 				}
@@ -479,7 +479,7 @@ var playState = {
 			}, 1000);
 			//	destroy the ultimate's bullets
 			setTimeout(function() {
-				Ultimates.children.forEach(function(thing) {
+				this.Ultimates.children.forEach(function(thing) {
 					thing.destroy();
 				});
 			}, 2000);
@@ -565,6 +565,7 @@ var playState = {
 		// }
 
 		////////////////////////////////////////////////////////// PLAYER MOVEMENT
+  	this.Players[this.myID].body.velocity.set(0); // stop movement
 	  if (this.cursors.down.isDown && this.cursors.up.isDown) { return; }
 	  else if (this.cursors.up.isDown) {
 	  	if (!this.charging) {
@@ -598,9 +599,6 @@ var playState = {
 	  	this.Players[this.myID].facing = "right";
 	  	this.Players[this.myID].animations.play('right');
 	  	this.playerMoved = true;
-	  }
-	  else {
-	  	this.Players[this.myID].body.velocity.set(0);
 	  }
 		// check of another user is connected before blasting the server
 		// if (this.playerCounter > 1 && this.playerMoved) {
