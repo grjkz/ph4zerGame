@@ -416,10 +416,13 @@ var playState = {
 
 		socket.on('ultimate receipt', function(data) {
 			this.updateBank(data.id, data.bank);
-			var ultSpeed = 1200;
+			var myID = this.myID;
+			var Ultimates = this.Ultimates;
+			var ultSpeed = 1500;
 			// needed these 2 to destroy later on 
 			var ultimate_origin; // starting point of ult creation so shooter doesn't kill himself
-			var bulletMaker;
+			var bulletMaker; // a setInterval function that gets cleared when finished firing
+			var setOOB = this.setOOB.bind(this);
 			// disable movement if shooter is me
 			if (data.id == this.myID) {
 				this.charging = true;
@@ -434,55 +437,50 @@ var playState = {
 			setTimeout(function() {
 				aura.destroy(); // remove aura from memory
 				if (shooter.facing === "right") {
-					ultimate_origin = this.Ultimates.create(shooter.x+60, shooter.y-60, 'ult_origin_right'); //x+30+30 | y-60
-					ultimate_origin.z = 9999; // overlaps anything on screen
+					ultimate_origin = Ultimates.create(shooter.x+60, shooter.y-60, 'ult_origin_right'); //x+30+30 | y-60
 					bulletMaker = setInterval(function() {
-						var ultimate_body = this.Ultimates.create(shooter.x+150, shooter.y-41.5, 'ult_body_vertical'); //x+30+120 | y-60+18.5
+						var ultimate_body = Ultimates.create(shooter.x+150, shooter.y-41.5, 'ult_body_vertical'); //x+30+120 | y-60+18.5
 						ultimate_body.body.velocity.x = ultSpeed;
+						setOOB([ultimate_body]);
 					}, 10);
 				}
 				// shooter is facing left
 				else if (shooter.facing === "left") {
-					ultimate_origin = this.Ultimates.create(shooter.x-139, shooter.y-60, 'ult_origin_left'); //x-15-124 | y-60
-					ultimate_origin.z = 9999;
+					ultimate_origin = Ultimates.create(shooter.x-139, shooter.y-60, 'ult_origin_left'); //x-15-124 | y-60
 					bulletMaker = setInterval(function() {
-						var ultimate_body = this.Ultimates.create(shooter.x-125, shooter.y-41.5, 'ult_body_vertical'); //x-5-120 | y-60+18.5
+						var ultimate_body = Ultimates.create(shooter.x-125, shooter.y-41.5, 'ult_body_vertical'); //x-5-120 | y-60+18.5
 						ultimate_body.body.velocity.x = -ultSpeed;
+						setOOB([ultimate_body]);
 					}, 10);
 				}
 				// shooter is facing down
 				else if (shooter.facing === "down") {
-					ultimate_origin = this.Ultimates.create(shooter.x-59, shooter.y+60, 'ult_origin_down');
-					ultimate_origin.z = 9999;
+					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y+60, 'ult_origin_down');
 					bulletMaker = setInterval(function() {
-						var ultimate_body = this.Ultimates.create(shooter.x-40.5, shooter.y+125, 'ult_body_horizontal'); //x-59+18.5 | y+5+120
+						var ultimate_body = Ultimates.create(shooter.x-40.5, shooter.y+125, 'ult_body_horizontal'); //x-59+18.5 | y+5+120
 						ultimate_body.body.velocity.y = ultSpeed;
+						setOOB([ultimate_body]);
 					}, 10);
 				}
 				// shooter is facing up
 				else if (shooter.facing === "up") {
-					ultimate_origin = this.Ultimates.create(shooter.x-59, shooter.y-135, 'ult_origin_up');
-					ultimate_origin.z = 9999;
+					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y-135, 'ult_origin_up');
 					bulletMaker = setInterval(function() {
-						var ultimate_body = this.Ultimates.create(shooter.x-40.5, shooter.y-120, 'ult_body_horizontal'); //x-59+18.5 | y-120
+						var ultimate_body = Ultimates.create(shooter.x-40.5, shooter.y-120, 'ult_body_horizontal'); //x-59+18.5 | y-120
 						ultimate_body.body.velocity.y = -ultSpeed;
+						setOOB([ultimate_body]);
 					}, 10);
 				}
+				ultimate_origin.z = 9999; // used to make sure ult bullets don't overlap origin sprite
 			}, 500);
-			// called when done shooting so player can move
+			// called to stop shooting ult and enable player movement
 			setTimeout(function() { 
 				ultimate_origin.destroy();
 				clearInterval(bulletMaker);
-				if (this.myID == data.id) {
-					this.charging = false;
+				if (myID == data.id) {
+					playState.charging = false; // don't know how to bind this.charging inside setTimeout so gotta resort to using this
 				}
-			}, 1000);
-			//	destroy the ultimate's bullets
-			setTimeout(function() {
-				this.Ultimates.children.forEach(function(thing) {
-					thing.destroy();
-				});
-			}, 2000);
+			}, 1000); // fires ult for X ms
 		}.bind(this));
 
 
@@ -753,7 +751,7 @@ var playState = {
 	///////////////////////////////////////////////////// ULTIMATE HITS SOMETHING
 	// kill anything that touches the ultimate
 	obliterate: function(victim, ultimate) {
-		if (this.Players[myID] === victim) {
+		if (this.Players[this.myID] === victim) {
 			var me = victim;
 			socket.emit('im hit', {id: this.myID});
 			if (me.shielded === true) {
@@ -830,13 +828,18 @@ var playState = {
 	},
 
 	/**
-	 * Destroy all out-of-bound bullets (technically, when they're invisible) to free memory
-	 * does this weird thing that only clears, at most, half the bullets at a time
+	 * Destroy all out-of-bound bullets and ultimates (technically, when they're invisible) to free memory
+	 * does this weird thing that clears, at most, half the bullets at a time
 	 */
 	destroyBullets: function() {
 		this.Bullets.children.forEach(function(bullet) {
 			if (!bullet.visible) {
 				bullet.destroy();
+			}
+		});
+		this.Ultimates.children.forEach(function(thing) {
+			if (!thing.visible) {
+				thing.destroy();
 			}
 		});
 	},
