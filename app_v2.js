@@ -204,7 +204,7 @@ io.on('connection', function(client) {
 		if (Users[client.id].bank >= 00) {
 			Users[client.id].bank -= 00; //900
 			var bulletID = [bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++];
-			client.emit('receipt', {
+			client.emit('omnishot receipt', {
 				// string, array, int
 				id: client.id,
 				bulletID: bulletID,

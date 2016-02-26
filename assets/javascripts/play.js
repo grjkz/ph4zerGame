@@ -367,46 +367,46 @@ var playState = {
 
 		socket.on('omnishot receipt', function(data){
 			this.updateBank(data.id, data.bank);
-			var shooter = Players[data.id];
+			var shooter = this.Players[data.id];
 			var bVel = this.bulletVelocity;
 			var cVel = 300; // custom bullet velocity
 			// shoot down
 			var bullet1 = this.Bullets.create(shooter.x+20, shooter.y+55, 'basic_bullet_down'); //x+25-5 | y+25+30
-			bullet.body.velocity.y = bVel;
-			bullet.bulletID = data.bulletID[0];
+			bullet1.body.velocity.y = bVel;
+			bullet1.bulletID = data.bulletID[0];
 			// shoot up
 			var bullet2 = this.Bullets.create(shooter.x+20, shooter.y-25, 'basic_bullet_up'); //x+25-5 | y+25-30-20
-			bullet.body.velocity.y = -bVel;
-			bullet.bulletID = data.bulletID[1];
+			bullet2.body.velocity.y = -bVel;
+			bullet2.bulletID = data.bulletID[1];
 			// shoot left	
 			var bullet3 = this.Bullets.create(shooter.x-25, shooter.y+21, 'basic_bullet_left'); //x+25-30-20 | y+25-4
-			bullet.body.velocity.x = -bVel;
-			bullet.bulletID = data.bulletID[2];
+			bullet3.body.velocity.x = -bVel;
+			bullet3.bulletID = data.bulletID[2];
 			// shoot right
 			var bullet4 = this.Bullets.create(shooter.x+55, shooter.y+21, 'basic_bullet_right'); //x+25+30 | y+25-4
-			bullet.body.velocity.x = bVel;
-			bullet.bulletID = data.bulletID[3];
+			bullet4.body.velocity.x = bVel;
+			bullet4.bulletID = data.bulletID[3];
 			// up left
 			var bullet5 = this.Bullets.create(shooter.x-25, shooter.y-4, 'basic_bullet_left'); //x-5-20 | y-4
-			bullet.body.velocity.y = -cVel;
-			bullet.body.velocity.x = -cVel;
-			bullet.bulletID = data.bulletID[4];
+			bullet5.body.velocity.y = -cVel;
+			bullet5.body.velocity.x = -cVel;
+			bullet5.bulletID = data.bulletID[4];
 			// up right
 			var bullet6 = this.Bullets.create(shooter.x+55, shooter.y-4, 'basic_bullet_right'); //x+50+5 | x-5-20
-			bullet.body.velocity.y = -cVel;
-			bullet.body.velocity.x = cVel;
-			bullet.bulletID = data.bulletID[5];
+			bullet6.body.velocity.y = -cVel;
+			bullet6.body.velocity.x = cVel;
+			bullet6.bulletID = data.bulletID[5];
 			// down left
 			var bullet7 = this.Bullets.create(shooter.x-25, shooter.y+55, 'basic_bullet_left'); //x-5-20 | y+50+5
-			bullet.body.velocity.y = cVel;
-			bullet.body.velocity.x = -cVel;
-			bullet.bulletID = data.bulletID[6];
+			bullet7.body.velocity.y = cVel;
+			bullet7.body.velocity.x = -cVel;
+			bullet7.bulletID = data.bulletID[6];
 			//down right
 			var bullet8 = this.Bullets.create(shooter.x+55, shooter.y+55, 'basic_bullet_right'); //x+50+5 | y+50+5
-			bullet.body.velocity.y = cVel;
-			bullet.body.velocity.x = cVel;
-			bullet.bulletID = data.bulletID[7];
-			setOOB([bullet1, bullet2, bullet3, bullet4, bullet5, bullet6, bullet7, bullet8]);
+			bullet8.body.velocity.y = cVel;
+			bullet8.body.velocity.x = cVel;
+			bullet8.bulletID = data.bulletID[7];
+			this.setOOB([bullet1, bullet2, bullet3, bullet4, bullet5, bullet6, bullet7, bullet8]);
 			this.incrementShotCounter(8);
 		}.bind(this));
 
@@ -825,9 +825,9 @@ var playState = {
 
 	/**
 	 * Destroy all out-of-bound bullets (technically, when they're invisible) to free memory
+	 * does this weird thing that only clears, at most, half the bullets at a time
 	 */
 	destroyBullets: function() {
-		console.log('clearing bullets')
 		this.Bullets.children.forEach(function(bullet) {
 			if (!bullet.visible) {
 				bullet.destroy();
