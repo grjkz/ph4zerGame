@@ -292,7 +292,7 @@ var playState = {
 			bulletUp.body.velocity.y = -this.bulletVelocity;
 			bulletUp.bulletID = data.bulletID2;
 			this.setOOB([bulletDown, bulletUp]);
-			incrementShotCounter(2);
+			this.incrementShotCounter(2);
 		}.bind(this));
 		
 
@@ -361,7 +361,7 @@ var playState = {
 						rightShot.bulletID = data.bulletID3;
 				}
 			this.setOOB([centerShot, leftShot, rightShot]);
-			incrementShotCounter(3);
+			this.incrementShotCounter(3);
 		}.bind(this));
 
 
@@ -407,7 +407,7 @@ var playState = {
 			bullet.body.velocity.x = cVel;
 			bullet.bulletID = data.bulletID[7];
 			setOOB([bullet1, bullet2, bullet3, bullet4, bullet5, bullet6, bullet7, bullet8]);
-			incrementShotCounter(8);
+			this.incrementShotCounter(8);
 		}.bind(this));
 
 
