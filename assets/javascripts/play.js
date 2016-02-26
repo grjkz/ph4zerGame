@@ -284,11 +284,11 @@ var playState = {
 			this.updateBank(data.id, data.bank);
 			var shooter = this.Players[data.id];
 			// shoot down
-			var bulletDown = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down');
+			var bulletDown = this.Bullets.create(shooter.x+20, shooter.y+55, 'basic_bullet_down'); //x+25-5 | y+25+30
 			bulletDown.body.velocity.y = this.bulletVelocity;
 			bulletDown.bulletID = data.bulletID1;
 			// shoot up
-			var bulletUp = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up');
+			var bulletUp = this.Bullets.create(shooter.x+20, shooter.y-25, 'basic_bullet_up'); //x+25-5 | y+25-30-20
 			bulletUp.body.velocity.y = -this.bulletVelocity;
 			bulletUp.bulletID = data.bulletID2;
 			this.setOOB([bulletDown, bulletUp]);
@@ -306,56 +306,56 @@ var playState = {
 				var rightShot;
 				// shooter is facing right
 				if (shooter.facing === "right") {
-					centerShot = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right');
+					centerShot = this.Bullets.create(shooter.x+55, shooter.y+21, 'basic_bullet_right'); //x+25+30 | y+25-4
 						centerShot.body.velocity.x = bVel;
 						centerShot.bulletID = data.bulletID1;
-					leftShot = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right');
+					leftShot = this.Bullets.create(shooter.x+55, shooter.y+21, 'basic_bullet_right');
 						leftShot.body.velocity.x = bVel;
 						leftShot.body.velocity.y = -hVel;
 						leftShot.bulletID = data.bulletID2;
-					rightShot = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right');
+					rightShot = this.Bullets.create(shooter.x+55, shooter.y+21, 'basic_bullet_right');
 						rightShot.body.velocity.x = bVel;
 						rightShot.body.velocity.y = hVel;
 						rightShot.bulletID = data.bulletID3;
 				}
 				// shooter is facing down
 				else if (shooter.facing === "down") {
-					centerShot = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down');
+					centerShot = this.Bullets.create(shooter.x+20, shooter.y+55, 'basic_bullet_down'); //x+25-5 | y+25+30
 						centerShot.body.velocity.y = bVel;
 						centerShot.bulletID = data.bulletID1;
-					leftShot = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down');
+					leftShot = this.Bullets.create(shooter.x+20, shooter.y+55, 'basic_bullet_down');
 						leftShot.body.velocity.y = bVel;
 						leftShot.body.velocity.x = hVel;
 						leftShot.bulletID = data.bulletID2;
-					rightShot = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down');
+					rightShot = this.Bullets.create(shooter.x+20, shooter.y+55, 'basic_bullet_down');
 						rightShot.body.velocity.y = bVel;
 						rightShot.body.velocity.x = -hVel;
 						rightShot.bulletID = data.bulletID3;
 				}
 				// shooter is facing left
 				else if (shooter.facing === "left") {
-					centerShot = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left');
+					centerShot = this.Bullets.create(shooter.x-25, shooter.y+21, 'basic_bullet_left'); //x+25-30-20 | y+25-4
 						centerShot.body.velocity.x = -bVel;
 						centerShot.bulletID = data.bulletID1;
-					leftShot = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left');
+					leftShot = this.Bullets.create(shooter.x-25, shooter.y+21, 'basic_bullet_left');
 						leftShot.body.velocity.x = -bVel;
 						leftShot.body.velocity.y = hVel;
 						leftShot.bulletID = data.bulletID2;
-					rightShot = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left');
+					rightShot = this.Bullets.create(shooter.x-25, shooter.y+21, 'basic_bullet_left');
 						rightShot.body.velocity.x = -bVel;
 						rightShot.body.velocity.y = -hVel;
 						rightShot.bulletID = data.bulletID3;
 				}
 				// shooter is facing up
 				else if (shooter.facing === "up") {
-					centerShot = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up');
+					centerShot = this.Bullets.create(shooter.x+20, shooter.y-25, 'basic_bullet_up'); //x+25-5 | y+25-30-20
 						centerShot.body.velocity.y = -bVel;
 						centerShot.bulletID = data.bulletID1;
-					leftShot = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up');
+					leftShot = this.Bullets.create(shooter.x+20, shooter.y-25, 'basic_bullet_up');
 						leftShot.body.velocity.y = -bVel;
 						leftShot.body.velocity.x = -hVel;
 						leftShot.bulletID = data.bulletID2;
-					rightShot = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up');
+					rightShot = this.Bullets.create(shooter.x+20, shooter.y-25, 'basic_bullet_up');
 						rightShot.body.velocity.y = -bVel;
 						rightShot.body.velocity.x = hVel;
 						rightShot.bulletID = data.bulletID3;
