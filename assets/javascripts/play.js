@@ -416,63 +416,63 @@ var playState = {
 
 		socket.on('ultimate receipt', function(data) {
 			this.updateBank(data.id, data.bank);
+			var ultSpeed = 1200;
+			// needed these 2 to destroy later on 
+			var ultimate_origin; // starting point of ult creation so shooter doesn't kill himself
+			var bulletMaker;
 			// disable movement if shooter is me
 			if (data.id == this.myID) {
 				this.charging = true;
 			}
 			var shooter = this.Players[data.id];
 			// play charging animation
-			var aura = Game.add.sprite(shooter.x-18,shooter.y-9,'charging')
-			aura.animations.add('charge')
-			aura.animations.play('charge',50,false)
-
-			// needed these 2 to destroy later on 
-			var ultimate_origin;
-			var bulletMaker;
+			var aura = Game.add.sprite(shooter.x-18,shooter.y-9,'charging');
+			aura.animations.add('charge');
+			aura.animations.play('charge',50,false);
 
 			// countdown before firing shot
-			setTimeout(function() { 
-				aura.destroy()
+			setTimeout(function() {
+				aura.destroy(); // remove aura from memory
 				if (shooter.facing === "right") {
-					ultimate_origin = Ultimates.create(shooter.x+30+30, shooter.y-60, 'ult_origin_right')
-					ultimate_origin.z = 9999;
+					ultimate_origin = Ultimates.create(shooter.x+60, shooter.y-60, 'ult_origin_right'); //x+30+30 | y-60
+					ultimate_origin.z = 9999; // overlaps anything on screen
 					bulletMaker = setInterval(function() {
-						var ultimate_body = Ultimates.create(shooter.x+30+120, shooter.y-60+18.5, 'ult_body_vertical')
-						ultimate_body.body.velocity.x = 1200
-					}, 10)
+						var ultimate_body = Ultimates.create(shooter.x+150, shooter.y-41.5, 'ult_body_vertical'); //x+30+120 | y-60+18.5
+						ultimate_body.body.velocity.x = ultSpeed;
+					}, 10);
 				}
 				// shooter is facing left
 				else if (shooter.facing === "left") {
-					ultimate_origin = Ultimates.create(shooter.x-15-124, shooter.y-60, 'ult_origin_left')
+					ultimate_origin = Ultimates.create(shooter.x-139, shooter.y-60, 'ult_origin_left'); //x-15-124 | y-60
 					ultimate_origin.z = 9999;
 					bulletMaker = setInterval(function() {
-						var ultimate_body = Ultimates.create(shooter.x-5-120, shooter.y-60+18.5, 'ult_body_vertical')
-						ultimate_body.body.velocity.x = -1200
-					}, 10)
+						var ultimate_body = Ultimates.create(shooter.x-125, shooter.y-41.5, 'ult_body_vertical'); //x-5-120 | y-60+18.5
+						ultimate_body.body.velocity.x = -ultSpeed;
+					}, 10);
 				}
 				// shooter is facing down
 				else if (shooter.facing === "down") {
-					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y+60, 'ult_origin_down')
+					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y+60, 'ult_origin_down');
 					ultimate_origin.z = 9999;
 					bulletMaker = setInterval(function() {
-						var ultimate_body = Ultimates.create(shooter.x-59+18.5, shooter.y+5+120, 'ult_body_horizontal')
-						ultimate_body.body.velocity.y = 1200
-					}, 10)
+						var ultimate_body = Ultimates.create(shooter.x-40.5, shooter.y+125, 'ult_body_horizontal'); //x-59+18.5 | y+5+120
+						ultimate_body.body.velocity.y = ultSpeed;
+					}, 10);
 				}
 				// shooter is facing up
 				else if (shooter.facing === "up") {
-					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y-135, 'ult_origin_up')
+					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y-135, 'ult_origin_up');
 					ultimate_origin.z = 9999;
 					bulletMaker = setInterval(function() {
-						var ultimate_body = Ultimates.create(shooter.x-59+18.5, shooter.y-120, 'ult_body_horizontal')
-						ultimate_body.body.velocity.y = -1200
-					}, 10)
+						var ultimate_body = Ultimates.create(shooter.x-40.5, shooter.y-120, 'ult_body_horizontal'); //x-59+18.5 | y-120
+						ultimate_body.body.velocity.y = -ultSpeed;
+					}, 10);
 				}
-			}, 500)
+			}, 500);
 			// called when done shooting so player can move
 			setTimeout(function() { 
-				ultimate_origin.destroy()
-				clearInterval(bulletMaker)
+				ultimate_origin.destroy();
+				clearInterval(bulletMaker);
 				if (this.myID == data.id) {
 					this.charging = false;
 				}
