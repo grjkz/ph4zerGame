@@ -58,6 +58,7 @@ var playState = {
 	shotTimer: 0,
 	shotLevel: 0,
 	shotCooldown: 800,
+	bulletVelocity: 400,
 	
 	Shields: null, // group of all shields
 	Ultimates: null,
@@ -144,10 +145,10 @@ var playState = {
 	  upgradeKey.onDown.add(this.upgradeGun, this);
 	  var shieldKey = this.input.keyboard.addKey(Phaser.Keyboard.S);
 	  shieldKey.onDown.add(this.buyShield, this);
-	  var shotgunKey = this.input.keyboard.addKey(Phaser.Keyboard.F);
-	  shotgunKey.onDown.add(this.buyShotgun, this);
 	  var verticalKey = this.input.keyboard.addKey(Phaser.Keyboard.E);
 	  verticalKey.onDown.add(this.buyVertical, this);
+	  var shotgunKey = this.input.keyboard.addKey(Phaser.Keyboard.F);
+	  shotgunKey.onDown.add(this.buyShotgun, this);
 	  var omniKey = this.input.keyboard.addKey(Phaser.Keyboard.A);
 	  omniKey.onDown.add(this.buyOmnishot, this);
 	  var ultimateKey = this.input.keyboard.addKey(Phaser.Keyboard.R);
@@ -277,134 +278,137 @@ var playState = {
 			// give shield the owner's ID
 			shield.playerID = data.id;
 		}.bind(this));
+
+
+		socket.on('vertical receipt', function(data) {
+			this.updateBank(data.id, data.bank);
+			var shooter = this.Players[data.id];
+			// shoot down
+			var bulletDown = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down');
+			bulletDown.body.velocity.y = this.bulletVelocity;
+			bulletDown.bulletID = data.bulletID1;
+			// shoot up
+			var bulletUp = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up');
+			bulletUp.body.velocity.y = -this.bulletVelocity;
+			bulletUp.bulletID = data.bulletID2;
+			this.setOOB([bulletDown, bulletUp]);
+			incrementShotCounter(2);
+		}.bind(this));
 		
-	// socket.on('shotgun receipt', function(data) {
-	// 	if (data.passed) {
-	// 		this.updateBank(data.id, data.bank)
-	// 		var shooter = this.Players[data.id]
-	// 		// shooter is facing right
-	// 		if (this.shooter.facing === "right") {
-	// 			var centerShot = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
-	// 				centerShot.body.velocity.x = 400
-	// 				centerShot.bulletID = data.bulletID1
-	// 			var leftShot = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
-	// 				leftShot.body.velocity.x = 400
-	// 				leftShot.body.velocity.y = -200
-	// 				leftShot.bulletID = data.bulletID2
-	// 			var rightShot = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
-	// 				rightShot.body.velocity.x = 400
-	// 				rightShot.body.velocity.y = 200
-	// 				rightShot.bulletID = data.bulletID3
-	// 		}
-	// 		// shooter is facing down
-	// 		else if (this.shooter.facing === "down") {
-	// 			var centerShot = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
-	// 				centerShot.body.velocity.y = 400
-	// 				centerShot.bulletID = data.bulletID1
-	// 			var leftShot = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
-	// 				leftShot.body.velocity.y = 400
-	// 				leftShot.body.velocity.x = 200
-	// 				leftShot.bulletID = data.bulletID2
-	// 			var rightShot = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
-	// 				rightShot.body.velocity.y = 400
-	// 				rightShot.body.velocity.x = -200
-	// 				rightShot.bulletID = data.bulletID3
-	// 		}
-	// 		// shooter is facing left
-	// 		else if (this.shooter.facing === "left") {
-	// 			var centerShot = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
-	// 				centerShot.body.velocity.x = -400
-	// 				centerShot.bulletID = data.bulletID1
-	// 			var leftShot = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
-	// 				leftShot.body.velocity.x = -400
-	// 				leftShot.body.velocity.y = 200
-	// 				leftShot.bulletID = data.bulletID2
-	// 			var rightShot = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
-	// 				rightShot.body.velocity.x = -400
-	// 				rightShot.body.velocity.y = -200
-	// 				rightShot.bulletID = data.bulletID3
-	// 		}
-	// 		// shooter is facing up
-	// 		else if (this.shooter.facing === "up") {
-	// 			var centerShot = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
-	// 				centerShot.body.velocity.y = -400
-	// 				centerShot.bulletID = data.bulletID1
-	// 			var leftShot = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
-	// 				leftShot.body.velocity.y = -400
-	// 				leftShot.body.velocity.x = -200
-	// 				leftShot.bulletID = data.bulletID2
-	// 			var rightShot = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
-	// 				rightShot.body.velocity.y = -400
-	// 				rightShot.body.velocity.x = 200
-	// 				rightShot.bulletID = data.bulletID3
-	// 		}
-	// 	}
-	// 	this.setOOB([centerShot, leftShot, rightShot])
-	// }.bind(this))
+
+		socket.on('shotgun receipt', function(data) {
+				this.updateBank(data.id, data.bank);
+				var shooter = this.Players[data.id];
+				var bVel = this.bulletVelocity;
+				var hVel = bVel/2; // half bullet velocity
+				var centerShot;
+				var leftShot;
+				var rightShot;
+				// shooter is facing right
+				if (shooter.facing === "right") {
+					centerShot = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right');
+						centerShot.body.velocity.x = bVel;
+						centerShot.bulletID = data.bulletID1;
+					leftShot = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right');
+						leftShot.body.velocity.x = bVel;
+						leftShot.body.velocity.y = -hVel;
+						leftShot.bulletID = data.bulletID2;
+					rightShot = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right');
+						rightShot.body.velocity.x = bVel;
+						rightShot.body.velocity.y = hVel;
+						rightShot.bulletID = data.bulletID3;
+				}
+				// shooter is facing down
+				else if (shooter.facing === "down") {
+					centerShot = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down');
+						centerShot.body.velocity.y = bVel;
+						centerShot.bulletID = data.bulletID1;
+					leftShot = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down');
+						leftShot.body.velocity.y = bVel;
+						leftShot.body.velocity.x = hVel;
+						leftShot.bulletID = data.bulletID2;
+					rightShot = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down');
+						rightShot.body.velocity.y = bVel;
+						rightShot.body.velocity.x = -hVel;
+						rightShot.bulletID = data.bulletID3;
+				}
+				// shooter is facing left
+				else if (shooter.facing === "left") {
+					centerShot = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left');
+						centerShot.body.velocity.x = -bVel;
+						centerShot.bulletID = data.bulletID1;
+					leftShot = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left');
+						leftShot.body.velocity.x = -bVel;
+						leftShot.body.velocity.y = hVel;
+						leftShot.bulletID = data.bulletID2;
+					rightShot = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left');
+						rightShot.body.velocity.x = -bVel;
+						rightShot.body.velocity.y = -hVel;
+						rightShot.bulletID = data.bulletID3;
+				}
+				// shooter is facing up
+				else if (shooter.facing === "up") {
+					centerShot = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up');
+						centerShot.body.velocity.y = -bVel;
+						centerShot.bulletID = data.bulletID1;
+					leftShot = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up');
+						leftShot.body.velocity.y = -bVel;
+						leftShot.body.velocity.x = -hVel;
+						leftShot.bulletID = data.bulletID2;
+					rightShot = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up');
+						rightShot.body.velocity.y = -bVel;
+						rightShot.body.velocity.x = hVel;
+						rightShot.bulletID = data.bulletID3;
+				}
+			this.setOOB([centerShot, leftShot, rightShot]);
+			incrementShotCounter(3);
+		}.bind(this));
 
 
-	// socket.on('omnishot receipt', function(data){
-	// 	if (data.passed) {
-	// 		this.updateBank(data.id, data.bank);
-	// 		var shooter = Players[data.id]
-	// 		// shoot down
-	// 		var bullet1 = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
-	// 		bullet.body.velocity.y = 400
-	// 		bullet.bulletID = data.bulletID[0]
-	// 		// shoot up
-	// 		var bullet2 = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
-	// 		bullet.body.velocity.y = -400
-	// 		bullet.bulletID = data.bulletID[1]
-	// 		// shoot left	
-	// 		var bullet3 = this.Bullets.create(shooter.x+25-30-20, shooter.y+25-4, 'basic_bullet_left')
-	// 		bullet.body.velocity.x = -400
-	// 		bullet.bulletID = data.bulletID[2]
-	// 		// shoot right
-	// 		var bullet4 = this.Bullets.create(shooter.x+25+30, shooter.y+25-4, 'basic_bullet_right')
-	// 		bullet.body.velocity.x = 400
-	// 		bullet.bulletID = data.bulletID[3]
-	// 		// up left
-	// 		var bullet5 = this.Bullets.create(shooter.x-5-20, shooter.y-4, 'basic_bullet_left')
-	// 		bullet.body.velocity.y = -300
-	// 		bullet.body.velocity.x = -300
-	// 		bullet.bulletID = data.bulletID[4]
-	// 		// up right
-	// 		var bullet6 = this.Bullets.create(shooter.x+50+5, shooter.y-4, 'basic_bullet_right')
-	// 		bullet.body.velocity.y = -300
-	// 		bullet.body.velocity.x = 300
-	// 		bullet.bulletID = data.bulletID[5]
-	// 		// down left
-	// 		var bullet7 = this.Bullets.create(shooter.x-5-20, shooter.y+50+5, 'basic_bullet_left')
-	// 		bullet.body.velocity.y = 300
-	// 		bullet.body.velocity.x = -300
-	// 		bullet.bulletID = data.bulletID[6]
-	// 		//down right
-	// 		var bullet8 = this.Bullets.create(shooter.x+50+5, shooter.y+50+5, 'basic_bullet_right')
-	// 		bullet.body.velocity.y = 300
-	// 		bullet.body.velocity.x = 300
-	// 		bullet.bulletID = data.bulletID[7]
-	// 	}
-	// 	setOOB([bullet1, bullet2, bullet3, bullet4, bullet5, bullet6, bullet7, bullet8]);
-	// }.bind(this))
-
-
-
-	// 	socket.on('vertical receipt', function(data) {
-	// 	if (data.passed) {
-	// 		this.updateBank(data.id, data.bank)
-	// 		var shooter = Players[data.id]
-	// 		// shoot down
-	// 		var bulletDown = this.Bullets.create(shooter.x+25-5, shooter.y+25+30, 'basic_bullet_down')
-	// 		bullet.body.velocity.y = 400
-	// 		bullet.bulletID = data.bulletID1
-	// 		// shoot up
-	// 		var bulletUp = this.Bullets.create(shooter.x+25-5, shooter.y+25-30-20, 'basic_bullet_up')
-	// 		bullet.body.velocity.y = -400
-	// 		bullet.bulletID = data.bulletID2
-	// 	}
-	// 	setOOB([bulletDown, bulletUp])
-	// }.bind(this))
-
+		socket.on('omnishot receipt', function(data){
+			this.updateBank(data.id, data.bank);
+			var shooter = Players[data.id];
+			var bVel = this.bulletVelocity;
+			var cVel = 300; // custom bullet velocity
+			// shoot down
+			var bullet1 = this.Bullets.create(shooter.x+20, shooter.y+55, 'basic_bullet_down'); //x+25-5 | y+25+30
+			bullet.body.velocity.y = bVel;
+			bullet.bulletID = data.bulletID[0];
+			// shoot up
+			var bullet2 = this.Bullets.create(shooter.x+20, shooter.y-25, 'basic_bullet_up'); //x+25-5 | y+25-30-20
+			bullet.body.velocity.y = -bVel;
+			bullet.bulletID = data.bulletID[1];
+			// shoot left	
+			var bullet3 = this.Bullets.create(shooter.x-25, shooter.y+21, 'basic_bullet_left'); //x+25-30-20 | y+25-4
+			bullet.body.velocity.x = -bVel;
+			bullet.bulletID = data.bulletID[2];
+			// shoot right
+			var bullet4 = this.Bullets.create(shooter.x+55, shooter.y+21, 'basic_bullet_right'); //x+25+30 | y+25-4
+			bullet.body.velocity.x = bVel;
+			bullet.bulletID = data.bulletID[3];
+			// up left
+			var bullet5 = this.Bullets.create(shooter.x-25, shooter.y-4, 'basic_bullet_left'); //x-5-20 | y-4
+			bullet.body.velocity.y = -cVel;
+			bullet.body.velocity.x = -cVel;
+			bullet.bulletID = data.bulletID[4];
+			// up right
+			var bullet6 = this.Bullets.create(shooter.x+55, shooter.y-4, 'basic_bullet_right'); //x+50+5 | x-5-20
+			bullet.body.velocity.y = -cVel;
+			bullet.body.velocity.x = cVel;
+			bullet.bulletID = data.bulletID[5];
+			// down left
+			var bullet7 = this.Bullets.create(shooter.x-25, shooter.y+55, 'basic_bullet_left'); //x-5-20 | y+50+5
+			bullet.body.velocity.y = cVel;
+			bullet.body.velocity.x = -cVel;
+			bullet.bulletID = data.bulletID[6];
+			//down right
+			var bullet8 = this.Bullets.create(shooter.x+55, shooter.y+55, 'basic_bullet_right'); //x+50+5 | y+50+5
+			bullet.body.velocity.y = cVel;
+			bullet.body.velocity.x = cVel;
+			bullet.bulletID = data.bulletID[7];
+			setOOB([bullet1, bullet2, bullet3, bullet4, bullet5, bullet6, bullet7, bullet8]);
+			incrementShotCounter(8);
+		}.bind(this));
 
 
 	// socket.on('ultimate receipt', function(data) {
@@ -712,32 +716,32 @@ var playState = {
 	/////////////////////////////////////////////////////////// SHOPPING FUCTIONS
 	//////////////////////////////////////////////// UPGRADE GUN
 	upgradeGun: function() {
-		if (this.Players[this.myID].bank >= 400 && this.alive && this.shotLevel < 5)
+		if (this.Players[this.myID].bank >= 00 && this.alive && this.shotLevel < 5) //400
 			socket.emit('upgrade');
 	},
 	//////////////////////////////////////////////////////////// SHIELD
 	buyShield: function() {
-		if (this.Players[this.myID].bank >= 350 && !this.Players[this.myID].shielded && this.alive)
+		if (this.Players[this.myID].bank >= 0 && !this.Players[this.myID].shielded && this.alive) //350
 			socket.emit('shield');
 	},
 	/////////////////////////////////////////////////////////// VERTICAL SHOT
 	buyVertical: function() {
-		if (this.Players[this.myID].bank >= 350 && this.alive)
-			socket.emit('verical');
+		if (this.Players[this.myID].bank >= 00 && this.alive) //350
+			socket.emit('vertical');
 	},
 	/////////////////////////////////////////////////////////// SHOTGUN SHOT
 	buyShotgun: function() {
-		if (this.Players[this.myID].bank >= 500 && this.alive)
+		if (this.Players[this.myID].bank >= 00 && this.alive) // 500
 			socket.emit('shotgun');
 	},
 	///////////////////////////////////////////////////////////// 8 WAY SHOT!!!
 	buyOmnishot: function() {
-		if (this.Players[this.myID].bank >= 800 && this.alive)
+		if (this.Players[this.myID].bank >= 00 && this.alive) // 900
 			socket.emit('omnishot');
 	},
 	//////////////////////////////////////////////////////////////// Ultimate
 	buyUltimate: function() {
-		if (this.Players[this.myID].bank >= 900 && this.alive)
+		if (this.Players[this.myID].bank >= 000 && this.alive) // 1000
 			socket.emit('ultimate');
 	},
 	///////////////////////////////////////////////////// ULTIMATE HITS SOMETHING

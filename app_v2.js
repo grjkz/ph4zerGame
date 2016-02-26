@@ -150,8 +150,8 @@ io.on('connection', function(client) {
 	// POWERUP SHOP //
 	//////////////////
 	client.on('upgrade', function(type) {
-		if (Users[client.id].bank >= 400) {
-			Users[client.id].bank -= 400;
+		if (Users[client.id].bank >= 00) { //400
+			Users[client.id].bank -= 00;
 			client.emit('upgrade receipt', {
 				// string, int
 				id: client.id,
@@ -161,8 +161,8 @@ io.on('connection', function(client) {
 	});
 			
 	client.on('shield', function() {
-		if (Users[client.id].bank >= 350) {
-			Users[client.id].bank -= 350;
+		if (Users[client.id].bank >= 0) { //350
+			Users[client.id].bank -= 0;
 			Users[client.id].shielded = true;
 			io.emit('shield receipt', {
 				// string, int, int
@@ -175,8 +175,8 @@ io.on('connection', function(client) {
 	});
 
 	client.on('vertical', function() {		
-		if (Users[client.id].bank >= 350) {
-			Users[client.id].bank -= 350;
+		if (Users[client.id].bank >= 0) { //350
+			Users[client.id].bank -= 0;
 			var bulletID = [bulletCounter++, bulletCounter++];
 			client.emit('vertical receipt', {
 				// string, array, int
@@ -188,8 +188,8 @@ io.on('connection', function(client) {
 	});
 	
 	client.on('shotgun', function() {
-		if (Users[client.id].bank >= 500) {
-			Users[client.id].bank -= 500;
+		if (Users[client.id].bank >= 00) { //500
+			Users[client.id].bank -= 00;
 			var bulletID = [bulletCounter++, bulletCounter++, bulletCounter++];
 			// string, array, int
 			client.emit('shotgun receipt', {
@@ -201,8 +201,8 @@ io.on('connection', function(client) {
 	});
 	
 	client.on('omnishot', function() {
-		if (Users[client.id].bank >= 800) {
-			Users[client.id].bank -= 800;
+		if (Users[client.id].bank >= 00) {
+			Users[client.id].bank -= 00; //900
 			var bulletID = [bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++];
 			client.emit('receipt', {
 				// string, array, int
@@ -214,8 +214,8 @@ io.on('connection', function(client) {
 	});
 	
 	client.on('ultimate', function() {
-		if (Users[client.id].bank >= 900) {
-			Users[client.id].bank -= 900;
+		if (Users[client.id].bank >= 00) {
+			Users[client.id].bank -= 000; //1000
 			// string, int, int
 			client.emit('ultimate receipt', {
 				id: client.id,
