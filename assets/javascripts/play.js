@@ -62,9 +62,12 @@ var playState = {
 	
 	Shields: null, // group of all shields
 	Ultimates: null,
+	charging: false, // charging to fire ultimate
 
 	Players: {},
 	playerCounter: 0, // greater than 1 == send server movement data
+
+	cursors: null, // for player controls
 
 	create: function() {
 		//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
@@ -130,7 +133,7 @@ var playState = {
 		///////////////////////////////////////////////////////////////////
 
 		///////////////////////////////////////////// ENABLE PLAYER CONTROLS
-		cursors = this.input.keyboard.createCursorKeys();
+		this.cursors = this.input.keyboard.createCursorKeys();
 
 		// this prevents spacebar from being used in the input tag
 	  // Game.onFocus.add(function() {
@@ -411,73 +414,76 @@ var playState = {
 		}.bind(this));
 
 
-	// socket.on('ultimate receipt', function(data) {
-	// 	if (data.passed) {
-	// 		this.updateBank(data.id, data.bank)
-	// 		var shooter = Players[data.id]
-	// 		shooter.charging = true // stops the player from moving
-	// 		// play charging animation
-	// 		var aura = Game.add.sprite(shooter.x-18,shooter.y-9,'charging')
-	// 		aura.animations.add('charge')
-	// 		aura.animations.play('charge',50,false)
+		socket.on('ultimate receipt', function(data) {
+			this.updateBank(data.id, data.bank);
+			// disable movement if shooter is me
+			if (data.id == this.myID) {
+				this.charging = true;
+			}
+			var shooter = this.Players[data.id];
+			// play charging animation
+			var aura = Game.add.sprite(shooter.x-18,shooter.y-9,'charging')
+			aura.animations.add('charge')
+			aura.animations.play('charge',50,false)
 
-	// 		// needed these 2 to destroy later on 
-	// 		var ultimate_origin;
-	// 		var bulletMaker;
+			// needed these 2 to destroy later on 
+			var ultimate_origin;
+			var bulletMaker;
 
-	// 		// countdown before firing shot
-	// 		setTimeout(function() { 
-	// 			aura.destroy()
-	// 			if (shooter.facing === "right") {
-	// 				ultimate_origin = Ultimates.create(shooter.x+30+30, shooter.y-60, 'ult_origin_right')
-	// 				ultimate_origin.z = 9999;
-	// 				bulletMaker = setInterval(function() {
-	// 					var ultimate_body = Ultimates.create(shooter.x+30+120, shooter.y-60+18.5, 'ult_body_vertical')
-	// 					ultimate_body.body.velocity.x = 1200
-	// 				}, 10)
-	// 			}
-	// 			// shooter is facing left
-	// 			else if (shooter.facing === "left") {
-	// 				ultimate_origin = Ultimates.create(shooter.x-15-124, shooter.y-60, 'ult_origin_left')
-	// 				ultimate_origin.z = 9999;
-	// 				bulletMaker = setInterval(function() {
-	// 					var ultimate_body = Ultimates.create(shooter.x-5-120, shooter.y-60+18.5, 'ult_body_vertical')
-	// 					ultimate_body.body.velocity.x = -1200
-	// 				}, 10)
-	// 			}
-	// 			// shooter is facing down
-	// 			else if (shooter.facing === "down") {
-	// 				ultimate_origin = Ultimates.create(shooter.x-59, shooter.y+60, 'ult_origin_down')
-	// 				ultimate_origin.z = 9999;
-	// 				bulletMaker = setInterval(function() {
-	// 					var ultimate_body = Ultimates.create(shooter.x-59+18.5, shooter.y+5+120, 'ult_body_horizontal')
-	// 					ultimate_body.body.velocity.y = 1200
-	// 				}, 10)
-	// 			}
-	// 			// shooter is facing up
-	// 			else if (shooter.facing === "up") {
-	// 				ultimate_origin = Ultimates.create(shooter.x-59, shooter.y-135, 'ult_origin_up')
-	// 				ultimate_origin.z = 9999;
-	// 				bulletMaker = setInterval(function() {
-	// 					var ultimate_body = Ultimates.create(shooter.x-59+18.5, shooter.y-120, 'ult_body_horizontal')
-	// 					ultimate_body.body.velocity.y = -1200
-	// 				}, 10)
-	// 			}
-	// 		}, 500)
-	// 		// called when done shooting so player can move
-	// 		setTimeout(function() { 
-	// 			ultimate_origin.destroy()
-	// 			clearInterval(bulletMaker)
-	// 			shooter.charging = false;
-	// 		}, 1000)
-	// 		//	destroy the ultimate's bullets
-	// 		setTimeout(function() {
-	// 			Ultimates.children.forEach(function(thing) {
-	// 				thing.destroy()
-	// 			})
-	// 		}, 2000)
-	// 	}
-	// }.bind(this))
+			// countdown before firing shot
+			setTimeout(function() { 
+				aura.destroy()
+				if (shooter.facing === "right") {
+					ultimate_origin = Ultimates.create(shooter.x+30+30, shooter.y-60, 'ult_origin_right')
+					ultimate_origin.z = 9999;
+					bulletMaker = setInterval(function() {
+						var ultimate_body = Ultimates.create(shooter.x+30+120, shooter.y-60+18.5, 'ult_body_vertical')
+						ultimate_body.body.velocity.x = 1200
+					}, 10)
+				}
+				// shooter is facing left
+				else if (shooter.facing === "left") {
+					ultimate_origin = Ultimates.create(shooter.x-15-124, shooter.y-60, 'ult_origin_left')
+					ultimate_origin.z = 9999;
+					bulletMaker = setInterval(function() {
+						var ultimate_body = Ultimates.create(shooter.x-5-120, shooter.y-60+18.5, 'ult_body_vertical')
+						ultimate_body.body.velocity.x = -1200
+					}, 10)
+				}
+				// shooter is facing down
+				else if (shooter.facing === "down") {
+					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y+60, 'ult_origin_down')
+					ultimate_origin.z = 9999;
+					bulletMaker = setInterval(function() {
+						var ultimate_body = Ultimates.create(shooter.x-59+18.5, shooter.y+5+120, 'ult_body_horizontal')
+						ultimate_body.body.velocity.y = 1200
+					}, 10)
+				}
+				// shooter is facing up
+				else if (shooter.facing === "up") {
+					ultimate_origin = Ultimates.create(shooter.x-59, shooter.y-135, 'ult_origin_up')
+					ultimate_origin.z = 9999;
+					bulletMaker = setInterval(function() {
+						var ultimate_body = Ultimates.create(shooter.x-59+18.5, shooter.y-120, 'ult_body_horizontal')
+						ultimate_body.body.velocity.y = -1200
+					}, 10)
+				}
+			}, 500)
+			// called when done shooting so player can move
+			setTimeout(function() { 
+				ultimate_origin.destroy()
+				clearInterval(bulletMaker)
+				if (this.myID == data.id) {
+					this.charging = false;
+				}
+			}, 1000);
+			//	destroy the ultimate's bullets
+			setTimeout(function() {
+				Ultimates.children.forEach(function(thing) {
+					thing.destroy();
+				});
+			}, 2000);
+		}.bind(this));
 
 
 
@@ -491,7 +497,7 @@ var playState = {
 		player.id = user.id;
 		player.facing = user.facing;
 		player.shielded = user.shielded;
-		player.charging = false; // note: might have to have this data stored on server in case user connects while player is charging as opposed to respawning
+		// player.charging = false; // note: might have to have this data stored on server in case user connects while player is charging as opposed to respawning
 		player.animations.add('right',[0],1,true);
 		player.animations.add('down',[1],1,true);
 		player.animations.add('left',[2],1,true);
@@ -559,40 +565,42 @@ var playState = {
 		// }
 
 		////////////////////////////////////////////////////////// PLAYER MOVEMENT
-		this.Players[this.myID].body.velocity.set(0);
-	  if (cursors.down.isDown && cursors.up.isDown) { return; }
-	  else if (cursors.up.isDown) {
-	  	if (!this.Players[this.myID].charging) {
+	  if (this.cursors.down.isDown && this.cursors.up.isDown) { return; }
+	  else if (this.cursors.up.isDown) {
+	  	if (!this.charging) {
 		    this.Players[this.myID].body.velocity.y = -300;
 		  }
 	    this.Players[this.myID].facing = "up";
 	    this.Players[this.myID].animations.play('up');
 	    this.playerMoved = true;
 	  }
-	  else if (cursors.down.isDown) {
-	  	if (!this.Players[this.myID].charging) {
+	  else if (this.cursors.down.isDown) {
+	  	if (!this.charging) {
 		    this.Players[this.myID].body.velocity.y = 300;
 		  }
 	    this.Players[this.myID].facing = "down";
 	    this.Players[this.myID].animations.play('down');
 	    this.playerMoved = true;
-	  }	
-	  if (cursors.left.isDown && cursors.right.isDown) { return; }
-	  else if (cursors.left.isDown) {
-	  	if (!this.Players[this.myID].charging) {
+	  }
+	  if (this.cursors.left.isDown && this.cursors.right.isDown) { return; }
+	  else if (this.cursors.left.isDown) {
+	  	if (!this.charging) {
 		  	this.Players[this.myID].body.velocity.x = -300;
 		  }
 	  	this.Players[this.myID].facing = "left";
 	  	this.Players[this.myID].animations.play('left');
 	  	this.playerMoved = true;
 	  }
-	  else if (cursors.right.isDown) {
-	  	if (!this.Players[this.myID].charging) {
+	  else if (this.cursors.right.isDown) {
+	  	if (!this.charging) {
 		  	this.Players[this.myID].body.velocity.x = 300;
 		  }
 	  	this.Players[this.myID].facing = "right";
 	  	this.Players[this.myID].animations.play('right');
 	  	this.playerMoved = true;
+	  }
+	  else {
+	  	this.Players[this.myID].body.velocity.set(0);
 	  }
 		// check of another user is connected before blasting the server
 		// if (this.playerCounter > 1 && this.playerMoved) {
