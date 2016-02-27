@@ -5,8 +5,7 @@ find "note:" for things I should add into the code
 Bugs:
 shields dont appear on my screen when opponent purchases it
 opponent doesn't respawn on my screen but does on his. if we kill each other once each, we never see each other again since Players[id].alive = false forever
-firing a bullet inside an opponent does't kill them, and creates a bug as well
-
+firing a bullet inside an opponent doesn't kill them, and creates a bug where the next bullet shot, and hits opponent, doesn't get destroyed
 
 FYI:
 shot cd starts at 800
@@ -125,12 +124,12 @@ var playState = {
 		// Meta Data Output
 		// upgrade
 		Game.add.text(850, 630, "Upgrade LvL:", {fontSize: '14px', fill: 'white'});
-		this.shotLevelOutput = Game.add.text(946, 630, "0", {fontSize: '14px', fill: 'orange'});
+		this.shotLevelOutput = Game.add.text(948, 630, "0", {fontSize: '14px', fill: 'orange'});
 		Game.add.text(850, 650, "Gun Speed:", {fontSize: '14px', fill: 'white'});
-		this.shotSpeedOutput = Game.add.text(946, 650, "800", {fontSize: '14px', fill: 'orange'});
+		this.shotSpeedOutput = Game.add.text(948, 650, "800", {fontSize: '14px', fill: 'orange'});
 		// shields
 		Game.add.text(850, 670, "Shields Used:", {fontSize: '14px', fill: 'white'});
-		this.shieldOutput = Game.add.text(946, 670, "0", {fontSize: '14px', fill: 'orange'});
+		this.shieldOutput = Game.add.text(948, 670, "0", {fontSize: '14px', fill: 'orange'});
 		// # of shots fired
 		Game.add.text(983, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
 		this.sessionShotOutput = Game.add.text(1090, 630, "0", {fontSize: '14px', fill: 'orange'});
@@ -140,13 +139,13 @@ var playState = {
 		this.ultimateShotOutput = Game.add.text(1090, 670, "0", {fontSize: '14px', fill: 'orange'});
 		// kills / deaths
 		Game.add.text(1140, 630, "Killstreak:", {fontSize: '14px', fill: 'white'});
-		this.killstreakOutput = Game.add.text(1245, 630, "0", {fontSize: '14px', fill: 'orange'});
+		this.killstreakOutput = Game.add.text(1248, 630, "0", {fontSize: '14px', fill: 'orange'});
 		Game.add.text(1140, 650, "Best Killstreak:", {fontSize: '14px', fill: 'white'});
-		this.bestKillstreakOutput = Game.add.text(1245, 650, "0", {fontSize: '14px', fill: 'yellow'});
+		this.bestKillstreakOutput = Game.add.text(1248, 650, "0", {fontSize: '14px', fill: 'yellow'});
 		Game.add.text(1140, 670, "Kills:", {fontSize: '14px', fill: 'white'});
-		this.killsOutput = Game.add.text(1245, 670, "0", {fontSize: '14px', fill: 'orange'});
+		this.killsOutput = Game.add.text(1248, 670, "0", {fontSize: '14px', fill: 'orange'});
 		Game.add.text(1140, 690, "Deaths:", {fontSize: '14px', fill: 'white'});
-		this.deathsOutput = Game.add.text(1245, 690, "0", {fontSize: '14px', fill: 'red'});
+		this.deathsOutput = Game.add.text(1248, 690, "0", {fontSize: '14px', fill: 'red'});
 		//////////////////////////////////////////////////// GAME OPTIONS
 		Game.world.setBounds(0, 0, 1280, 600);
 		Game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -751,7 +750,7 @@ var playState = {
 		// shooter is facing right
 		if (data.facing === "right") {
 			bullet = this.Bullets.create(player.x+25+30, player.y+25-4, 'basic_bullet_right');
-			bullet.body.velocity.x = 00;
+			bullet.body.velocity.x = 400;
 		}
 		// shooter is facing down
 		else if (data.facing === "down") {
@@ -782,7 +781,8 @@ var playState = {
 	 */
 	imHit: function(player, bullet) {
 		// destroy bullet
-		this.destroyBullet(bullet.bulletID);
+		bullet.destroy();
+		// this.destroyBullet(bullet.bulletID);
 		// destroy shield or playser
 		var alive = this.hitTaken(player);
 		// send out player's id and bullet's id
