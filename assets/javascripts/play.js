@@ -50,10 +50,8 @@ var playState = {
 
 	Bullets: null, // group of all bullets ever created in game
 	sessionShots: 0, // total number of shots made since joining the game
-	sessionShotText: null,
 	sessionShotNum: null,
 	lifetimeShots: 0, // number of shots made since last (re)spawn
-	lifetimeShotText: null,
 	lifetimeShotNum: null,
 	shotTimer: 0,
 	shotLevel: 0,
@@ -62,6 +60,7 @@ var playState = {
 	
 	Shields: null, // group of all shields
 	Ultimates: null,
+	ultimateShotNum: 0,
 	charging: false, // charging to fire ultimate
 
 	Players: {},
@@ -126,10 +125,12 @@ var playState = {
 		this.Ultimates.enableBody = true;
 		Game.physics.arcade.enable(this.Ultimates);
 		// bullet meta output
-		this.sessionShotText = Game.add.text(870, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
+		Game.add.text(870, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
 		this.sessionShotNum = Game.add.text(980, 630, "0", {fontSize: '14px', fill: 'orange'});
-		this.lifetimeShotText = Game.add.text(870, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
+		Game.add.text(870, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
 		this.lifetimeShotNum = Game.add.text(980, 650, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(870, 670, "Ultimates:", {fontSize: '14px', fill: 'white'});
+		this.ultimateShotNum = Game.add.text(980, 670, "0", {fontSize: '14px', fill: 'orange'});
 		///////////////////////////////////////////////////////////////////
 
 		///////////////////////////////////////////// ENABLE PLAYER CONTROLS
