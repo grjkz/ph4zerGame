@@ -725,7 +725,7 @@ var playState = {
 		this.updateBank(user.id, user.bank);
 
 		// Display Name above ship
-		player.displayName = Game.add.text(user.x, user.y, user.id, {fontSize: '10px', fill:'red'});
+		player.displayName = Game.add.text(user.x, user.y, user.alias, {fontSize: '10px', fill:'red'});
 		// set self name color to black
 		if (player.id == this.myID) {
 			player.displayName.fill = 'black';
