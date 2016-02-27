@@ -77,7 +77,10 @@ var playState = {
 		//////////////////////////////////// RENDER BACKGROUND STUFF FIRST
 		Game.add.sprite(0, 0, 'sky');
 		Game.add.sprite(0, 600, 'bottom_bar');
-		///////////////////////// WINDOW SHOPPING
+		///////////////////////// GAME TEXT
+		// bank text
+		this.bankOutput = Game.add.text(550, 600, 'Bank: 0',{fontSize: '16px', fill: '#83FF59'});
+		Game.add.text(1030, 605, "STATS", {fontSize: '14px', fill: 'black', fontStyle: 'italic'});
 		// display shield
 		Game.add.sprite(30, 620, 'bubble');
 		Game.add.text(53, 640, 'S', {fontSize:'16px',fill:'white'});
@@ -102,43 +105,25 @@ var playState = {
 		Game.add.sprite(770, 625, 'ult_icon');
 		Game.add.text(735, 690, 'Ka***ha: $3000', {fontSize:'16px', fill:'orange'});
 		Game.add.text(750, 640,'R',{fontSize:'16px', fill:'white'});
-		//////////////////////////////////////////////////////////////////
-
-		//////////////////////////////////////////////////// GAME OPTIONS
-		Game.world.setBounds(0, 0, 1280, 600);
-		Game.physics.startSystem(Phaser.Physics.ARCADE);
-		Game.renderer.renderSession.roundPixels = true;
-		this.bankOutput = Game.add.text(550, 600, 'Bank: 0',{fontSize: '16px', fill: '#83FF59'});
-		Game.add.text(1030, 605, "STATS", {fontSize: '14px', fill: 'black', fontStyle: 'italic'});
-		// Clean Up Bullets
-		var clearbullets = this.destroyBullets.bind(this);
-		setInterval(function() {
-			clearbullets();
-		}, 5000);
-		/////////////////////////////////////////////////////////////////
-
-		/////////////////////////////////////////////// WORLD ITEM OPTIONS
-		this.Coins = Game.add.group();
-		this.Coins.enableBody = true;
-		//////////////////////////////////////////////////////////////////
-
-		//////////////////////////////////////////////////// BULLET OPTIONS
-		this.Bullets = Game.add.group();
-		this.Bullets.enableBody = true;
-		Game.physics.arcade.enable(this.Bullets);
-		this.Ultimates = Game.add.group();
-		this.Ultimates.enableBody = true;
-		Game.physics.arcade.enable(this.Ultimates);
-		// bullet meta output
+		// Meta Data Output
 		Game.add.text(870, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
 		this.sessionShotNum = Game.add.text(980, 630, "0", {fontSize: '14px', fill: 'orange'});
 		Game.add.text(870, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
 		this.lifetimeShotNum = Game.add.text(980, 650, "0", {fontSize: '14px', fill: 'orange'});
 		Game.add.text(870, 670, "Ultimates:", {fontSize: '14px', fill: 'white'});
 		this.ultimateShotNum = Game.add.text(980, 670, "0", {fontSize: '14px', fill: 'orange'});
-		///////////////////////////////////////////////////////////////////
 
-		///////////////////////////////////////////// ENABLE PLAYER CONTROLS
+		//////////////////////////////////////////////////// GAME OPTIONS
+		Game.world.setBounds(0, 0, 1280, 600);
+		Game.physics.startSystem(Phaser.Physics.ARCADE);
+		Game.renderer.renderSession.roundPixels = true;
+		// Clean Up Bullets
+		var clearbullets = this.destroyBullets.bind(this);
+		setInterval(function() {
+			clearbullets();
+		}, 5000);
+
+		///////////////////////// ENABLE PLAYER CONTROLS
 		this.cursors = this.input.keyboard.createCursorKeys();
 
 		// this prevents spacebar from being used in the input tag
@@ -162,7 +147,19 @@ var playState = {
 	  omniKey.onDown.add(this.buyOmnishot, this);
 	  var ultimateKey = this.input.keyboard.addKey(Phaser.Keyboard.R);
 	  ultimateKey.onDown.add(this.buyUltimate, this);
-	  ///////////////////////////////////////////////////////////////////
+
+		/////////////////////////////////////////////// WORLD ITEM OPTIONS
+		this.Coins = Game.add.group();
+		this.Coins.enableBody = true;
+
+		//////////////////////////////////////////////////// BULLET OPTIONS
+		this.Bullets = Game.add.group();
+		this.Bullets.enableBody = true;
+		Game.physics.arcade.enable(this.Bullets);
+		this.Ultimates = Game.add.group();
+		this.Ultimates.enableBody = true;
+		Game.physics.arcade.enable(this.Ultimates);
+		///////////////////////////////////////////////////////////////////
 
 	  ////////////////////////////////////////////////////////// POWERUPS
 	  this.Shields = Game.add.group();
