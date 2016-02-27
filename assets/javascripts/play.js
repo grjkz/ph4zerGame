@@ -288,7 +288,9 @@ var playState = {
 		 */
 		socket.on('player hit', function(data) {
 			// destroy bullet
-			this.destroyBullet(data.bulletID);
+			if (data.bulletID != 'x') {
+				this.destroyBullet(data.bulletID);
+			}
 			// destroy shield or player
 			this.hitTaken(this.Players[data.id]);
 			// if player opponent died and shooter was me, increment my kill count
@@ -610,8 +612,9 @@ var playState = {
 	  Game.physics.arcade.collide(this.Players[this.myID], this.Bullets, this.imHit, null, this);
 	  Game.physics.arcade.overlap(this.Players[this.myID], this.Coins, this.getRich, null, this);
 	  Game.physics.arcade.overlap(this.Ultimates, this.Players[this.myID], this.obliterate, null, this);
-	  Game.physics.arcade.overlap(this.Ultimates, this.Coins, this.obliterate, null, this);
-	  Game.physics.arcade.overlap(this.Ultimates, this.Bullets, this.obliterate, null, this);
+	  Game.physics.arcade.overlap(this.Ultimates, this.Coins, this.obliterateItem, null, this);
+	  Game.physics.arcade.overlap(this.Ultimates, this.Bullets, this.obliterateItem, null, this);
+	  // Game.physics.arcade.overlap(this.Ultimates, this.Ultimates, this.ultimateClash, null, this);
 	  
 	  //////////////////////////////// OTHERS
 	  // tell server to generate coins every 4-12 seconds
@@ -909,34 +912,45 @@ var playState = {
 	
 	//////////////////////////////////////////////////////////// ULTIMATE HITS SOMETHING
 	// kill anything that touches the ultimate
+	// if hitting a player | first is player, second is ult
 	obliterate: function(victim, ultimate) {
-		if (this.Players[this.myID] === victim) {
-			var me = victim;
-			socket.emit('im hit', {id: this.myID});
-			if (me.shielded === true) {
-				this.Shields.children.forEach(function(shield) {
-					if (shield.playerID === this.myID) {
-						shield.destroy();
-					}
-				})
-				me.shielded = false
-			}
-			else {
-				me.kill()
-				me.alive = false
-				// facing unknown might disable any type of shooting
-				me.facing = 'unknown'
-				//  EXPLODE ANIMATION
-				var explode = Game.add.sprite(me.body.center.x-50, me.body.center.y-50,'explode1')
-				explode.animations.add('explode')
-				explode.animations.play('explode',10)
-				//
-			}	
-		}
-		else {
-			ultimate.destroy()
+		// destroy shield or playser
+		var alive = this.hitTaken(victim);
+		// send out player's id and bullet's id
+		socket.emit('im hit', {
+			id: victim.id,
+			bulletID: 'x',
+			alive: alive,
+			killer: ultimate.playerID
+		});
+		// if this player died, reset killstreak and increment death counter
+		if (!alive) {
+			this.killstreak = 0;
+			this.killstreakOutput.text = 0;
+			this.deathsOutput.text = ++this.deaths;
 		}
 	},
+
+	// if hitting a coin | first is ult, second is coin
+	// if hitting a bullet | first is ult, second is bullet
+	/**
+	 * Destroy world object if ultimate hits it
+	 * @param  {object} ultimate Ultimate beam
+	 * @param  {object} item     World item that was hit
+	 */
+	obliterateItem: function(ultimate, item) {
+		item.destroy();
+	},
+
+	/**
+	 * When two ultimates clash, destroy both | wont work since creating ultimates are, by default, overlapping
+	 * @param  {object} ultimate1 Ult 1
+	 * @param  {object} ultimate2 Ult 2
+	 */
+	// ultimateClash: function(ultimate1, ultimate2) {
+	// 	ultimate1.destroy();
+	// 	ultimate2.destroy();
+	// },
 
 
 
@@ -1027,7 +1041,6 @@ var playState = {
 			// destroy bullet
 			for (var i = 0; i < bullets.length; i++) {
 				if (bullets[i].bulletID == bulletID) {
-					bullets[i].kill();
 					bullets[i].destroy();
 					return;
 				}
