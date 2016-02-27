@@ -65,6 +65,7 @@ var playState = {
 
 	// for Meta data
 	shotLevelOutput: null,
+	shotSpeedOutput: null,
 
 	shieldCounter: 0,
 	shieldOutput: null,
@@ -123,16 +124,18 @@ var playState = {
 		// Meta Data Output
 		// upgrade
 		Game.add.text(850, 630, "Upgrade LvL:", {fontSize: '14px', fill: 'white'});
-		this.shotLevelOutput = Game.add.text(950, 630, "0", {fontSize: '14px', fill: 'orange'});
+		this.shotLevelOutput = Game.add.text(945, 630, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(850, 650, "Gun Speed:", {fontSize: '14px', fill: 'white'});
+		this.shotSpeedOutput = Game.add.text(945, 650, "800", {fontSize: '14px', fill: 'orange'});
 		// shields
-		Game.add.text(850, 650, "Shields Used:", {fontSize: '14px', fill: 'white'});
-		this.shieldOutput = Game.add.text(950, 650, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(850, 670, "Shields Used:", {fontSize: '14px', fill: 'white'});
+		this.shieldOutput = Game.add.text(945, 670, "0", {fontSize: '14px', fill: 'orange'});
 		// # of shots fired
-		Game.add.text(980, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
+		Game.add.text(983, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
 		this.sessionShotOutput = Game.add.text(1090, 630, "0", {fontSize: '14px', fill: 'orange'});
-		Game.add.text(980, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
+		Game.add.text(983, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
 		this.lifetimeShotOutput = Game.add.text(1090, 650, "0", {fontSize: '14px', fill: 'orange'});
-		Game.add.text(980, 670, "Ultimates:", {fontSize: '14px', fill: 'white'});
+		Game.add.text(983, 670, "Ultimates:", {fontSize: '14px', fill: 'white'});
 		this.ultimateShotOutput = Game.add.text(1090, 670, "0", {fontSize: '14px', fill: 'orange'});
 		// kills / deaths
 		Game.add.text(1140, 630, "Killstreak:", {fontSize: '14px', fill: 'white'});
@@ -333,7 +336,8 @@ var playState = {
 				this.shotLevel++;
 				this.shotCooldown *= 0.8;
 				// update shot level output; says "Max" if level == 5
-				this.shotLevelOutput.text = this.shotLevel < 5 ? this.shotLevel : "Max";	
+				this.shotLevelOutput.text = this.shotLevel < 5 ? this.shotLevel : "Max";
+				this.shotSpeedOutput.text = Math.floor(this.shotCooldown);
 			}
 			this.updateBank(data.id, data.bank);
 		}.bind(this));
