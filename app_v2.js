@@ -178,7 +178,7 @@ io.on('connection', function(client) {
 		if (Users[client.id].bank >= 0) { //350
 			Users[client.id].bank -= 0;
 			var bulletID = [bulletCounter++, bulletCounter++];
-			client.emit('vertical receipt', {
+			io.emit('vertical receipt', {
 				// string, array, int
 				id: client.id,
 				bulletID: bulletID,
@@ -192,7 +192,7 @@ io.on('connection', function(client) {
 			Users[client.id].bank -= 00;
 			var bulletID = [bulletCounter++, bulletCounter++, bulletCounter++];
 			// string, array, int
-			client.emit('shotgun receipt', {
+			io.emit('shotgun receipt', {
 				id: client.id,
 				bulletID: bulletID,
 				bank: Users[client.id].bank
@@ -204,7 +204,7 @@ io.on('connection', function(client) {
 		if (Users[client.id].bank >= 00) {
 			Users[client.id].bank -= 00; //900
 			var bulletID = [bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++];
-			client.emit('omnishot receipt', {
+			io.emit('omnishot receipt', {
 				// string, array, int
 				id: client.id,
 				bulletID: bulletID,
@@ -217,7 +217,7 @@ io.on('connection', function(client) {
 		if (Users[client.id].bank >= 00) {
 			Users[client.id].bank -= 000; //1000
 			// string, int, int
-			client.emit('ultimate receipt', {
+			io.emit('ultimate receipt', {
 				id: client.id,
 				bulletID: bulletCounter++,
 				bank: Users[client.id].bank
