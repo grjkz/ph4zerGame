@@ -2,48 +2,99 @@
 <html lang="en">
 <head>
 	<meta charset="UTF-8">
-	<% include partials/head %>
+	<link rel="stylesheet" type="text/css" href="../stylesheets/index.css">
 	<title>Philip Choi</title>
 </head>
 <body>
-	<h1>Welcome to my Shooter</h1>
-	<p>Created by Philip Choi</p>
-	<h5>All Images/Sprites belong to their rightful owners. I did not create any of them.</h5>
-	
-	<div id="rules">
-		<h2>Rules</h2>
-		<ol>
-			<li>Arrow Keys to move</li>
-			<li>Spacebar to shoot</li>
-			<!-- <ol>Coins:
-				<li><img src="images/" alt=""></li>
-			</ol> -->
-			<li>Pick up coins to purchase Abilities or Upgrade!</li>
-			<li class='top-text'>Abilities:</li>
-			<ul>
-				<li><strong>D</strong> $200: Shoots UP and Down</li>
-				<li><strong>F</strong> $250: Shoots 3 bullets forward (spread)</li>
-				<li><strong>S</strong> $350: Creates a shield that absorbs one hit</li>
-				<li><strong>Q</strong> $500: Upgrades your gun speed</li>
-				<li><strong>A</strong> $1000: Shoots in 8 directions</li>
-				<li><strong>R</strong> $3000: Big laser!</li>
-				<li>Simply: <strong>A S D F Q R</strong></li>
-			</ul>
-		</ol>
-		<h3>Notes:</h3>
-		<ol>
-			<li><strike>Your bank will be cut in half when a new player joins</strike></li>
-			<li>There are still bugs so Click your browser's Back button and try again if something is wrong <strong style='color:red'>Don't refresh the page</strong></li>
-		</ol>
-	</div>
-	<% if (players === 1) { %>
-	 <h3><strong><%= players %></strong> player currently in the game</h3>
-	<% } else { %>
-	<h3><strong><%= players %></strong> players currently in the game</h3>
-	<% } %>
-	
-	<div class="links">
-		<h3><a href="/game_v2">Take me to the game!</a></h3>
-	</div>
+	<div class="main">
+		<div class="wrapper">
+				
+			<div class="instructions left-column">
+				<h1>Welcome to my Shooter</h1>
+				<p>Created by Philip Choi</p>
+				<h5>All Images/Sprites belong to their rightful owners. I did not create any of them.</h5>
+				
+				<div id="rules">
+					<h2>Rules</h2>
+					<ol>
+						<li>Arrow Keys to move</li>
+						<li>Spacebar to shoot</li>
+						<!-- <ol>Coins:
+							<li><img src="images/" alt=""></li>
+						</ol> -->
+						<li>Pick up coins to purchase Abilities or Upgrade!</li>
+						<li class='top-text'>Abilities:
+							<table>
+								<tr>
+									<th>Key</th>
+									<th>Cost</th>
+									<th>Name</th>
+									<th>Description</th>
+								</tr>
+								<tr>
+									<td class='key'>S</td>
+									<td>$350</td>
+									<td>Shield</td>
+									<td>Creates a shield that absorbs one hit</td>
+								</tr>
+								<tr>
+									<td class="key">Q</td>
+									<td>$400</td>
+									<td>Upgrade</td>
+									<td>Increases your gun speed</td>
+								</tr>
+								<tr>
+									<td class="key">D</td>
+									<td>$350</td>
+									<td>Vertical</td>
+									<td>Fires Up and Down</td>
+								</tr>
+								<tr>
+									<td class="key">F</td>
+									<td>$500</td>
+									<td>Shotgun</td>
+									<td>Shoots 3 bullets forward in a cone</td>
+								</tr>
+								<tr>
+									<td class="key">A</td>
+									<td>$900</td>
+									<td>Omnishot</td>
+									<td>Fires in 8 directions around you</td>
+								</tr>
+								<tr>
+									<td class="key">R</td>
+									<td>$1000</td>
+									<td>Kame**meha</td>
+									<td>Fires a fast beam that destroys everything!</td>
+								</tr>
+							</table>
+						</li>
+						<li>Simply: <span class='key'>A S D F Q R</span></li>
+					</ol>
+				</div> <!-- end .rules -->
+			</div> <!-- end .instructions.left-column -->
+
+			<div class="right-column">
+				<h3>Notes:</h3>
+				<ol>
+					<li><strike>Your bank will be cut in half when a new player joins</strike></li>
+					<li>If you happen to encounter a bug, submit a ticket <a href="https://github.com/grjkz/ph4zerGame/issues">here</a></li>
+				</ol>
+			
+				<% if (players === 1) { %>
+					<h3 class='player-info'><strong class="player-count"><%= players %></strong> player currently in the game</h3>
+				<% } else { %>
+					<h3 class='player-info'><strong class="player-count"><%= players %></strong> players currently in the game</h3>
+				<% } %>
+				
+				<div>
+					<a href="/game_v2" class='start-button'>
+						<button class="start-button">Take me to the game!</button>
+					</a>
+				</div>
+			</div> <!-- end .right-column -->
+		
+		</div> <!-- end .wrapper -->
+	</div> <!-- end .main -->
 </body>
 </html>

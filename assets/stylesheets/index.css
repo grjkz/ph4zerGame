@@ -1,0 +1,80 @@
+* {
+	margin: 0;
+}
+
+body {
+	background-color: rgba(0,0,0,0.03);
+}
+
+li {
+	line-height: 24px
+}
+
+table th {
+	padding: 8px 12px;
+}
+
+table td {
+	padding: 8px 12px;
+}
+
+.main {
+	width: 1280px;
+	height: 720px;
+	background: url(/images/sky.jpg);
+	position: relative;
+	margin: 24px auto;
+}
+
+.wrapper {
+	width: 100%;
+	height: 100%;
+	background: rgba(0,0,0,0.3);
+	color: white;
+	font-weight: 800;
+}
+
+.left-column {
+	width: 670px;
+	float: left;
+	padding: 32px;
+	box-sizing: border-box;
+}
+
+.right-column {
+	width: 600px;
+	float: left;
+	margin-top: 200px;
+	padding: 32px;
+	box-sizing: border-box;
+	text-align: center;
+}
+
+.top-text {
+	color: rgba(255,204,0,1);
+}
+
+.key {
+	color: rgba(0,255,0,1);
+	text-align: center;
+}
+
+.player-info {
+	margin: 18px;
+}
+
+.player-count {
+	color: rgba(0,255,0,1);
+}
+
+.start-button {
+	text-decoration: none;
+	font-weight: 800;
+	font-size: 24px;
+	color: green;
+}
+
+.start-button button {
+	margin-top: 32px;
+	padding: 12px;
+}
