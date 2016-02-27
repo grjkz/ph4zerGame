@@ -66,6 +66,10 @@ var playState = {
 
 	Players: {},
 	playerCounter: 0, // greater than 1 == send server movement data
+	kills: 0,
+	killsOutputNum: null,
+	deaths: 0,
+	deathsOutputNum: null,
 
 	cursors: null, // for player controls
 
@@ -220,6 +224,8 @@ var playState = {
 		}.bind(this));
 
 
+////////////////////////////////////////////////////// Others
+
 		// Update player positions
 		socket.on('movement', function(data) {
 			var player = this.Players[data.id];
@@ -255,14 +261,15 @@ var playState = {
 			this.updateBank(data.id, data.bank);
 		}.bind(this));
 
+
+																																				///////////////////////
+////////////////////////////////////////////////////////////////////////// PURCHASE RECEIPTS //
+																																				///////////////////////
 		// A player has shot (includes me)
 		socket.on('shots fired',function(data) {
 			this.shoot(data);
 		}.bind(this));
 
-																																				///////////////////////
-////////////////////////////////////////////////////////////////////////// PURCHASE RECEIPTS //
-																																				///////////////////////
 
 		socket.on('upgrade receipt', function(data) {
 			this.updateBank(data.id, data.bank);
@@ -490,37 +497,7 @@ var playState = {
 
 	},
 
-	spawnPlayer: function(user) {
-		// have server send over which ship to render as well
-		this.Players[user.id] = Game.add.sprite(user.x, user.y, user.ship);
 
-		var player = this.Players[user.id];
-		player.id = user.id;
-		player.facing = user.facing;
-		player.shielded = user.shielded;
-		// player.charging = false; // note: might have to have this data stored on server in case user connects while player is charging as opposed to respawning
-		player.animations.add('right',[0],1,true);
-		player.animations.add('down',[1],1,true);
-		player.animations.add('left',[2],1,true);
-		player.animations.add('up',[3],1,true);
-		player.animations.play(user.facing);
-		
-		Game.physics.arcade.enable(player);
-		player.body.collideWorldBounds = true;
-		this.updateBank(user.id, user.bank);
-
-		// Display Name above ship
-		player.displayName = Game.add.text(user.x, user.y, user.id, {fontSize: '10px', fill:'red'});
-		// set self name color to black
-		if (player.id == this.myID) {
-			player.displayName.fill = 'black';
-		}
-		if (player.shielded) {
-			var shield = this.Shields.create(player.x, player.y, 'bubble');
-			shield.playerID = user.id;
-		}
-		this.playerCounter++;
-	},
 
 	// function(user) {
 	// 	this.Players.counter++
@@ -641,7 +618,39 @@ var playState = {
 	  	this.redrawShields();
 	  }
 	},
-	//////////////////////////////////////////////////////////////////////////////
+	////////////////////////////////////////////////////////////////////////////// SPAWNING
+	
+	spawnPlayer: function(user) {
+		// have server send over which ship to render as well
+		this.Players[user.id] = Game.add.sprite(user.x, user.y, user.ship);
+
+		var player = this.Players[user.id];
+		player.id = user.id;
+		player.facing = user.facing;
+		player.shielded = user.shielded;
+		// player.charging = false; // note: might have to have this data stored on server in case user connects while player is charging as opposed to respawning
+		player.animations.add('right',[0],1,true);
+		player.animations.add('down',[1],1,true);
+		player.animations.add('left',[2],1,true);
+		player.animations.add('up',[3],1,true);
+		player.animations.play(user.facing);
+		
+		Game.physics.arcade.enable(player);
+		player.body.collideWorldBounds = true;
+		this.updateBank(user.id, user.bank);
+
+		// Display Name above ship
+		player.displayName = Game.add.text(user.x, user.y, user.id, {fontSize: '10px', fill:'red'});
+		// set self name color to black
+		if (player.id == this.myID) {
+			player.displayName.fill = 'black';
+		}
+		if (player.shielded) {
+			var shield = this.Shields.create(player.x, player.y, 'bubble');
+			shield.playerID = user.id;
+		}
+		this.playerCounter++;
+	},
 
 
 	////////////////////////////////////////////////////////////// SHOOTING
@@ -675,8 +684,13 @@ var playState = {
 		bullet.outOfBoundsKill = true;
 	},
 
-	//////////////////////////////////////////////////////////// PLAYER HIT
-	// LOCAL CLIENT WAS HIT
+
+	//////////////////////////////////////////////////////////// OBJECT COLLISION / DESTRUCTION
+	/**
+	 * This player made contact with a bullet
+	 * @param  {object} player Player object
+	 * @param  {object} bullet Bullet object
+	 */
 	imHit: function(player, bullet) {
 		// destroy bullet
 		this.destroyBullet(bullet.bulletID);
@@ -688,12 +702,59 @@ var playState = {
 			bulletID: bullet.bulletID,
 			alive: alive
 		});
+		if (!alive) {
+			this.deathsOutputNum = ++this.deaths;
+		}
 	},
 
-	///////////////////////////////////////////////////////////////////////////
+		/**
+	 * Destroys a shield or kills player
+	 * @param  {object} player Player that was shot
+	 * @return {bool}        Is player still alive?
+	 */
+	hitTaken: function(player) {
+		if (player.shielded) { // if shielded
+			player.shielded = false;
+			var shields = this.Shields.children;
+			for (var s = 0; s < shields.length; s++) {
+				if (shields[s].playerID == player.id) {
+					shields[s].destroy();
+					// return true if player is still alive
+					return true;
+				}
+			}
+			console.log("ERROR: Couldn't find shield but player.shielded was = true");
+			return true;
+		}
+		// else
+		// if killed ship is me
+		if (player.id == this.myID) {
+			this.alive = false;
+			// set timeout for the player to respawn and reset shotCounter
+			var lifetimeShots = this.lifetimeShots;
+			setTimeout(function() {
+				socket.emit('respawn me');
+				lifetimeShots = 0;
+			}, 2000);
+		}
+		// destroy the ship
+		player.kill();
+		this.Players[player.id].alive = false;
+		//  EXPLODE ANIMATION
+		var explode = Game.add.sprite(player.x-35, player.body.center.y-40,'explode1');
+		explode.animations.add('explode');
+		explode.animations.play('explode',10);
+		// return false if player exploded (had no shield)
+		return false;
+	
+	},
+
 
 	//////////////////////////////////////////////////////////////// MONEY STUFF
-	// SERVER-GENERATED RANDOM COIN
+	/**
+	 * Creates a coin sprite with its data
+	 * @param  {object} data Contains coin's information (uid, coords, value, expiry)
+	 */
 	generateCoin: function(data) {
 		// x, y, coinID, type
 		var coin = this.Coins.create(data.x, data.y, data.type);
@@ -707,7 +768,11 @@ var playState = {
 		}, data.expire);
 	},
 
-	// LOCAL CLIENT PICKS UP COIN
+	/**
+	 * This player touches/picks up a coin
+	 * @param  {object} player Player Object
+	 * @param  {object} coin   Coin object touched
+	 */
 	getRich: function(player, coin) {
 		// remove coin from my own screen to prevent multiple pickups due to laggy computer
 		coin.kill();
@@ -721,37 +786,38 @@ var playState = {
 	//////////////////////////////////////////////////////////////////////////
 
 	/////////////////////////////////////////////////////////// SHOPPING FUCTIONS
-	//////////////////////////////////////////////// UPGRADE GUN
+	
 	upgradeGun: function() {
 		if (this.Players[this.myID].bank >= 00 && this.alive && this.shotLevel < 5) //400
 			socket.emit('upgrade');
 	},
-	//////////////////////////////////////////////////////////// SHIELD
+	
 	buyShield: function() {
 		if (this.Players[this.myID].bank >= 0 && !this.Players[this.myID].shielded && this.alive) //350
 			socket.emit('shield');
 	},
-	/////////////////////////////////////////////////////////// VERTICAL SHOT
+	
 	buyVertical: function() {
 		if (this.Players[this.myID].bank >= 00 && this.alive) //350
 			socket.emit('vertical');
 	},
-	/////////////////////////////////////////////////////////// SHOTGUN SHOT
+	
 	buyShotgun: function() {
 		if (this.Players[this.myID].bank >= 00 && this.alive) // 500
 			socket.emit('shotgun');
 	},
-	///////////////////////////////////////////////////////////// 8 WAY SHOT!!!
+	
 	buyOmnishot: function() {
 		if (this.Players[this.myID].bank >= 00 && this.alive) // 900
 			socket.emit('omnishot');
 	},
-	//////////////////////////////////////////////////////////////// Ultimate
+	
 	buyUltimate: function() {
 		if (this.Players[this.myID].bank >= 000 && this.alive) // 1000
 			socket.emit('ultimate');
 	},
-	///////////////////////////////////////////////////// ULTIMATE HITS SOMETHING
+	
+	//////////////////////////////////////////////////////////// ULTIMATE HITS SOMETHING
 	// kill anything that touches the ultimate
 	obliterate: function(victim, ultimate) {
 		if (this.Players[this.myID] === victim) {
@@ -782,10 +848,11 @@ var playState = {
 		}
 	},
 
-	////////////////////////////////////////////////////////////////////////////
+
 
 	/**
-	 * Redraw Name
+	 * Redraws name to follow its player
+	 * @param  {object} player Player object
 	 */
 	redrawName: function(player) {
 		// Display Name above ship
@@ -795,7 +862,7 @@ var playState = {
 
 
 	/**
-	 * Redraws shields so they follow its ship
+	 * Redraws shields to follow its ship
 	 */
 	redrawShields: function() {
 		this.Shields.children.forEach(function(shield) {
@@ -845,48 +912,6 @@ var playState = {
 				thing.destroy();
 			}
 		});
-	},
-
-	/**
-	 * Destroys a shield or kills player
-	 * @param  {object} player Player that was shot
-	 * @return {bool}        Is player still alive?
-	 */
-	hitTaken: function(player) {
-		if (player.shielded) { // if shielded
-			player.shielded = false;
-			var shields = this.Shields.children;
-			for (var s = 0; s < shields.length; s++) {
-				if (shields[s].playerID == player.id) {
-					shields[s].destroy();
-					// return true if player is still alive
-					return true;
-				}
-			}
-			console.log("ERROR: Couldn't find shield but player.shielded was = true");
-			return true;
-		}
-		// else
-		// if killed ship is me
-		if (player.id == this.myID) {
-			this.alive = false;
-			// set timeout for the player to respawn and reset shotCounter
-			var lifetimeShots = this.lifetimeShots;
-			setTimeout(function() {
-				socket.emit('respawn me');
-				lifetimeShots = 0;
-			}, 2000);
-		}
-		// destroy the ship
-		player.kill();
-		this.Players[player.id].alive = false;
-		//  EXPLODE ANIMATION
-		var explode = Game.add.sprite(player.x-35, player.body.center.y-40,'explode1');
-		explode.animations.add('explode');
-		explode.animations.play('explode',10);
-		// return false if player exploded (had no shield)
-		return false;
-	
 	},
 
 	/**
