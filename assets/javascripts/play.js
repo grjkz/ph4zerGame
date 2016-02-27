@@ -60,7 +60,8 @@ var playState = {
 	
 	Shields: null, // group of all shields
 	Ultimates: null,
-	ultimateShotNum: 0,
+	ultimateShots: 0,
+	ultimateShotNum: null,
 	charging: false, // charging to fire ultimate
 
 	Players: {},
@@ -426,7 +427,8 @@ var playState = {
 			var setOOB = this.setOOB.bind(this);
 			// disable movement if shooter is me
 			if (data.id == this.myID) {
-				this.charging = true;
+				this.charging = true; // stop player movement
+				this.ultimateShotNum.text = ++this.ultimateShots; // increment ultimate shot counter
 			}
 			var shooter = this.Players[data.id];
 			// play charging animation
