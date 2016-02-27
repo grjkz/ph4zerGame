@@ -49,13 +49,8 @@ var playState = {
 	coinTimer: 0,
 
 	Bullets: null, // group of all bullets ever created in game
-	sessionShots: 0, // total number of shots made since joining the game
-	sessionShotOutput: null,
-	lifetimeShots: 0, // number of shots made since last (re)spawn
-	lifetimeShotOutput: null,
 	shotTimer: 0,
 	shotLevel: 0,
-	shotLevelOutput: null,
 	shotCooldown: 800,
 	bulletVelocity: 400,
 	
@@ -67,6 +62,17 @@ var playState = {
 
 	Players: {},
 	playerCounter: 0, // greater than 1 == send server movement data
+
+	// for Meta data
+	shotLevelOutput: null,
+
+	shieldCounter: 0,
+	shieldOutput: null,
+
+	sessionShots: 0, // total number of shots made since joining the game
+	sessionShotOutput: null,
+	lifetimeShots: 0, // number of shots made since last (re)spawn
+	lifetimeShotOutput: null,
 	
 	kills: 0,
 	killsOutput: null,
@@ -121,7 +127,7 @@ var playState = {
 		// shields
 		Game.add.text(850, 650, "Shields Used:", {fontSize: '14px', fill: 'white'});
 		this.shieldOutput = Game.add.text(950, 650, "0", {fontSize: '14px', fill: 'orange'});
-		// shooting
+		// # of shots fired
 		Game.add.text(980, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
 		this.sessionShotOutput = Game.add.text(1090, 630, "0", {fontSize: '14px', fill: 'orange'});
 		Game.add.text(980, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
@@ -344,6 +350,9 @@ var playState = {
 			var shield = this.Shields.create(player.x, player.y, 'bubble');
 			// give shield the owner's ID
 			shield.playerID = data.id;
+			if (this.myID == data.id) {
+				this.shieldOutput.text = ++this.shieldCounter;
+			}
 			this.updateBank(data.id, data.bank);
 		}.bind(this));
 
