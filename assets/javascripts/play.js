@@ -102,50 +102,50 @@ var playState = {
 		Game.add.text(53, 640, 'S', {fontSize:'16px',fill:'white'});
 		Game.add.text(10, 690, 'Shield: $350', {fontSize:'16px', fill:'orange'});
 		// display shotgun
-		Game.add.sprite(155, 620, 'shotgun_icon');
-		Game.add.text(140, 690, 'Shotgun: $250', {fontSize:'16px', fill:'orange'});
-		Game.add.text(210, 640, 'F', {fontSize:'16px',fill:'white'});
+		Game.add.sprite(135, 620, 'shotgun_icon');
+		Game.add.text(120, 690, 'Shotgun: $250', {fontSize:'16px', fill:'orange'});
+		Game.add.text(190, 640, 'F', {fontSize:'16px',fill:'white'});
 		// display gun upgrade
-		Game.add.sprite(310, 615, 'upgrade_icon');
-		Game.add.text(290, 690, 'Upgrade: $500', {fontSize:'16px', fill:'orange'});
-		Game.add.text(340, 655, 'Q', {fontSize:'16px',fill:'white'});
+		Game.add.sprite(270, 615, 'upgrade_icon');
+		Game.add.text(250, 690, 'Upgrade: $500', {fontSize:'16px', fill:'orange'});
+		Game.add.text(300, 655, 'Q', {fontSize:'16px',fill:'white'});
 		// display veritcal
-		Game.add.sprite(450, 620, 'vertical_icon');
-		Game.add.text(435, 690, 'Vertical: $200', {fontSize:'16px', fill:'orange'});
-		Game.add.text(480, 640, 'E', {fontSize:'16px', fill:'white'});
+		Game.add.sprite(395, 620, 'vertical_icon');
+		Game.add.text(380, 690, 'Vertical: $200', {fontSize:'16px', fill:'orange'});
+		Game.add.text(425, 640, 'E', {fontSize:'16px', fill:'white'});
 		// display Omni
-		Game.add.sprite(600, 620, 'omni_icon');
-		Game.add.text(575, 690, 'Omnishot: $500', {fontSize:'16px', fill:'orange'});
-		Game.add.text(630, 640, 'A', {fontSize:'16px', fill:'white'});
+		Game.add.sprite(525, 620, 'omni_icon');
+		Game.add.text(500, 690, 'Omnishot: $500', {fontSize:'16px', fill:'orange'});
+		Game.add.text(555, 640, 'A', {fontSize:'16px', fill:'white'});
 		// display Ultimate
-		Game.add.sprite(770, 625, 'ult_icon');
-		Game.add.text(735, 690, 'Ka***ha: $3000', {fontSize:'16px', fill:'orange'});
-		Game.add.text(750, 640,'R',{fontSize:'16px', fill:'white'});
+		Game.add.sprite(680, 625, 'ult_icon');
+		Game.add.text(645, 690, 'Ka***ha: $3000', {fontSize:'16px', fill:'orange'});
+		Game.add.text(660, 640,'R',{fontSize:'16px', fill:'white'});
 		// Meta Data Output
 		// upgrade
-		Game.add.text(850, 630, "Upgrade LvL:", {fontSize: '14px', fill: 'white'});
-		this.shotLevelOutput = Game.add.text(948, 630, "0", {fontSize: '14px', fill: 'orange'});
-		Game.add.text(850, 650, "Gun Speed:", {fontSize: '14px', fill: 'white'});
-		this.shotSpeedOutput = Game.add.text(948, 650, "800", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(780, 630, "Upgrade LvL", {fontSize: '14px', fill: 'white'});
+		this.shotLevelOutput = Game.add.text(880, 630, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(780, 650, "Gun Speed", {fontSize: '14px', fill: 'white'});
+		this.shotSpeedOutput = Game.add.text(880, 650, "800", {fontSize: '14px', fill: 'orange'});
 		// shields
-		Game.add.text(850, 670, "Shields Used:", {fontSize: '14px', fill: 'white'});
-		this.shieldOutput = Game.add.text(948, 670, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(780, 670, "Shields Used", {fontSize: '14px', fill: 'white'});
+		this.shieldOutput = Game.add.text(880, 670, "0", {fontSize: '14px', fill: 'orange'});
 		// # of shots fired
-		Game.add.text(983, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
-		this.sessionShotOutput = Game.add.text(1090, 630, "0", {fontSize: '14px', fill: 'orange'});
-		Game.add.text(983, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
-		this.lifetimeShotOutput = Game.add.text(1090, 650, "0", {fontSize: '14px', fill: 'orange'});
-		Game.add.text(983, 670, "Ultimates:", {fontSize: '14px', fill: 'white'});
-		this.ultimateShotOutput = Game.add.text(1090, 670, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(943, 630, "Total Shots", {fontSize: '14px', fill: 'white'});
+		this.sessionShotOutput = Game.add.text(1050, 630, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(943, 650, "Lifetime Shots", {fontSize: '14px', fill: 'white'});
+		this.lifetimeShotOutput = Game.add.text(1050, 650, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(943, 670, "Ultimates", {fontSize: '14px', fill: 'white'});
+		this.ultimateShotOutput = Game.add.text(1050, 670, "0", {fontSize: '14px', fill: 'orange'});
 		// kills / deaths
-		Game.add.text(1140, 630, "Killstreak:", {fontSize: '14px', fill: 'white'});
-		this.killstreakOutput = Game.add.text(1248, 630, "0", {fontSize: '14px', fill: 'orange'});
-		Game.add.text(1140, 650, "Best Killstreak:", {fontSize: '14px', fill: 'white'});
-		this.bestKillstreakOutput = Game.add.text(1248, 650, "0", {fontSize: '14px', fill: 'yellow'});
-		Game.add.text(1140, 670, "Kills:", {fontSize: '14px', fill: 'white'});
-		this.killsOutput = Game.add.text(1248, 670, "0", {fontSize: '14px', fill: 'orange'});
-		Game.add.text(1140, 690, "Deaths:", {fontSize: '14px', fill: 'white'});
-		this.deathsOutput = Game.add.text(1248, 690, "0", {fontSize: '14px', fill: 'red'});
+		Game.add.text(1110, 630, "Killstreak", {fontSize: '14px', fill: 'white'});
+		this.killstreakOutput = Game.add.text(1220, 630, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(1110, 650, "Best Killstreak", {fontSize: '14px', fill: 'white'});
+		this.bestKillstreakOutput = Game.add.text(1220, 650, "0", {fontSize: '14px', fill: 'yellow'});
+		Game.add.text(1110, 670, "Kills", {fontSize: '14px', fill: 'white'});
+		this.killsOutput = Game.add.text(1220, 670, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(1110, 690, "Deaths", {fontSize: '14px', fill: 'white'});
+		this.deathsOutput = Game.add.text(1220, 690, "0", {fontSize: '14px', fill: 'red'});
 		//////////////////////////////////////////////////// GAME OPTIONS
 		Game.world.setBounds(0, 0, 1280, 600);
 		Game.physics.startSystem(Phaser.Physics.ARCADE);
