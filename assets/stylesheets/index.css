@@ -18,6 +18,15 @@ table td {
 	padding: 8px 12px;
 }
 
+a {
+	text-decoration: none;
+}
+
+.red {
+	color: rgb(255,0,0);
+	font-weight: 400;
+}
+
 .main {
 	width: 1280px;
 	height: 720px;
@@ -44,10 +53,13 @@ table td {
 .right-column {
 	width: 600px;
 	float: left;
-	margin-top: 200px;
+	margin-top: 120px;
 	padding: 32px;
 	box-sizing: border-box;
-	text-align: center;
+}
+
+.instructions {
+	margin-top: 24px;
 }
 
 .top-text {
@@ -61,14 +73,18 @@ table td {
 
 .player-info {
 	margin: 18px;
+	text-align: center;
 }
 
 .player-count {
 	color: rgba(0,255,0,1);
 }
 
+.start-wrapper {
+	text-align: center;
+}
+
 .start-button {
-	text-decoration: none;
 	font-weight: 800;
 	font-size: 24px;
 	color: green;

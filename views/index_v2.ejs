@@ -9,13 +9,13 @@
 	<div class="main">
 		<div class="wrapper">
 				
-			<div class="instructions left-column">
-				<h1>Welcome to my Shooter</h1>
+			<div class="left-column">
+				<h1>Welcome to Ph4zer!</h1>
 				<p>Created by Philip Choi</p>
 				<h5>All Images/Sprites belong to their rightful owners. I did not create any of them.</h5>
 				
-				<div id="rules">
-					<h2>Rules</h2>
+				<div class="instructions">
+					<h2>Instructions</h2>
 					<ol>
 						<li>Arrow Keys to move</li>
 						<li>Spacebar to shoot</li>
@@ -77,8 +77,9 @@
 			<div class="right-column">
 				<h3>Notes:</h3>
 				<ol>
+					<li>This game is made for a minimum of <span class='red'>1280x720 resolution</span>. If you cannot see this entire background image, your window is too small.</li>
+					<li>If you happen to encounter a bug, submit a ticket <a href="https://github.com/grjkz/ph4zerGame/issues">here</a>.</li>
 					<li><strike>Your bank will be cut in half when a new player joins</strike></li>
-					<li>If you happen to encounter a bug, submit a ticket <a href="https://github.com/grjkz/ph4zerGame/issues">here</a></li>
 				</ol>
 			
 				<% if (players === 1) { %>
@@ -87,7 +88,7 @@
 					<h3 class='player-info'><strong class="player-count"><%= players %></strong> players currently in the game</h3>
 				<% } %>
 				
-				<div>
+				<div class='start-wrapper'>
 					<a href="/game_v2" class='start-button'>
 						<button class="start-button">Take me to the game!</button>
 					</a>
