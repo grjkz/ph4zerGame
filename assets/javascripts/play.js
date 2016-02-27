@@ -1,10 +1,11 @@
 /*
+find "note:" for things I should add into the code
+
 
 Bugs:
 shields dont appear on my screen when opponent purchases it
 opponent doesn't respawn on my screen but does on his. if we kill each other once each, we never see each other again since Players[id].alive = false forever
-
-find "note:" for things I should add into the code
+firing a bullet inside an opponent does't kill them, and creates a bug as well
 
 
 FYI:
@@ -291,7 +292,6 @@ var playState = {
 			// destroy shield or player
 			this.hitTaken(this.Players[data.id]);
 			// if player opponent died and shooter was me, increment my kill count
-			console.log(data.id+' was hit by '+data.killer+" | "+data.alive)
 			if (!data.alive && data.killer == this.myID) {
 				this.incrementKillCount();
 			}
@@ -791,8 +791,9 @@ var playState = {
 		});
 		// if this player died, reset killstreak and increment death counter
 		if (!alive) {
+			this.killstreak = 0;
+			this.killstreakOutput.text = 0;
 			this.deathsOutput.text = ++this.deaths;
-			this.killsOutput.text = 0;
 		}
 	},
 
@@ -1049,6 +1050,7 @@ var playState = {
 		this.killsOutput.text = ++this.kills;
 		this.killstreakOutput.text = ++this.killstreak;
 		if (this.killstreak > this.bestKillstreak) {
+			this.bestKillstreak = this.killstreak;
 			this.bestKillstreakOutput.text = this.killstreak;
 		}
 
