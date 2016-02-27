@@ -175,6 +175,10 @@ var playState = {
 
 		// Init: grab all players' info
 		// Spawn all players
+		/**
+		 * Init: Grabs all players' data
+		 * @param  {object} data This player's data and all other players' data in data.players object
+		 */
 		socket.on('generate players', function(data) {
 			// initialize coin timer to prevent coin spawns while in menu
 			this.coinTimer = Game.time.now + 4000;
@@ -192,7 +196,10 @@ var playState = {
 		}.bind(this));
 
 
-		// Respawn a dead player
+		/**
+		 * Respawn a dead player
+		 * @param  {object} data Contains respawning player's new random coords and resets sprite
+		 */
 		socket.on('respawn player', function(data) {
 			var player = this.Players[data.id];
 			// reset() the player first: it sets x/y to zero
@@ -207,23 +214,31 @@ var playState = {
 		}.bind(this));
 
 
-		// New player joins the Game
+		/**
+		 * New player joins the Game
+		 * @param  {object} newPlayer Newly generated player data
+		 */
 		socket.on('add new challenger', function(newPlayer) {
 			this.spawnPlayer(newPlayer);
 		}.bind(this));
 
 
-		// Delete player from game on disconnect
+		/**
+		 * Delete player from game on disconnect
+		 * @param  {string} id Player id to remove
+		 */
 		socket.on('remove player', function(id) {
 			this.Players[id].displayName.destroy();
 			this.Players[id].destroy();
-			delete this.Players[id];
 		}.bind(this));
 
 
 ////////////////////////////////////////////////////// Others
 
-		// Update player positions
+		/**
+		 * Update player positions
+		 * @param  {object} data Contains moving player's new location and heading
+		 */
 		socket.on('movement', function(data) {
 			var player = this.Players[data.id];
 			player.x = data.x;
@@ -233,7 +248,10 @@ var playState = {
 			this.redrawName(player);
 		}.bind(this));
 
-		// Other player was hit (not this player)
+		/**
+		 * Other player was hit (not this player)
+		 * @param  {object} data Contains player id, bullet id
+		 */
 		socket.on('player hit', function(data) {
 			// destroy bullet
 			this.destroyBullet(data.bulletID);
@@ -241,12 +259,18 @@ var playState = {
 			this.hitTaken(this.Players[data.id]);
 		}.bind(this));
 
-		// Spawn a coin
+		/**
+		 * Spawn a coin
+		 * @param  {object} data Contains all data for generating a coin
+		 */
 		socket.on('spawn coin', function(data) {
 			this.generateCoin(data);
 		}.bind(this));
 
-		// someone picked up a coin; update their bank info and destroy that coin
+		/**
+		 * Someone picked up a coin; update their bank amount and destroy that coin
+		 * @param  {object} data Contains player's id, updated bank, and coin id
+		 */
 		socket.on('update bank', function(data) {
 			var Coins = this.Coins.children;
 			for (var i = 0; i < Coins.length; i++) {
@@ -262,23 +286,31 @@ var playState = {
 																																				///////////////////////
 ////////////////////////////////////////////////////////////////////////// PURCHASE RECEIPTS //
 																																				///////////////////////
-		// A player has shot (includes me)
+		/**
+		 * A player has shot a normal bullet (includes me)
+		 * @param  {object} data Contains player id and heading/facing
+		 */
 		socket.on('shots fired',function(data) {
 			this.shoot(data);
 		}.bind(this));
 
-
+		/**
+		 * Upgrades gun speed; results applied only to customer
+		 * @param  {object} data Contains player id and new bank information
+		 */
 		socket.on('upgrade receipt', function(data) {
-			this.updateBank(data.id, data.bank);
 			if (data.id === this.myID) {
 				this.shotLevel++;
 				this.shotCooldown *= 0.8;
 			}
+			this.updateBank(data.id, data.bank);
 		}.bind(this));
 
-
+		/**
+		 * Creates a shield
+		 * @param  {object} data Contains player id, bank info
+		 */
 		socket.on('shield receipt', function(data) {
-			this.updateBank(data.id, data.bank);
 			var player = this.Players[data.id];
 			// need this for 'player hit' conditionals
 			player.shielded = true;
@@ -286,11 +318,14 @@ var playState = {
 			var shield = this.Shields.create(player.x, player.y, 'bubble');
 			// give shield the owner's ID
 			shield.playerID = data.id;
+			this.updateBank(data.id, data.bank);
 		}.bind(this));
 
-
+		/**
+		 * Fires two bullets; up and down
+		 * @param  {object} data Contains playerid, bullet ids, bank info
+		 */
 		socket.on('vertical receipt', function(data) {
-			this.updateBank(data.id, data.bank);
 			var shooter = this.Players[data.id];
 			// shoot down
 			var bulletDown = this.Bullets.create(shooter.x+20, shooter.y+55, 'basic_bullet_down'); //x+25-5 | y+25+30
@@ -302,11 +337,14 @@ var playState = {
 			bulletUp.bulletID = data.bulletID2;
 			this.setOOB([bulletDown, bulletUp]);
 			this.incrementShotCounter(2);
+			this.updateBank(data.id, data.bank);
 		}.bind(this));
 		
-
+		/**
+		 * Fires three bullets
+		 * @param  {object} data Contains player id, bullet ids, bank info
+		 */
 		socket.on('shotgun receipt', function(data) {
-				this.updateBank(data.id, data.bank);
 				var shooter = this.Players[data.id];
 				var bVel = this.bulletVelocity;
 				var hVel = bVel/2; // half bullet velocity
@@ -371,11 +409,14 @@ var playState = {
 				}
 			this.setOOB([centerShot, leftShot, rightShot]);
 			this.incrementShotCounter(3);
+			this.updateBank(data.id, data.bank);
 		}.bind(this));
 
-
+		/**
+		 * Fires 8 bullets
+		 * @param  {object} data Contains player id, bullet ids, bank info
+		 */
 		socket.on('omnishot receipt', function(data){
-			this.updateBank(data.id, data.bank);
 			var shooter = this.Players[data.id];
 			var bVel = this.bulletVelocity;
 			var cVel = 300; // custom bullet velocity
@@ -417,11 +458,15 @@ var playState = {
 			bullet8.bulletID = data.bulletID[7];
 			this.setOOB([bullet1, bullet2, bullet3, bullet4, bullet5, bullet6, bullet7, bullet8]);
 			this.incrementShotCounter(8);
+			this.updateBank(data.id, data.bank);
 		}.bind(this));
 
-
+		/**
+		 * Fires a big laser
+		 * @param  {object} data Contains player id, bank info
+		 */
 		socket.on('ultimate receipt', function(data) {
-			this.updateBank(data.id, data.bank);
+			var shooter = this.Players[data.id];
 			var myID = this.myID;
 			var Ultimates = this.Ultimates;
 			var ultSpeed = 1500;
@@ -434,13 +479,12 @@ var playState = {
 				this.charging = true; // stop player movement
 				this.ultimateShotNum.text = ++this.ultimateShots; // increment ultimate shot counter
 			}
-			var shooter = this.Players[data.id];
 			// play charging animation
 			var aura = Game.add.sprite(shooter.x-18,shooter.y-9,'charging');
 			aura.animations.add('charge');
 			aura.animations.play('charge',50,false);
 
-			// countdown before firing shot
+			// Waits 500ms before firing
 			setTimeout(function() {
 				aura.destroy(); // remove aura from memory
 				if (shooter.facing === "right") {
@@ -488,6 +532,7 @@ var playState = {
 					playState.charging = false; // don't know how to bind this.charging inside setTimeout so gotta resort to using this
 				}
 			}, 1000); // fires ult for X ms
+			this.updateBank(data.id, data.bank);
 		}.bind(this));
 
 
@@ -592,8 +637,8 @@ var playState = {
 	  	this.shotTimer = Game.time.now + this.shotCooldown;
 	  	this.incrementShotCounter(1);
 			socket.emit('shoot', {
-				id: this.myID, 
-				facing: this.Players[this.myID].facing 
+				id: this.myID,
+				facing: this.Players[this.myID].facing
 			});
 		}
 
@@ -924,7 +969,7 @@ var playState = {
 	/**
 	 * Destroys a single bullet that hit a ship
 	 * @param  {int} bulletID ID of the bullet to be destroyed
-	 * @return {null}          Used to end for loop when bullet is found and destroyed
+	 * @return {undefined}    Used to end the for loop when bullet is found and destroyed
 	 */
 	destroyBullet: function(bulletID) {
 		var bullets = this.Bullets.children;
