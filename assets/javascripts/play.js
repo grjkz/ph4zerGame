@@ -495,7 +495,7 @@ var playState = {
 
 
 
-	},
+	}, // end create()
 
 
 
@@ -617,9 +617,15 @@ var playState = {
 	  if (this.Shields.children.length > 0) {
 	  	this.redrawShields();
 	  }
-	},
+	}, // end update()
+
+
 	////////////////////////////////////////////////////////////////////////////// SPAWNING
 	
+	/**
+	 * Spawns player by creating an entire sprite entity
+	 * @param  {object} user All data needed to spawn player and his current stats and information
+	 */
 	spawnPlayer: function(user) {
 		// have server send over which ship to render as well
 		this.Players[user.id] = Game.add.sprite(user.x, user.y, user.ship);
@@ -655,6 +661,10 @@ var playState = {
 
 	////////////////////////////////////////////////////////////// SHOOTING
 
+	/**
+	 * Create bullet near player who shot
+	 * @param  {object} shooter Player object
+	 */
 	shoot: function(shooter) {
 		var player = this.Players[shooter.id];
 		var bullet;
@@ -943,5 +953,5 @@ var playState = {
 	
 
 
-};
+}; // end playState{}
 
