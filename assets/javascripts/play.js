@@ -15,7 +15,7 @@ at 5 upgrades, it goes drops to 262.144
 
 
 Bugs
-Laggy computers get to pick up one coin multiple times
+Laggy computers get to pick up one coin multiple times SOLVED USING .kill() ON LOCAL SIDE
 	make it so that the one who picked it up deletes it off their own computer
 	send data to server
 	server process the value and stuff
@@ -50,26 +50,35 @@ var playState = {
 
 	Bullets: null, // group of all bullets ever created in game
 	sessionShots: 0, // total number of shots made since joining the game
-	sessionShotNum: null,
+	sessionShotOutput: null,
 	lifetimeShots: 0, // number of shots made since last (re)spawn
-	lifetimeShotNum: null,
+	lifetimeShotOutput: null,
 	shotTimer: 0,
 	shotLevel: 0,
+	shotLevelOutput: null,
 	shotCooldown: 800,
 	bulletVelocity: 400,
 	
 	Shields: null, // group of all shields
 	Ultimates: null,
 	ultimateShots: 0,
-	ultimateShotNum: null,
+	ultimateShotOutput: null,
 	charging: false, // charging to fire ultimate
 
 	Players: {},
 	playerCounter: 0, // greater than 1 == send server movement data
+	
 	kills: 0,
-	killsOutputNum: null,
+	killsOutput: null,
+	
+	killstreak: 0,
+	killstreakOutput: null,
+	
+	bestKillstreak: null,
+	bestKillstreakOutput: 0,
+	
 	deaths: 0,
-	deathsOutputNum: null,
+	deathsOutput: null,
 
 	cursors: null, // for player controls
 
@@ -106,13 +115,28 @@ var playState = {
 		Game.add.text(735, 690, 'Ka***ha: $3000', {fontSize:'16px', fill:'orange'});
 		Game.add.text(750, 640,'R',{fontSize:'16px', fill:'white'});
 		// Meta Data Output
-		Game.add.text(870, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
-		this.sessionShotNum = Game.add.text(980, 630, "0", {fontSize: '14px', fill: 'orange'});
-		Game.add.text(870, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
-		this.lifetimeShotNum = Game.add.text(980, 650, "0", {fontSize: '14px', fill: 'orange'});
-		Game.add.text(870, 670, "Ultimates:", {fontSize: '14px', fill: 'white'});
-		this.ultimateShotNum = Game.add.text(980, 670, "0", {fontSize: '14px', fill: 'orange'});
-
+		// upgrade
+		Game.add.text(850, 630, "Upgrade LvL:", {fontSize: '14px', fill: 'white'});
+		this.shotLevelOutput = Game.add.text(950, 630, "0", {fontSize: '14px', fill: 'orange'});
+		// shields
+		Game.add.text(850, 650, "Shields Used:", {fontSize: '14px', fill: 'white'});
+		this.shieldOutput = Game.add.text(950, 650, "0", {fontSize: '14px', fill: 'orange'});
+		// shooting
+		Game.add.text(980, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
+		this.sessionShotOutput = Game.add.text(1090, 630, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(980, 650, "Lifetime Shots:", {fontSize: '14px', fill: 'white'});
+		this.lifetimeShotOutput = Game.add.text(1090, 650, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(980, 670, "Ultimates:", {fontSize: '14px', fill: 'white'});
+		this.ultimateShotOutput = Game.add.text(1090, 670, "0", {fontSize: '14px', fill: 'orange'});
+		// kills / deaths
+		Game.add.text(1140, 630, "Killstreak:", {fontSize: '14px', fill: 'white'});
+		this.killstreakOutput = Game.add.text(1245, 630, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(1140, 650, "Best Killstreak:", {fontSize: '14px', fill: 'white'});
+		this.bestKillstreakOutput = Game.add.text(1245, 650, "0", {fontSize: '14px', fill: 'yellow'});
+		Game.add.text(1140, 670, "Kills:", {fontSize: '14px', fill: 'white'});
+		this.killsOutput = Game.add.text(1245, 670, "0", {fontSize: '14px', fill: 'orange'});
+		Game.add.text(1140, 690, "Deaths:", {fontSize: '14px', fill: 'white'});
+		this.deathsOutput = Game.add.text(1245, 690, "0", {fontSize: '14px', fill: 'red'});
 		//////////////////////////////////////////////////// GAME OPTIONS
 		Game.world.setBounds(0, 0, 1280, 600);
 		Game.physics.startSystem(Phaser.Physics.ARCADE);
@@ -245,7 +269,7 @@ var playState = {
 			player.y = data.y;
 			player.facing = data.facing;
 			player.animations.play(data.facing);
-			this.redrawName(player);
+			this.redrawName(player); // redraw opponents' names above their ships
 		}.bind(this));
 
 		/**
@@ -302,6 +326,8 @@ var playState = {
 			if (data.id === this.myID) {
 				this.shotLevel++;
 				this.shotCooldown *= 0.8;
+				// update shot level output; says "Max" if level == 5
+				this.shotLevelOutput.text = this.shotLevel < 5 ? this.shotLevel : "Max";	
 			}
 			this.updateBank(data.id, data.bank);
 		}.bind(this));
@@ -477,7 +503,7 @@ var playState = {
 			// disable movement if shooter is me
 			if (data.id == this.myID) {
 				this.charging = true; // stop player movement
-				this.ultimateShotNum.text = ++this.ultimateShots; // increment ultimate shot counter
+				this.ultimateShotOutput.text = ++this.ultimateShots; // increment ultimate shot counter
 			}
 			// play charging animation
 			var aura = Game.add.sprite(shooter.x-18,shooter.y-9,'charging');
@@ -622,7 +648,7 @@ var playState = {
 	  }
 		// check of another user is connected before blasting the server
 		// if (this.playerCounter > 1 && this.playerMoved) {
-			// Display Name above ship
+			// Display this player's name above ship
 			this.redrawName(this.Players[this.myID]);
 			socket.emit('movement', {
 				id: this.myID,
@@ -713,7 +739,7 @@ var playState = {
 		// shooter is facing right
 		if (shooter.facing === "right") {
 			bullet = this.Bullets.create(player.x+25+30, player.y+25-4, 'basic_bullet_right');
-			bullet.body.velocity.x = 400;
+			bullet.body.velocity.x = 00;
 		}
 		// shooter is facing down
 		else if (shooter.facing === "down") {
@@ -754,8 +780,10 @@ var playState = {
 			bulletID: bullet.bulletID,
 			alive: alive
 		});
+		// if this player died, reset killstreak and increment death counter
 		if (!alive) {
-			this.deathsOutputNum = ++this.deaths;
+			this.deathsOutput.text = ++this.deaths;
+			this.killsOutput.text = 0;
 		}
 	},
 
@@ -988,9 +1016,9 @@ var playState = {
 	 */
 	incrementShotCounter: function(n) {
 		this.sessionShots += n;
-		this.sessionShotNum.text = this.sessionShots;
+		this.sessionShotOutput.text = this.sessionShots;
 		this.lifetimeShots += n;
-		this.lifetimeShotNum.text = this.lifetimeShots;
+		this.lifetimeShotOutput.text = this.lifetimeShots;
 	}
 	
 
