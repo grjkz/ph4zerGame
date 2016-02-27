@@ -18,6 +18,7 @@
 
 .alias-form {
 	text-align: center;
+	visibility: hidden;
 }
 
 .alias-form input {

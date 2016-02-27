@@ -3,8 +3,6 @@ find "note:" for things I should add into the code
 
 
 Bugs:
-shields dont appear on my screen when opponent purchases it
-opponent doesn't respawn on my screen but does on his. if we kill each other once each, we never see each other again since Players[id].alive = false forever
 firing a bullet inside an opponent doesn't kill them, and creates a bug where the next bullet shot, and hits opponent, doesn't get destroyed
 
 FYI:
