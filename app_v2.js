@@ -12,7 +12,7 @@ app.use(express.static('assets'));
 
 
 app.get('/', function(req,res) {
-	res.render('index_v2.ejs', {players: 0} );
+	res.render('index_v2.ejs', {players: getUserCount(Players)} );
 });
 
 app.get('/game_v2', function(req,res) {
@@ -317,10 +317,3 @@ function getUserCount(clients) {
 	}
 	return count;
 }
-
-
-
-
-
-
-
