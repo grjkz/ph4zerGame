@@ -75,14 +75,14 @@ var playState = {
 	lifetimeShots: 0, // number of shots made since last (re)spawn
 	lifetimeShotOutput: null,
 	
-	kills: 0,
+	kills: 0, // total number of kills
 	killsOutput: null,
 	
 	killstreak: 0,
 	killstreakOutput: null,
 	
-	bestKillstreak: null,
-	bestKillstreakOutput: 0,
+	bestKillstreak: 0,
+	bestKillstreakOutput: null,
 	
 	deaths: 0,
 	deathsOutput: null,
@@ -124,12 +124,12 @@ var playState = {
 		// Meta Data Output
 		// upgrade
 		Game.add.text(850, 630, "Upgrade LvL:", {fontSize: '14px', fill: 'white'});
-		this.shotLevelOutput = Game.add.text(945, 630, "0", {fontSize: '14px', fill: 'orange'});
+		this.shotLevelOutput = Game.add.text(946, 630, "0", {fontSize: '14px', fill: 'orange'});
 		Game.add.text(850, 650, "Gun Speed:", {fontSize: '14px', fill: 'white'});
-		this.shotSpeedOutput = Game.add.text(945, 650, "800", {fontSize: '14px', fill: 'orange'});
+		this.shotSpeedOutput = Game.add.text(946, 650, "800", {fontSize: '14px', fill: 'orange'});
 		// shields
 		Game.add.text(850, 670, "Shields Used:", {fontSize: '14px', fill: 'white'});
-		this.shieldOutput = Game.add.text(945, 670, "0", {fontSize: '14px', fill: 'orange'});
+		this.shieldOutput = Game.add.text(946, 670, "0", {fontSize: '14px', fill: 'orange'});
 		// # of shots fired
 		Game.add.text(983, 630, "Total Shots:", {fontSize: '14px', fill: 'white'});
 		this.sessionShotOutput = Game.add.text(1090, 630, "0", {fontSize: '14px', fill: 'orange'});
@@ -290,6 +290,11 @@ var playState = {
 			this.destroyBullet(data.bulletID);
 			// destroy shield or player
 			this.hitTaken(this.Players[data.id]);
+			// if player opponent died and shooter was me, increment my kill count
+			console.log(data.id+' was hit by '+data.killer+" | "+data.alive)
+			if (!data.alive && data.killer == this.myID) {
+				this.incrementKillCount();
+			}
 		}.bind(this));
 
 		/**
@@ -596,77 +601,9 @@ var playState = {
 
 	/////////////////////////////////////////////////////////////////////// PHASER UPDATE()
 	update: function() {
-		if (!this.playerReady || !this.alive) {
+		if (!this.playerReady) {
 			console.log('player not ready, update() stopping');
 			return;
-		}
-
-		// makes it so that the mouse must be inside the Game window for the client to issue any commands
-		// if (Game.input.activePointer.withinGame) {
-	 //    Game.input.enabled = true;
-	 //    // Game.stage.backgroundColor = "0x999999";
-	 //  }
-		// else {
-	 //    Game.input.enabled = false;
-	 //    // Game.stage.backgroundColor = "0x999999";
-		// }
-
-		////////////////////////////////////////////////////////// PLAYER MOVEMENT
-  	this.Players[this.myID].body.velocity.set(0); // stop movement
-	  if (this.cursors.down.isDown && this.cursors.up.isDown) { return; }
-	  else if (this.cursors.up.isDown) {
-	  	if (!this.charging) {
-		    this.Players[this.myID].body.velocity.y = -300;
-		  }
-	    this.Players[this.myID].facing = "up";
-	    this.Players[this.myID].animations.play('up');
-	    this.playerMoved = true;
-	  }
-	  else if (this.cursors.down.isDown) {
-	  	if (!this.charging) {
-		    this.Players[this.myID].body.velocity.y = 300;
-		  }
-	    this.Players[this.myID].facing = "down";
-	    this.Players[this.myID].animations.play('down');
-	    this.playerMoved = true;
-	  }
-	  if (this.cursors.left.isDown && this.cursors.right.isDown) { return; }
-	  else if (this.cursors.left.isDown) {
-	  	if (!this.charging) {
-		  	this.Players[this.myID].body.velocity.x = -300;
-		  }
-	  	this.Players[this.myID].facing = "left";
-	  	this.Players[this.myID].animations.play('left');
-	  	this.playerMoved = true;
-	  }
-	  else if (this.cursors.right.isDown) {
-	  	if (!this.charging) {
-		  	this.Players[this.myID].body.velocity.x = 300;
-		  }
-	  	this.Players[this.myID].facing = "right";
-	  	this.Players[this.myID].animations.play('right');
-	  	this.playerMoved = true;
-	  }
-		// check of another user is connected before blasting the server
-		// if (this.playerCounter > 1 && this.playerMoved) {
-			// Display this player's name above ship
-			this.redrawName(this.Players[this.myID]);
-			socket.emit('movement', {
-				id: this.myID,
-				x: this.Players[this.myID].body.x,
-				y: this.Players[this.myID].body.y, 
-				facing: this.Players[this.myID].facing
-			});
-		// }
-
-		// check if i'm alive, check if shot timer is ok, check if pressed spacebar
-	  if (Game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.shotTimer < Game.time.now) {
-	  	this.shotTimer = Game.time.now + this.shotCooldown;
-	  	this.incrementShotCounter(1);
-			socket.emit('shoot', {
-				id: this.myID,
-				facing: this.Players[this.myID].facing
-			});
 		}
 
 		/////////////////////////////// COLLISIONS
@@ -686,6 +623,77 @@ var playState = {
 	  if (this.Shields.children.length > 0) {
 	  	this.redrawShields();
 	  }
+
+		// makes it so that the mouse must be inside the Game window for the client to issue any commands
+		// if (Game.input.activePointer.withinGame) {
+	 //    Game.input.enabled = true;
+	 //    // Game.stage.backgroundColor = "0x999999";
+	 //  }
+		// else {
+	 //    Game.input.enabled = false;
+	 //    // Game.stage.backgroundColor = "0x999999";
+		// }
+
+		////////////////////////////////////////////////////////// PLAYER MOVEMENT
+  	this.Players[this.myID].body.velocity.set(0); // stop movement
+		// only allow player controls if player is alive
+		if (this.alive) {
+			// check if shot timer is ok, check if spacebar was pressed
+		  if (Game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR) && this.shotTimer < Game.time.now) {
+		  	this.shotTimer = Game.time.now + this.shotCooldown;
+		  	this.incrementShotCounter(1);
+				socket.emit('shoot', {
+					id: this.myID,
+					facing: this.Players[this.myID].facing
+				});
+			}
+
+		  if (this.cursors.down.isDown && this.cursors.up.isDown) { return; }
+		  else if (this.cursors.up.isDown) {
+		  	if (!this.charging) {
+			    this.Players[this.myID].body.velocity.y = -300;
+			  }
+		    this.Players[this.myID].facing = "up";
+		    this.Players[this.myID].animations.play('up');
+		    this.playerMoved = true;
+		  }
+		  else if (this.cursors.down.isDown) {
+		  	if (!this.charging) {
+			    this.Players[this.myID].body.velocity.y = 300;
+			  }
+		    this.Players[this.myID].facing = "down";
+		    this.Players[this.myID].animations.play('down');
+		    this.playerMoved = true;
+		  }
+		  if (this.cursors.left.isDown && this.cursors.right.isDown) { return; }
+		  else if (this.cursors.left.isDown) {
+		  	if (!this.charging) {
+			  	this.Players[this.myID].body.velocity.x = -300;
+			  }
+		  	this.Players[this.myID].facing = "left";
+		  	this.Players[this.myID].animations.play('left');
+		  	this.playerMoved = true;
+		  }
+		  else if (this.cursors.right.isDown) {
+		  	if (!this.charging) {
+			  	this.Players[this.myID].body.velocity.x = 300;
+			  }
+		  	this.Players[this.myID].facing = "right";
+		  	this.Players[this.myID].animations.play('right');
+		  	this.playerMoved = true;
+		  }
+			// check of another user is connected before blasting the server
+			// if (this.playerCounter > 1 && this.playerMoved) {
+				// Display this player's name above ship
+				this.redrawName(this.Players[this.myID]);
+				socket.emit('movement', {
+					id: this.myID,
+					x: this.Players[this.myID].body.x,
+					y: this.Players[this.myID].body.y, 
+					facing: this.Players[this.myID].facing
+				});
+			// }
+		}
 	}, // end update()
 
 
@@ -732,35 +740,34 @@ var playState = {
 
 	/**
 	 * Create bullet near player who shot
-	 * @param  {object} shooter Player object
+	 * @param  {object} data Contains player id, player facing, bullet id
 	 */
-	shoot: function(shooter) {
-		var player = this.Players[shooter.id];
+	shoot: function(data) {
+		var player = this.Players[data.id];
 		var bullet;
 		// shooter is facing right
-		if (shooter.facing === "right") {
+		if (data.facing === "right") {
 			bullet = this.Bullets.create(player.x+25+30, player.y+25-4, 'basic_bullet_right');
 			bullet.body.velocity.x = 00;
 		}
 		// shooter is facing down
-		else if (shooter.facing === "down") {
+		else if (data.facing === "down") {
 			bullet = this.Bullets.create(player.x+25-5, player.y+25+30, 'basic_bullet_down');
 			bullet.body.velocity.y = 400;
 		}
 		// shooter is facing left
-		else if (shooter.facing === "left") {
+		else if (data.facing === "left") {
 			bullet = this.Bullets.create(player.x+25-30-20, player.y+25-4, 'basic_bullet_left');
 			bullet.body.velocity.x = -400;
 		}
 		// shooter is facing up
-		else if (shooter.facing === "up") {
+		else if (data.facing === "up") {
 			bullet = this.Bullets.create(player.x+25-5, player.y+25-30-20, 'basic_bullet_up');
 			bullet.body.velocity.y = -400;
 		}
-		bullet.bulletID = shooter.bulletID;
+		this.setBulletID([bullet], data.bulletID, data.id);
 		// makes sure that all bullets are killed upon leaving world bounds
-		bullet.checkWorldBounds = true;
-		bullet.outOfBoundsKill = true;
+		this.setOOB([bullet]);
 	},
 
 
@@ -779,7 +786,8 @@ var playState = {
 		socket.emit('im hit', {
 			id: player.id,
 			bulletID: bullet.bulletID,
-			alive: alive
+			alive: alive,
+			killer: bullet.playerID
 		});
 		// if this player died, reset killstreak and increment death counter
 		if (!alive) {
@@ -789,7 +797,7 @@ var playState = {
 	},
 
 		/**
-	 * Destroys a shield or kills player
+	 * Destroys a shield or kills opponent player
 	 * @param  {object} player Player that was shot
 	 * @return {bool}        Is player still alive?
 	 */
@@ -1018,6 +1026,7 @@ var playState = {
 			// destroy bullet
 			for (var i = 0; i < bullets.length; i++) {
 				if (bullets[i].bulletID == bulletID) {
+					bullets[i].kill();
 					bullets[i].destroy();
 					return;
 				}
@@ -1033,6 +1042,16 @@ var playState = {
 		this.sessionShotOutput.text = this.sessionShots;
 		this.lifetimeShots += n;
 		this.lifetimeShotOutput.text = this.lifetimeShots;
+	},
+
+
+	incrementKillCount: function() {
+		this.killsOutput.text = ++this.kills;
+		this.killstreakOutput.text = ++this.killstreak;
+		if (this.killstreak > this.bestKillstreak) {
+			this.bestKillstreakOutput.text = this.killstreak;
+		}
+
 	}
 	
 
