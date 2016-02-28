@@ -40,19 +40,19 @@ io.on('connection', function(client) {
 	client.on('disconnect', function() {
 		// emit to all other players to remove disconnecting player
 		client.broadcast.emit('remove player', client.id);
-		console.log('emit to delete player:', client.id)
+		// console.log('emit to delete player:', client.id)
 		delete Users[client.id];
 		// remember to delete Player as well else it will send non-existent ships to generate
 		delete Players[client.id];
 		// console.log(Users);
-		console.log(getUserCount(Users), "Users Remain")
+		// console.log(getUserCount(Users), "Users Remain")
 	});
 
 
 	// Add new user to Users
 	Users[client.id] = new Player(client.id);
 	// console.log(Users)
-	console.log(getUserCount(Users), "Users")
+	// console.log(getUserCount(Users), "Users")
 
 
 	// user enters name and clicks "join game"
@@ -72,7 +72,7 @@ io.on('connection', function(client) {
 	// new user finished loading playState environment
 	client.on('environment loaded', function() {
 		if (!Users[client.id]) {
-			console.log("ERROR: user id in Users not found");
+			// console.log("ERROR: user id in Users not found");
 			return;
 		}
 		// send player his own id and alias
@@ -96,8 +96,8 @@ io.on('connection', function(client) {
 		Players[client.id].alive = true;
 		var data = genCoords();
 		data.id = client.id;
-		console.log('respawn data:')
-		console.log(data)
+		// console.log('respawn data:')
+		// console.log(data)
 		// notify everyone to render respawning player
 		io.emit('respawn player', data);
 	});
@@ -117,7 +117,7 @@ io.on('connection', function(client) {
 			facing: data.facing,
 			bulletID: bulletCounter
 		});
-		console.log(bulletCounter, "-th bullet shot")
+		// console.log(bulletCounter, "-th bullet shot")
 		bulletCounter++;
 	});
 
@@ -144,7 +144,7 @@ io.on('connection', function(client) {
 			coinID: data.coinID,
 			bank: Users[client.id].bank
 		});
-		console.log(client.id, Users[client.id].bank)
+		// console.log(client.id, Users[client.id].bank)
 	});
 
 
@@ -152,8 +152,8 @@ io.on('connection', function(client) {
 	// POWERUP SHOP //
 	//////////////////
 	client.on('upgrade', function(type) {
-		if (Users[client.id].bank >= 00) { //400
-			Users[client.id].bank -= 00;
+		if (Users[client.id].bank >= 400) { //400
+			Users[client.id].bank -= 400;
 			client.emit('upgrade receipt', {
 				// string, int
 				id: client.id,
@@ -163,8 +163,8 @@ io.on('connection', function(client) {
 	});
 			
 	client.on('shield', function() {
-		if (Users[client.id].bank >= 0) { //350
-			Users[client.id].bank -= 0;
+		if (Users[client.id].bank >= 350) { //350
+			Users[client.id].bank -= 350;
 			Users[client.id].shielded = true;
 			io.emit('shield receipt', {
 				// string, int, int
@@ -177,8 +177,8 @@ io.on('connection', function(client) {
 	});
 
 	client.on('vertical', function() {		
-		if (Users[client.id].bank >= 0) { //350
-			Users[client.id].bank -= 0;
+		if (Users[client.id].bank >= 350) { //350
+			Users[client.id].bank -= 350;
 			var bulletID = [bulletCounter++, bulletCounter++];
 			io.emit('vertical receipt', {
 				// string, array, int
@@ -190,8 +190,8 @@ io.on('connection', function(client) {
 	});
 	
 	client.on('shotgun', function() {
-		if (Users[client.id].bank >= 00) { //500
-			Users[client.id].bank -= 00;
+		if (Users[client.id].bank >= 500) { //500
+			Users[client.id].bank -= 500;
 			var bulletID = [bulletCounter++, bulletCounter++, bulletCounter++];
 			// string, array, int
 			io.emit('shotgun receipt', {
@@ -203,8 +203,8 @@ io.on('connection', function(client) {
 	});
 	
 	client.on('omnishot', function() {
-		if (Users[client.id].bank >= 00) {
-			Users[client.id].bank -= 00; //900
+		if (Users[client.id].bank >= 900) {
+			Users[client.id].bank -= 900; //900
 			var bulletID = [bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++,bulletCounter++];
 			io.emit('omnishot receipt', {
 				// string, array, int
@@ -216,8 +216,8 @@ io.on('connection', function(client) {
 	});
 	
 	client.on('ultimate', function() {
-		if (Users[client.id].bank >= 00) {
-			Users[client.id].bank -= 000; //1000
+		if (Users[client.id].bank >= 1000) {
+			Users[client.id].bank -= 1000; //1000
 			// string, int, int
 			io.emit('ultimate receipt', {
 				id: client.id,

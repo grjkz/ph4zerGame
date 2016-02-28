@@ -601,7 +601,7 @@ var playState = {
 	/////////////////////////////////////////////////////////////////////// PHASER UPDATE()
 	update: function() {
 		if (!this.playerReady) {
-			console.log('player not ready, update() stopping');
+			// console.log('player not ready, update() stopping');
 			return;
 		}
 
@@ -814,7 +814,7 @@ var playState = {
 					return true;
 				}
 			}
-			console.log("ERROR: Couldn't find shield but player.shielded was = true");
+			// console.log("ERROR: Couldn't find shield but player.shielded was = true");
 			return true;
 		}
 		// else
