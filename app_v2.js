@@ -31,10 +31,9 @@ var bulletCounter = 0; // generate a unique id for each bullet; helps to destroy
 // var shieldCounter = 0;
 var coinCounter = 0;
 
-/////////////////////
-// SOCKET IO STUFF //
-/////////////////////
-
+																																		/////////////////////
+////////////////////////////////////////////////////////////////////// SOCKET IO STUFF //
+																																		/////////////////////
 
 io.on('connection', function(client) {
 	// delete user from Users when disconnecting (refreshing page, etc)
@@ -65,6 +64,10 @@ io.on('connection', function(client) {
 		client.emit('start playState'); // command to menu.js that starts playState
 	});
 
+
+	//////////////////
+	// Game Actions //
+	//////////////////
 
 	// new user finished loading playState environment
 	client.on('environment loaded', function() {
@@ -129,7 +132,6 @@ io.on('connection', function(client) {
 
 
 	client.on('create coin', function() {
-		console.log('generating coin')
 		io.emit('spawn coin', genCoin());
 	});
 
@@ -226,8 +228,23 @@ io.on('connection', function(client) {
 	});
 
 
+	//////////////////
+	// Chat Actions //
+	//////////////////
+	
+	client.on('request users', function() {
 
-});
+	});
+
+
+	client.on('out message', function(message) {
+		var alias = Players[client.id].alias ? Players[client.id].alias : client.id;
+		console.log(alias+" said "+message)
+		client.broadcast.emit('in message', {alias: alias, message: message});
+	});
+
+
+}); // end io.on connection
 
 
 
