@@ -232,16 +232,16 @@ io.on('connection', function(client) {
 	// Chat Actions //
 	//////////////////
 	
-	client.on('request users', function() {
+	// client.on('request users', function() {
 
-	});
+	// });
 
 
-	client.on('out message', function(message) {
-		var alias = Players[client.id].alias ? Players[client.id].alias : client.id;
-		console.log(alias+" said "+message)
-		client.broadcast.emit('in message', {alias: alias, message: message});
-	});
+	// client.on('out message', function(message) {
+	// 	var alias = Players[client.id].alias ? Players[client.id].alias : client.id;
+	// 	console.log(alias+" said "+message)
+	// 	client.broadcast.emit('in message', {alias: alias, message: message});
+	// });
 
 
 }); // end io.on connection
