@@ -99,25 +99,25 @@ var playState = {
 		Game.add.sprite(30, 620, 'bubble');
 		Game.add.text(53, 640, 'S', {fontSize:'16px',fill:'white'});
 		Game.add.text(10, 690, 'Shield: $350', {fontSize:'16px', fill:'orange'});
-		// display shotgun
-		Game.add.sprite(135, 620, 'shotgun_icon');
-		Game.add.text(120, 690, 'Shotgun: $250', {fontSize:'16px', fill:'orange'});
-		Game.add.text(190, 640, 'F', {fontSize:'16px',fill:'white'});
 		// display gun upgrade
-		Game.add.sprite(270, 615, 'upgrade_icon');
-		Game.add.text(250, 690, 'Upgrade: $500', {fontSize:'16px', fill:'orange'});
-		Game.add.text(300, 655, 'Q', {fontSize:'16px',fill:'white'});
+		Game.add.sprite(140, 615, 'upgrade_icon');
+		Game.add.text(170, 655, 'Q', {fontSize:'16px',fill:'white'});
+		Game.add.text(125, 690, 'Upgrade: $400', {fontSize:'16px', fill:'orange'});
 		// display veritcal
-		Game.add.sprite(395, 620, 'vertical_icon');
-		Game.add.text(380, 690, 'Vertical: $200', {fontSize:'16px', fill:'orange'});
-		Game.add.text(425, 640, 'E', {fontSize:'16px', fill:'white'});
-		// display Omni
-		Game.add.sprite(525, 620, 'omni_icon');
-		Game.add.text(500, 690, 'Omnishot: $500', {fontSize:'16px', fill:'orange'});
-		Game.add.text(555, 640, 'A', {fontSize:'16px', fill:'white'});
+		Game.add.sprite(275, 620, 'vertical_icon');
+		Game.add.text(305, 640, 'E', {fontSize:'16px', fill:'white'});
+		Game.add.text(255, 690, 'Vertical: $350', {fontSize:'16px', fill:'orange'});
+		// display shotgun
+		Game.add.sprite(410, 620, 'shotgun_icon');
+		Game.add.text(415, 640, 'F', {fontSize:'16px',fill:'white'});
+		Game.add.text(380, 690, 'Shotgun: $500', {fontSize:'16px', fill:'orange'});
+		// display Omnishot
+		Game.add.sprite(530, 620, 'omni_icon');
+		Game.add.text(505, 690, 'Omnishot: $900', {fontSize:'16px', fill:'orange'});
+		Game.add.text(560, 640, 'A', {fontSize:'16px', fill:'white'});
 		// display Ultimate
 		Game.add.sprite(680, 625, 'ult_icon');
-		Game.add.text(645, 690, 'Ka***ha: $3000', {fontSize:'16px', fill:'orange'});
+		Game.add.text(645, 690, 'Ka***ha: $1000', {fontSize:'16px', fill:'orange'});
 		Game.add.text(660, 640,'R',{fontSize:'16px', fill:'white'});
 		// Meta Data Output
 		// upgrade
@@ -570,34 +570,6 @@ var playState = {
 
 	}, // end create()
 
-
-
-	// function(user) {
-	// 	this.Players.counter++
-	// 	// have server send over which ship to render as well
-	// 	this.Players[user.id] = Game.add.sprite(user.x, user.y, user.ship);
-
-	// 	var player = this.Players[user.id]
-	// 	// player.weapons = []
-	// 	player.animations.add('right',[0],1,true);
-	// 	player.animations.add('down',[1],1,true);
-	// 	player.animations.add('left',[2],1,true);
-	// 	player.animations.add('up',[3],1,true);
-	// 	player.animations.play(user.facing)
-	// 	Game.physics.arcade.enable(player);
-	// 	player.body.collideWorldBounds = true;
-	// 	player.shielded = false;
-	// 	player.facing = user.facing;
-	// 	player.charging = false;
-	// 	// player.bank = user.bank
-	// 	this.updateBank(user.id, user.bank)
-	// 	// shield = Game.add.sprite(player.position.x-2.5,player.position.y-2.5,'bubble')
-
-	// }
-
-
-	///////////////////////////////////////////////////////////////////////////////////////
-
 	/////////////////////////////////////////////////////////////////////// PHASER UPDATE()
 	update: function() {
 		if (!this.playerReady) {
@@ -879,32 +851,32 @@ var playState = {
 	/////////////////////////////////////////////////////////// SHOPPING FUCTIONS
 	
 	upgradeGun: function() {
-		if (this.Players[this.myID].bank >= 00 && this.alive && this.shotLevel < 5) //400
+		if (this.Players[this.myID].bank >= 400 && this.alive && this.shotLevel < 5) //400
 			socket.emit('upgrade');
 	},
 	
 	buyShield: function() {
-		if (this.Players[this.myID].bank >= 0 && !this.Players[this.myID].shielded && this.alive) //350
+		if (this.Players[this.myID].bank >= 350 && !this.Players[this.myID].shielded && this.alive) //350
 			socket.emit('shield');
 	},
 	
 	buyVertical: function() {
-		if (this.Players[this.myID].bank >= 00 && this.alive) //350
+		if (this.Players[this.myID].bank >= 350 && this.alive) //350
 			socket.emit('vertical');
 	},
 	
 	buyShotgun: function() {
-		if (this.Players[this.myID].bank >= 00 && this.alive) // 500
+		if (this.Players[this.myID].bank >= 500 && this.alive) // 500
 			socket.emit('shotgun');
 	},
 	
 	buyOmnishot: function() {
-		if (this.Players[this.myID].bank >= 00 && this.alive) // 900
+		if (this.Players[this.myID].bank >= 900 && this.alive) // 900
 			socket.emit('omnishot');
 	},
 	
 	buyUltimate: function() {
-		if (this.Players[this.myID].bank >= 000 && this.alive) // 1000
+		if (this.Players[this.myID].bank >= 1000 && this.alive) // 1000
 			socket.emit('ultimate');
 	},
 	

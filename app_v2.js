@@ -2,14 +2,14 @@ var express = require('express');
 var app = express();
 var ejs = require('ejs');
 
-var tunnel = app.listen(3000, function() {
-	console.log("listening on 3k");
-});
-var io = require('socket.io')(tunnel);
-
+app.set('port', process.env.PORT || 3000);
 app.set('view_engine', 'ejs');
 app.use(express.static('assets'));
 
+var tunnel = app.listen(app.get('port'), function() {
+	console.log("listening on " + app.get('port'));
+});
+var io = require('socket.io')(tunnel);
 
 app.get('/', function(req,res) {
 	res.render('index_v2.ejs', {players: getUserCount(Players)} );
@@ -60,7 +60,7 @@ io.on('connection', function(client) {
 		// add alias to User and push into Players
 		Users[client.id].alias = alias.alias;
 		Players[client.id] = Users[client.id];
-		console.log(alias);
+		// console.log(alias);
 		client.emit('start playState'); // command to menu.js that starts playState
 	});
 
@@ -71,10 +71,6 @@ io.on('connection', function(client) {
 
 	// new user finished loading playState environment
 	client.on('environment loaded', function() {
-		if (!Users[client.id]) {
-			// console.log("ERROR: user id in Users not found");
-			return;
-		}
 		// send player his own id and alias
 		// send player the data of all in-game players (includes himself)
 		// needed to create a seperate object for in-game players; if you send all the Users, all those not past the menu are generated as well
@@ -226,22 +222,6 @@ io.on('connection', function(client) {
 			});
 		}
 	});
-
-
-	//////////////////
-	// Chat Actions //
-	//////////////////
-	
-	// client.on('request users', function() {
-
-	// });
-
-
-	// client.on('out message', function(message) {
-	// 	var alias = Players[client.id].alias ? Players[client.id].alias : client.id;
-	// 	console.log(alias+" said "+message)
-	// 	client.broadcast.emit('in message', {alias: alias, message: message});
-	// });
 
 
 }); // end io.on connection
